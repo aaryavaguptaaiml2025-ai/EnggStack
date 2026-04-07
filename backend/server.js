@@ -7,7 +7,7 @@ const rateLimit = require("express-rate-limit");
 const app = express();
 
 app.use(cors({
-  origin: true,
+  origin: "https://enggstack-q018.vercel.app",
   credentials: true,
 }));
 
