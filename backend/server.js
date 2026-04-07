@@ -17,7 +17,7 @@ const aiLimiter = rateLimit({ windowMs: 60000, max: 20, message: { error: "Too m
 
 // Routes
 app.use("/api/auth",      require("./routes/auth"));
-app.use("/api/ai",        aiLimiter, require("./routes/ai"));
+//app.use("/api/ai",        aiLimiter, require("./routes/ai"));
 app.use("/api/stats",     require("./routes/stats"));
 app.use("/api/user",      require("./routes/user"));
 app.use("/api/deadlines", require("./routes/deadlines"));
@@ -33,13 +33,16 @@ app.get("/api/health", (_, res) => res.json({ status: "ok", time: new Date() }))
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB connected");
-    app.listen(process.env.PORT || 5000, () =>
-      console.log(`✅ Server on http://localhost:${process.env.PORT || 5000}`)
-    );
+    startServer();
   })
   .catch(err => {
-    console.error("⚠️  MongoDB failed:", err.message, "\n   Running without DB...");
-    app.listen(process.env.PORT || 5000, () =>
-      console.log(`⚠️  Server on http://localhost:${process.env.PORT || 5000} (no DB)`)
-    );
+    console.error("❌ MongoDB ERROR FULL:", err); // 👈 ADD THIS
+    startServer();
   });
+
+function startServer() {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () =>
+    console.log(`🚀 Server running on port ${PORT}`)
+  );
+}

@@ -1,4 +1,4 @@
-const BASE = "/api";
+const BASE = "https://enggstack-1.onrender.com/api";
 const tok  = () => localStorage.getItem("es_token") || "";
 
 async function req(method, path, body) {

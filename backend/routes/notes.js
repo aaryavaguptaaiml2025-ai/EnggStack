@@ -1,1 +1,1 @@
-module.exports = require('./crud').notes;
+module.exports = require("./crud").notes;
