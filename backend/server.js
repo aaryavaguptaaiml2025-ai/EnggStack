@@ -7,17 +7,20 @@ const rateLimit = require("express-rate-limit");
 const app = express();
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
+  origin: true,
   credentials: true,
 }));
+
 app.use(express.json({ limit: "10mb" }));
 
-// Rate limiting for AI
-const aiLimiter = rateLimit({ windowMs: 60000, max: 20, message: { error: "Too many AI requests, slow down." } });
+const aiLimiter = rateLimit({
+  windowMs: 60000,
+  max: 20,
+  message: { error: "Too many AI requests, slow down." }
+});
 
-// Routes
 app.use("/api/auth",      require("./routes/auth"));
-//app.use("/api/ai",        aiLimiter, require("./routes/ai"));
+// app.use("/api/ai",     aiLimiter, require("./routes/ai"));
 app.use("/api/stats",     require("./routes/stats"));
 app.use("/api/user",      require("./routes/user"));
 app.use("/api/deadlines", require("./routes/deadlines"));
@@ -36,13 +39,11 @@ mongoose.connect(process.env.MONGO_URI)
     startServer();
   })
   .catch(err => {
-    console.error("❌ MongoDB ERROR FULL:", err); // 👈 ADD THIS
+    console.error("❌ MongoDB ERROR FULL:", err);
     startServer();
   });
 
 function startServer() {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () =>
-    console.log(`🚀 Server running on port ${PORT}`)
-  );
+  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 }
