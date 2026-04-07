@@ -118,7 +118,7 @@ export default function AnalyticsPage() {
                   const hi=XP_THRESHOLDS[i+1]; const done=Math.min(stats.xp||0,hi)-lo; const total=hi-lo;
                   const pct=Math.max(0,Math.min(100,Math.round((done/total)*100)));
                   const current=lv===i;
-                  return <div key={i} style={{opacity:i>lv+1?.3:1}}>
+                  return <div key={i} style={{opacity:i>lv+1?0.3:1}}>
                     <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
                       <span style={{fontSize:12,color:current?"var(--ac)":"var(--muted)",fontWeight:current?600:400}}>
                         {current?"→ ":""}{LEVEL_NAMES[i]} (Lv.{i+1})

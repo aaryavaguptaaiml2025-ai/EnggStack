@@ -500,7 +500,7 @@ export function SubjectsPage() {
                   <span style={{ fontSize:12, color:c, fontWeight:700 }}>{pct}%</span>
                 </div>
                 <ProgressBar value={pct} max={100} color={c} glow />
-                <button onClick={() => inc(s)} disabled={s.doneTopics >= s.totalTopics} style={{ marginTop:12, width:"100%", background:c+"14", border:`1px solid ${c}33`, borderRadius:9, padding:"8px", color:c, fontSize:12, cursor:"pointer", fontWeight:600, opacity:s.doneTopics>=s.totalTopics?.5:1, transition:"all .15s" }}>
+                <button onClick={() => inc(s)} disabled={s.doneTopics >= s.totalTopics} style={{ marginTop:12, width:"100%", background:c+"14", border:`1px solid ${c}33`, borderRadius:9, padding:"8px", color:c, fontSize:12, cursor:"pointer", fontWeight:600, opacity:s.doneTopics>=s.totalTopics?0.5:1, transition:"all .15s" }}>
                   {s.doneTopics >= s.totalTopics ? "✓ All Done" : "+ Mark Topic Done"}
                 </button>
               </Card>

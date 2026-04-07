@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { StatsProvider } from "./context/StatsContext";
 import { MusicProvider } from "./context/MusicContext";
@@ -6,7 +6,7 @@ import Sidebar from "./components/Sidebar";
 import { LoginPage, RegisterPage } from "./pages/AuthPages";
 import DashboardPage from "./pages/DashboardPage";
 import PomodoroPage from "./pages/PomodoroPage";
-import AIChatPage from "./pages/AIChatPage";
+//import AIChatPage from "./pages/AIChatPage";
 import FocusModePage from "./pages/FocusModePage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -65,7 +65,7 @@ function Layout() {
             <Route path="/dashboard"    element={<DashboardPage/>}/>
             <Route path="/pomodoro"     element={<PomodoroPage/>}/>
             <Route path="/focus"        element={<FocusModePage/>}/>
-            <Route path="/ai-chat"      element={<AIChatPage/>}/>
+
             <Route path="/deadlines"    element={<DeadlinesPage/>}/>
             <Route path="/notes"        element={<NotesPage/>}/>
             <Route path="/checklist"    element={<ChecklistPage/>}/>

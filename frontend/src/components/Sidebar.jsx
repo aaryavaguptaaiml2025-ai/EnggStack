@@ -17,7 +17,7 @@ const NAV = [
   { to:"/calendar",icon:"date",label:"Calendar" },
   { to:"/gamification",icon:"trophy",label:"Achievements" },
   { to:"/music",icon:"music",label:"Music" },
-  { to:"/ai-chat",icon:"bot",label:"AI Chat" },
+  //{ to:"/ai-chat",icon:"bot",label:"AI Chat" },
   { to:"/settings",icon:"gear",label:"Settings" },
 ];
 
