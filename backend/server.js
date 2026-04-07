@@ -8,6 +8,7 @@ const app = express();
 
 app.use(cors({
   origin: "https://enggstack-q018.vercel.app",
+  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
   credentials: true,
 }));
 
