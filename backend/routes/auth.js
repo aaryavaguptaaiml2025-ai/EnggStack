@@ -65,7 +65,12 @@ router.post("/google", async (req, res) => {
 
     let user = await User.findOne({ $or: [{ googleId }, { email }] });
     if (!user) {
-      user = await User.create({ name, email, googleId, googleAvatar: picture });
+      user = await User.create({
+        name: name || email.split("@")[0],
+        email,
+        googleId,
+        googleAvatar: picture
+      });
       await ensureStats(user._id);
     } else if (!user.googleId) {
       user.googleId     = googleId;
