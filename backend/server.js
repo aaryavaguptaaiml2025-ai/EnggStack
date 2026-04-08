@@ -12,6 +12,7 @@ app.use(cors({
       "http://localhost:5173",
       "https://engg-stack-q018.vercel.app",
       "https://engg-stack.vercel.app",
+      "https://engg-stack-qol8-qw05iqeo3-aaryavaguptaaiml2025-ais-projects.vercel.app",
       process.env.CLIENT_URL,
     ].filter(Boolean);
     if (!origin || allowed.includes(origin)) return callback(null, true);
