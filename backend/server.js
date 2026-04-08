@@ -7,11 +7,18 @@ const rateLimit = require("express-rate-limit");
 const app = express();
 
 app.use(cors({
-  origin: "https://enggstack-q018.vercel.app",
-  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+  origin: function(origin, callback) {
+    const allowed = [
+      "http://localhost:5173",
+      "https://engg-stack-q018.vercel.app",
+      "https://engg-stack.vercel.app",
+      process.env.CLIENT_URL,
+    ].filter(Boolean);
+    if (!origin || allowed.includes(origin)) return callback(null, true);
+    callback(new Error("CORS blocked: " + origin));
+  },
   credentials: true,
 }));
-
 app.use(express.json({ limit: "10mb" }));
 
 const aiLimiter = rateLimit({

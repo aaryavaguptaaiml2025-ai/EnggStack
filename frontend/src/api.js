@@ -1,4 +1,4 @@
-const BASE = "https://enggstack-1.onrender.com/api";
+const BASE = import.meta.env.VITE_API_URL || "/api";
 const tok  = () => localStorage.getItem("es_token") || "";
 
 async function req(method, path, body) {
