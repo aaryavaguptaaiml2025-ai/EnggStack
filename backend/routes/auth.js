@@ -57,7 +57,11 @@ router.post("/google", async (req, res) => {
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
     });
-    const { sub: googleId, email, name, picture } = ticket.getPayload();
+    const payload = ticket.getPayload();
+    const googleId = payload.sub;
+    const email = payload.email;
+    const picture = payload.picture;
+    const name = payload.name || email.split("@")[0] || "User";
 
     let user = await User.findOne({ $or: [{ googleId }, { email }] });
     if (!user) {
