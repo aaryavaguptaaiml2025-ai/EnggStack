@@ -99,9 +99,9 @@ export function RegisterPage() {
     <AuthWrap title="Create account" sub="Join EnggStack — study smarter">
       <GoogleBtn onSuccess={c=>go(googleLogin,c)} label="Sign up with Google"/>
       <div style={{display:"flex",alignItems:"center",gap:10,margin:"0 0 14px"}}><div style={{flex:1,height:1,background:"var(--border)"}}/>  <span style={{fontSize:11,color:"var(--dim)"}}>OR</span><div style={{flex:1,height:1,background:"var(--border)"}}/></div>
-      <Input label="Full Name" placeholder="Aaryava Gupta" value={name} onChange={e=>setName(e.target.value)}/>
+      <Input label="Full Name" placeholder="Full Name" value={name} onChange={e=>setName(e.target.value)}/>
       <Input label="Email" type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)}/>
-      <Input label="Username (optional)" placeholder="aaryava" value={uname} onChange={e=>setUname(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,""))}/>
+      <Input label="Username (optional)" placeholder="username" value={uname} onChange={e=>setUname(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,""))}/>
       <Input label="Password" type="password" placeholder="min 6 chars" value={pass} onChange={e=>setPass(e.target.value)} style={{marginBottom:0}}/>
       {err&&<div style={{color:"#f87171",fontSize:12,marginTop:8}}>{err}</div>}
       <Btn full color="var(--ac)" onClick={()=>go(register,name,email,pass,uname||undefined)} disabled={loading} style={{marginTop:14}}>{loading?<Spinner color="#000"/>:"Create Account"}</Btn>

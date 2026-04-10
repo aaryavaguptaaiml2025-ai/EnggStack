@@ -160,7 +160,7 @@ export default function SettingsPage() {
             </div>
 
             <Input label="Full Name" value={name} onChange={e=>setName(e.target.value)} placeholder="Your full name"/>
-            <Input label="Username" value={username} onChange={e=>setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,""))} placeholder="e.g. aaryava"/>
+            <Input label="Username" value={username} onChange={e=>setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,""))} placeholder="e.g. name"/>
             <div style={{ marginBottom:14 }}>
               <div style={{ fontSize:12,color:"var(--muted)",marginBottom:6,fontWeight:500 }}>Email</div>
               <div style={{ background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:10,padding:"11px 14px",fontSize:13,color:"var(--dim)" }}>{user?.email}</div>
