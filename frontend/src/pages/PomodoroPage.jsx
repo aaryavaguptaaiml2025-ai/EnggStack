@@ -26,7 +26,11 @@ export default function PomodoroPage() {
   const mins=String(Math.floor(tl/60)).padStart(2,"0"); const secs=String(tl%60).padStart(2,"0");
   const R=110; const circ=2*Math.PI*R;
   return (
+<<<<<<< HEAD
     <div style={{padding:"20px 16px",display:"flex",flexDirection:"column",alignItems:"center",gap:22}}>
+=======
+    <div style={{padding:"32px 40px",display:"flex",flexDirection:"column",alignItems:"center",gap:26}}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
       {toast&&<Toast msg={toast} color={color} onClose={()=>setToast(null)}/>}
       <h1 style={{color:"var(--text)",fontSize:22,fontWeight:800,margin:0}}>Pomodoro Timer</h1>
       <div style={{display:"flex",background:"var(--card)",border:"1px solid var(--border)",borderRadius:12,padding:4,gap:3}}>

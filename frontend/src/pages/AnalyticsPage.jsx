@@ -71,7 +71,11 @@ export default function AnalyticsPage() {
   const last4Weeks = [wMins.reduce((a,b)=>a+b,0)-20, wMins.reduce((a,b)=>a+b,0)-50, wMins.reduce((a,b)=>a+b,0)+15, wMins.reduce((a,b)=>a+b,0)];
 
   return (
+<<<<<<< HEAD
     <div style={{padding:"24px 28px",maxWidth:1100,margin:"0 auto"}}>
+=======
+    <div style={{padding:"28px 32px",maxWidth:1100,margin:"0 auto"}}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
       <h1 style={{color:"var(--text)",fontSize:22,fontWeight:800,margin:"0 0 20px"}}>Analytics</h1>
 
       <Tabs tabs={[{id:"overview",label:"Overview",icon:"📊"},{id:"heatmap",label:"Study Heatmap",icon:"🔥"},{id:"subjects",label:"Subjects",icon:"📚"}]} active={tab} onChange={setTab}/>
@@ -80,7 +84,11 @@ export default function AnalyticsPage() {
         {tab==="overview" && (
           <div style={{display:"flex",flexDirection:"column",gap:16}}>
             {/* Summary cards */}
+<<<<<<< HEAD
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(160px,1fr))",gap:14}}>
+=======
+            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
               {[
                 {label:"Total Study Time",value:`${Math.floor((stats.totalMins||0)/60)}h ${(stats.totalMins||0)%60}m`,icon:"⏱️",color:"#60a5fa"},
                 {label:"Total XP",value:(stats.xp||0).toLocaleString(),icon:"⚡",color:"#fbbf24"},
@@ -96,7 +104,11 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Weekly bar + line */}
+<<<<<<< HEAD
             <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:16}}>
+=======
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
               <Card>
                 <div style={{fontSize:14,fontWeight:700,color:"var(--text)",marginBottom:14}}>Daily Study (this week)</div>
                 <BarChart data={wMins} labels={DAYS} color="#4ade80" unit="m"/>
@@ -118,7 +130,11 @@ export default function AnalyticsPage() {
                   const hi=XP_THRESHOLDS[i+1]; const done=Math.min(stats.xp||0,hi)-lo; const total=hi-lo;
                   const pct=Math.max(0,Math.min(100,Math.round((done/total)*100)));
                   const current=lv===i;
+<<<<<<< HEAD
                   return <div key={i} style={{opacity:i>lv+1?.3:1}}>
+=======
+                  return <div key={i} style={{opacity:i>lv+1?0.3:1}}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
                     <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
                       <span style={{fontSize:12,color:current?"var(--ac)":"var(--muted)",fontWeight:current?600:400}}>
                         {current?"→ ":""}{LEVEL_NAMES[i]} (Lv.{i+1})
@@ -159,7 +175,11 @@ export default function AnalyticsPage() {
           <div style={{display:"flex",flexDirection:"column",gap:16}}>
             {subjects.length===0?<Card style={{textAlign:"center",padding:40}}><div style={{color:"var(--muted)"}}>No subjects yet. Add them in the Subjects page.</div></Card>:(
               <>
+<<<<<<< HEAD
                 <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:14}}>
+=======
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14}}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
                   {subjects.map((s,i)=>{
                     const pct=s.totalTopics>0?Math.round((s.doneTopics/s.totalTopics)*100):0;
                     const c=COLORS[i%COLORS.length];

@@ -56,7 +56,11 @@ export function DeadlinesPage() {
   const done    = items.filter(x =>  x.done);
 
   return (
+<<<<<<< HEAD
     <div className="page-pad" style={{ padding:"24px 28px" }}>
+=======
+    <div style={{ padding:"28px 32px" }}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={() => setToast(null)} />}
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:22 }}>
@@ -196,6 +200,7 @@ export function NotesPage() {
     } catch {}
   };
 
+<<<<<<< HEAD
   const exportPDF = async (id) => {
     try {
       await api.exportNote(id);
@@ -203,6 +208,9 @@ export function NotesPage() {
       setToast({ msg:"PDF export failed: " + e.message, color:"#f87171" });
     }
   };
+=======
+  const exportPDF = (id) => window.open(`/api/export/notes/${id}?token=${localStorage.getItem("es_token")}`, "_blank");
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
 
   const filtered = notes.filter(n =>
     n.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -210,6 +218,7 @@ export function NotesPage() {
   );
 
   return (
+<<<<<<< HEAD
     <div style={{ display:"flex", flexDirection:"column", height:"100vh", overflow:"hidden" }}>
       <style>{`
         @media (min-width: 769px) {
@@ -222,6 +231,13 @@ export function NotesPage() {
       <div className="notes-layout" style={{ display:"flex", flex:1, overflow:"hidden", flexDirection:"column" }}>
       {/* Note list */}
       <div className="notes-list" style={{ borderBottom:"1px solid var(--border)", display:"flex", flexDirection:"column", flexShrink:0, background:"var(--bg2)", maxHeight:"40vh" }}>
+=======
+    <div style={{ display:"flex", height:"100vh", overflow:"hidden" }}>
+      {toast && <Toast msg={toast.msg} color={toast.color} onClose={() => setToast(null)} />}
+
+      {/* Note list sidebar */}
+      <div style={{ width:280, borderRight:"1px solid var(--border)", display:"flex", flexDirection:"column", flexShrink:0, background:"var(--bg2)" }}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
         <div style={{ padding:"18px 14px 10px", borderBottom:"1px solid var(--border)" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
             <span style={{ fontWeight:700, fontSize:15, color:"var(--text)" }}>Notes</span>
@@ -317,7 +333,10 @@ export function NotesPage() {
         )}
       </div>
 
+<<<<<<< HEAD
       </div>{/* end notes-layout */}
+=======
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
       {modal && (
         <Modal title="New Note" onClose={() => setModal(false)}>
           <Input label="Title" placeholder="e.g. Binary Search Trees" value={form.title} onChange={e => setForm({...form, title:e.target.value})} />
@@ -368,7 +387,11 @@ export function ChecklistPage() {
   const done    = items.filter(x =>  x.done);
 
   return (
+<<<<<<< HEAD
     <div className="page-pad" style={{ padding:"24px 28px" }}>
+=======
+    <div style={{ padding:"28px 32px" }}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={() => setToast(null)} />}
       <h1 style={{ color:"var(--text)", fontSize:22, fontWeight:800, margin:"0 0 18px" }}>Checklist</h1>
 
@@ -478,7 +501,11 @@ export function SubjectsPage() {
   const del = async (id) => { await api.deleteSubject(id); sfx.click(); load(); };
 
   return (
+<<<<<<< HEAD
     <div className="page-pad" style={{ padding:"24px 28px" }}>
+=======
+    <div style={{ padding:"28px 32px" }}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={() => setToast(null)} />}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:22 }}>
         <h1 style={{ color:"var(--text)", fontSize:22, fontWeight:800, margin:0 }}>Subjects</h1>
@@ -514,7 +541,11 @@ export function SubjectsPage() {
                   <span style={{ fontSize:12, color:c, fontWeight:700 }}>{pct}%</span>
                 </div>
                 <ProgressBar value={pct} max={100} color={c} glow />
+<<<<<<< HEAD
                 <button onClick={() => inc(s)} disabled={s.doneTopics >= s.totalTopics} style={{ marginTop:12, width:"100%", background:c+"14", border:`1px solid ${c}33`, borderRadius:9, padding:"8px", color:c, fontSize:12, cursor:"pointer", fontWeight:600, opacity:s.doneTopics>=s.totalTopics?.5:1, transition:"all .15s" }}>
+=======
+                <button onClick={() => inc(s)} disabled={s.doneTopics >= s.totalTopics} style={{ marginTop:12, width:"100%", background:c+"14", border:`1px solid ${c}33`, borderRadius:9, padding:"8px", color:c, fontSize:12, cursor:"pointer", fontWeight:600, opacity:s.doneTopics>=s.totalTopics?0.5:1, transition:"all .15s" }}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
                   {s.doneTopics >= s.totalTopics ? "✓ All Done" : "+ Mark Topic Done"}
                 </button>
               </Card>
@@ -581,7 +612,11 @@ export function TimetablePage() {
   const del = async (id) => { await api.deleteEntry(id); sfx.click(); load(); };
 
   return (
+<<<<<<< HEAD
     <div className="page-pad" style={{ padding:"24px 28px" }}>
+=======
+    <div style={{ padding:"28px 32px" }}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={() => setToast(null)} />}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:22 }}>
         <h1 style={{ color:"var(--text)", fontSize:22, fontWeight:800, margin:0 }}>Timetable</h1>
@@ -589,8 +624,12 @@ export function TimetablePage() {
       </div>
 
       {loading ? <div style={{ textAlign:"center", padding:60 }}><Spinner /></div> : (
+<<<<<<< HEAD
         <div style={{ overflowX:"auto" }}>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(7,minmax(120px,1fr))", gap:10, minWidth:600 }}>
+=======
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:10 }}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
           {DAYS.map(day => {
             const dayEntries = entries.filter(e => e.day === day).sort((a,b) => a.startTime.localeCompare(b.startTime));
             const isToday = day === todayShort;
@@ -619,7 +658,10 @@ export function TimetablePage() {
             );
           })}
         </div>
+<<<<<<< HEAD
         </div>{/* end scroll wrapper */}
+=======
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
       )}
 
       {modal && (

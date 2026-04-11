@@ -124,7 +124,11 @@ export default function SettingsPage() {
   ];
 
   return (
+<<<<<<< HEAD
     <div style={{ padding:"24px 28px", maxWidth:720, margin:"0 auto" }}>
+=======
+    <div style={{ padding:"28px 32px", maxWidth:720, margin:"0 auto" }}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={()=>setToast(null)}/>}
       <h1 style={{ color:"var(--text)", fontSize:22, fontWeight:800, margin:"0 0 20px" }}>⚙️ Settings</h1>
 
@@ -160,7 +164,11 @@ export default function SettingsPage() {
             </div>
 
             <Input label="Full Name" value={name} onChange={e=>setName(e.target.value)} placeholder="Your full name"/>
+<<<<<<< HEAD
             <Input label="Username" value={username} onChange={e=>setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,""))} placeholder="e.g. aaryava"/>
+=======
+            <Input label="Username" value={username} onChange={e=>setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,""))} placeholder="e.g. name"/>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
             <div style={{ marginBottom:14 }}>
               <div style={{ fontSize:12,color:"var(--muted)",marginBottom:6,fontWeight:500 }}>Email</div>
               <div style={{ background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:10,padding:"11px 14px",fontSize:13,color:"var(--dim)" }}>{user?.email}</div>
@@ -183,7 +191,11 @@ export default function SettingsPage() {
             <div style={{ fontSize:15, fontWeight:700, color:"var(--text)", marginBottom:18 }}>Appearance</div>
 
             <div style={{ fontSize:12, color:"var(--muted)", marginBottom:10, fontWeight:500 }}>Theme</div>
+<<<<<<< HEAD
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(80px,1fr))", gap:10, marginBottom:20 }}>
+=======
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:20 }}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
               {THEMES.map(t=>(
                 <button key={t.id} onClick={()=>{setTheme(t.id);document.documentElement.setAttribute("data-theme",t.id);}} style={{
                   padding:"14px 6px", borderRadius:12, cursor:"pointer",
@@ -266,7 +278,11 @@ export default function SettingsPage() {
                 Set a 4-digit PIN to log in quickly from any device — just enter your email + PIN.
                 {user?.hasPin && <span style={{color:"#4ade80",marginLeft:8}}>✓ PIN is active</span>}
               </div>
+<<<<<<< HEAD
               <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))", gap:10 }}>
+=======
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
                 <Input label="New PIN (4 digits)" type="password" inputMode="numeric" maxLength={4} value={pin} onChange={e=>setPin(e.target.value.replace(/\D/g,"").slice(0,4))} placeholder="••••" style={{letterSpacing:8,textAlign:"center",fontSize:20}}/>
                 <Input label="Confirm PIN" type="password" inputMode="numeric" maxLength={4} value={pinConfirm} onChange={e=>setPinConfirm(e.target.value.replace(/\D/g,"").slice(0,4))} placeholder="••••" style={{letterSpacing:8,textAlign:"center",fontSize:20}}/>
               </div>

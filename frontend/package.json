@@ -2,6 +2,12 @@
   "name": "enggstack-frontend",
   "version": "2.0.0",
   "type": "module",
+<<<<<<< HEAD
+=======
+  "engines": {
+    "node": ">=20"
+  },
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -16,4 +22,8 @@
     "@vitejs/plugin-react": "^4.2.1",
     "vite": "^5.0.10"
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
