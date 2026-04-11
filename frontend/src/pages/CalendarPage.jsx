@@ -67,11 +67,7 @@ export default function CalendarPage() {
   const selectedEvents = selected ? getEventsForDay(selected) : [];
 
   return (
-<<<<<<< HEAD
     <div style={{ padding:"24px 28px" }}>
-=======
-    <div style={{ padding:"28px 32px" }}>
->>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={()=>setToast(null)}/>}
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:22 }}>
@@ -87,11 +83,7 @@ export default function CalendarPage() {
         <button onClick={()=>{ sfx.click(); setYear(today.getFullYear()); setMonth(today.getMonth()); }} style={{ background:"var(--ac-dim)",border:"1px solid var(--ac)44",borderRadius:8,padding:"6px 14px",color:"var(--ac)",fontSize:12,fontWeight:600,cursor:"pointer" }}>Today</button>
       </div>
 
-<<<<<<< HEAD
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(300px,1fr))", gap:16 }}>
-=======
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 300px", gap:20 }}>
->>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
         {/* Calendar grid */}
         <div style={{ background:"var(--card)", border:"1px solid var(--border)", borderRadius:16, overflow:"hidden" }}>
           {/* Day headers */}
@@ -101,11 +93,7 @@ export default function CalendarPage() {
             ))}
           </div>
           {/* Day cells */}
-<<<<<<< HEAD
           <div style={{ overflowX:"auto"}}><div style={{display:"grid", gridTemplateColumns:"repeat(7,minmax(44px,1fr))", minWidth:300}}>
-=======
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)" }}>
->>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
             {cells.map((day,i) => {
               const events = getEventsForDay(day);
               const isToday = day===today.getDate() && month===today.getMonth() && year===today.getFullYear();

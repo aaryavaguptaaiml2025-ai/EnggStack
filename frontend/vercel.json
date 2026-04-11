@@ -1,13 +1,5 @@
 {
-<<<<<<< HEAD
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
-=======
-  "routes": [
-    { "handle": "filesystem" },
-    { "src": "/.*", "dest": "/index.html" }
-  ]
-}
->>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c

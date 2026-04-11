@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-<<<<<<< HEAD
 const bcrypt   = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
@@ -26,34 +25,6 @@ const userSchema = new mongoose.Schema({
   customQuotes:   [{ type: String }],
 
   // Notifications
-=======
-const bcrypt = require("bcryptjs");
-
-const userSchema = new mongoose.Schema({
-  // Core identity
-  name:         { type: String, required: false, trim: true },
-  email:        { type: String, required: true, unique: true, lowercase: true },
-  username:     { type: String, unique: true, sparse: true, trim: true },
-  password:     { type: String, select: false },        // null for Google-only users
-  googleId:     { type: String, unique: true, sparse: true },
-  googleAvatar: { type: String, default: "" },
-
-  // PIN login (4-digit, hashed)
-  pin:          { type: String, select: false },
-
-  // Profile / Personalization
-  avatar:       { type: String, default: "" },          // base64 or URL
-  avatarEmoji:  { type: String, default: "🎓" },
-  theme:        { type: String, default: "dark", enum: ["dark","midnight","forest","ocean","candy"] },
-  accentColor:  { type: String, default: "#4ade80" },
-
-  // Study goals & quotes
-  dailyGoalMins:   { type: Number, default: 120 },
-  dailyGoalPomos:  { type: Number, default: 4 },
-  customQuotes:    [{ type: String }],
-
-  // Notification prefs
->>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
   notifyDeadlines: { type: Boolean, default: true },
   notifyBreak:     { type: Boolean, default: true },
 
@@ -61,10 +32,7 @@ const userSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
-<<<<<<< HEAD
 // Hash password and PIN before save
-=======
->>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
 userSchema.pre("save", async function () {
   this.updatedAt = new Date();
   if (this.isModified("password") && this.password)
@@ -76,7 +44,6 @@ userSchema.pre("save", async function () {
 userSchema.methods.comparePassword = function (p) { return bcrypt.compare(p, this.password); };
 userSchema.methods.comparePin      = function (p) { return bcrypt.compare(p, this.pin); };
 
-<<<<<<< HEAD
 const User = mongoose.model("User", userSchema);
 
 // ── Drop stale indexes from old schema versions ───────────────────────────────
@@ -87,6 +54,3 @@ User.collection.dropIndex("uid_1").catch(() => {
 });
 
 module.exports = User;
-=======
-module.exports = mongoose.model("User", userSchema);
->>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c

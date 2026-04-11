@@ -17,11 +17,7 @@ export default function FocusModePage() {
   const mins=String(Math.floor(time/60)).padStart(2,"0"); const secs=String(time%60).padStart(2,"0");
   const prog=((len*60-time)/(len*60))*100; const R=124; const circ=2*Math.PI*R;
   return (
-<<<<<<< HEAD
     <div style={{padding:"20px 16px",display:"flex",flexDirection:"column",alignItems:"center",gap:22,minHeight:"calc(100vh - 65px)",background:on?"var(--bg)":"var(--bg)",transition:"background 1.2s ease"}}>
-=======
-    <div style={{padding:"40px",display:"flex",flexDirection:"column",alignItems:"center",gap:28,minHeight:"calc(100vh - 65px)",background:on?"var(--bg)":"var(--bg)",transition:"background 1.2s ease"}}>
->>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
       {toast&&<Toast msg={toast} color="#4ade80" onClose={()=>setToast(null)}/>}
       <h1 style={{color:on?"#4ade80":"var(--text)",fontSize:22,fontWeight:800,margin:0,transition:"color .6s"}}>Focus Mode {on&&"— Active"}</h1>
       {!on&&<div style={{width:"100%",maxWidth:420,display:"flex",flexDirection:"column",gap:12}}>

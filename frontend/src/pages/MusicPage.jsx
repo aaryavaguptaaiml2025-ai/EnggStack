@@ -6,11 +6,7 @@ export default function MusicPage() {
   const fmt = (s) => `${String(Math.floor(s/3600)).padStart(2,"0")}:${String(Math.floor((s%3600)/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
 
   return (
-<<<<<<< HEAD
     <div style={{padding:"24px 28px",maxWidth:1000,margin:"0 auto"}}>
-=======
-    <div style={{padding:"28px 32px",maxWidth:1000,margin:"0 auto"}}>
->>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
         <h1 style={{color:"var(--text)",fontSize:22,fontWeight:800,margin:0}}>Music</h1>
         <div style={{background:"var(--card)",border:"1px solid var(--border)",borderRadius:12,padding:"8px 16px",display:"flex",alignItems:"center",gap:10}}>
@@ -47,11 +43,7 @@ export default function MusicPage() {
         </div>
       )}
 
-<<<<<<< HEAD
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:14,marginBottom:24}}>
-=======
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:24}}>
->>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
         {PLAYLISTS.map(pl=>{
           const active=activePL?.id===pl.id&&playing;
           return (
@@ -85,11 +77,7 @@ export default function MusicPage() {
         </div>
       </div>
 
-<<<<<<< HEAD
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:12}}>
-=======
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12}}>
->>>>>>> aa34717e4aab2e0d5daa253fdebdafcf824aa76c
         {[
           {icon:"🎧",title:"Use Headphones",tip:"Binaural beats require headphones to work properly — they create different tones in each ear."},
           {icon:"🧩",title:"Match to Task",tip:"Lo-Fi for reading, Classical for maths, Nature for writing, Binaural for deep focus."},
