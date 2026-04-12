@@ -596,36 +596,36 @@ export function TimetablePage() {
 
       {loading ? <div style={{ textAlign:"center", padding:60 }}><Spinner /></div> : (
         <div style={{ overflowX:"auto" }}>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(7,minmax(120px,1fr))", gap:10, minWidth:600 }}>
-          {DAYS.map(day => {
-            const dayEntries = entries.filter(e => e.day === day).sort((a,b) => a.startTime.localeCompare(b.startTime));
-            const isToday = day === todayShort;
-            return (
-              <div key={day}>
-                <div style={{ textAlign:"center", padding:"8px 4px", borderRadius:10, background:isToday?"var(--ac-dim)":"var(--card)", border:`1px solid ${isToday?"var(--ac)44":"var(--border)"}`, fontSize:13, fontWeight:isToday?700:500, color:isToday?"var(--ac)":"var(--muted)", marginBottom:8 }}>
-                  {day}{isToday ? " ✦" : ""}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(7,minmax(120px,1fr))", gap:10, minWidth:600 }}>
+            {DAYS.map(day => {
+              const dayEntries = entries.filter(e => e.day === day).sort((a,b) => a.startTime.localeCompare(b.startTime));
+              const isToday = day === todayShort;
+              return (
+                <div key={day}>
+                  <div style={{ textAlign:"center", padding:"8px 4px", borderRadius:10, background:isToday?"var(--ac-dim)":"var(--card)", border:`1px solid ${isToday?"var(--ac)44":"var(--border)"}`, fontSize:13, fontWeight:isToday?700:500, color:isToday?"var(--ac)":"var(--muted)", marginBottom:8 }}>
+                    {day}{isToday ? " ✦" : ""}
+                  </div>
+                  <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                    {dayEntries.map(e => (
+                      <div key={e._id} style={{ background:"var(--card)", border:`1px solid ${e.color||"#60a5fa"}33`, borderLeft:`3px solid ${e.color||"#60a5fa"}`, borderRadius:9, padding:"9px 8px", position:"relative" }}>
+                        <div style={{ fontSize:12, fontWeight:600, color:"var(--text)", marginBottom:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{e.subject}</div>
+                        <div style={{ fontSize:10, color:"var(--muted)" }}>{e.startTime}–{e.endTime}</div>
+                        {e.room && <div style={{ fontSize:10, color:"var(--dim)", marginTop:1 }}>{e.room}</div>}
+                        <button onClick={() => del(e._id)} style={{ position:"absolute", top:4, right:4, background:"none", border:"none", color:"var(--dim)", cursor:"pointer", fontSize:13, transition:"color .15s" }}
+                          onMouseEnter={ev => ev.currentTarget.style.color = "#f87171"}
+                          onMouseLeave={ev => ev.currentTarget.style.color = "var(--dim)"}
+                        ><X /></button>
+                      </div>
+                    ))}
+                    {dayEntries.length === 0 && (
+                      <div style={{ fontSize:11, color:"var(--dim)", textAlign:"center", padding:"10px 4px" }}>—</div>
+                    )}
+                  </div>
                 </div>
-                <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                  {dayEntries.map(e => (
-                    <div key={e._id} style={{ background:"var(--card)", border:`1px solid ${e.color||"#60a5fa"}33`, borderLeft:`3px solid ${e.color||"#60a5fa"}`, borderRadius:9, padding:"9px 8px", position:"relative" }}>
-                      <div style={{ fontSize:12, fontWeight:600, color:"var(--text)", marginBottom:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{e.subject}</div>
-                      <div style={{ fontSize:10, color:"var(--muted)" }}>{e.startTime}–{e.endTime}</div>
-                      {e.room && <div style={{ fontSize:10, color:"var(--dim)", marginTop:1 }}>{e.room}</div>}
-                      <button onClick={() => del(e._id)} style={{ position:"absolute", top:4, right:4, background:"none", border:"none", color:"var(--dim)", cursor:"pointer", fontSize:13, transition:"color .15s" }}
-                        onMouseEnter={ev => ev.currentTarget.style.color = "#f87171"}
-                        onMouseLeave={ev => ev.currentTarget.style.color = "var(--dim)"}
-                      ><X /></button>
-                    </div>
-                  ))}
-                  {dayEntries.length === 0 && (
-                    <div style={{ fontSize:11, color:"var(--dim)", textAlign:"center", padding:"10px 4px" }}>—</div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-        </div>{/* end scroll wrapper */}
       )}
 
       {modal && (

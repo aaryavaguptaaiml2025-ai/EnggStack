@@ -127,6 +127,7 @@ export default function CalendarPage() {
             })}
           </div>
         </div>
+        </div>
 
         {/* Side panel */}
         <div style={{ display:"flex", flexDirection:"column", gap:14 }}>

@@ -1,10 +1,13 @@
-// In production (Vercel), VITE_API_URL = https://enggstack-1.onrender.com/api
-// In development, falls back to /api which Vite proxies to localhost:5000
-const BASE = import.meta.env.VITE_API_URL || "/api";
+// In production (Vercel), VITE_API_URL = https://enggstack-1.onrender.com
+// This module appends /api to all paths
+// In development, falls back to "" which Vite proxies to localhost:5000
+const RAW = import.meta.env.VITE_API_URL || "";
+// Ensure no trailing slash
+const BASE = RAW.endsWith("/") ? RAW.slice(0, -1) : RAW;
 const tok  = () => localStorage.getItem("es_token") || "";
 
 async function req(method, path, body) {
-  const r = await fetch(`${BASE}${path}`, {
+  const r = await fetch(`${BASE}/api${path}`, {
     method,
     headers: {
       "Content-Type":  "application/json",
@@ -27,10 +30,12 @@ async function req(method, path, body) {
 
 export const api = {
   // auth
-  register:    (b) => req("POST",  "/auth/register",  b),
-  login:       (b) => req("POST",  "/auth/login",     b),
-  googleAuth:  (b) => req("POST",  "/auth/google",    b),
-  pinLogin:    (b) => req("POST",  "/auth/pin-login", b),
+  sendOtp:     (b) => req("POST",  "/auth/send-otp",    b),
+  verifyOtp:   (b) => req("POST",  "/auth/verify-otp",  b),
+  resendOtp:   (b) => req("POST",  "/auth/resend-otp",  b),
+  login:       (b) => req("POST",  "/auth/login",       b),
+  googleAuth:  (b) => req("POST",  "/auth/google",      b),
+  pinLogin:    (b) => req("POST",  "/auth/pin-login",   b),
   me:          ()  => req("GET",   "/auth/me"),
 
   // user / settings
@@ -78,9 +83,12 @@ export const api = {
   addReminder:    (b)  => req("POST",   "/reminders",     b),
   deleteReminder: (id) => req("DELETE", `/reminders/${id}`),
 
+  // AI chat
+  chat: (messages) => req("POST", "/ai/chat", { messages }),
+
   // export PDFs — sends token in Authorization header via fetch
   exportNote: async (id) => {
-    const r = await fetch(`${BASE}/export/notes/${id}`, {
+    const r = await fetch(`${BASE}/api/export/notes/${id}`, {
       headers: { "Authorization": `Bearer ${tok()}` },
     });
     if (!r.ok) throw new Error("Export failed");
@@ -91,7 +99,7 @@ export const api = {
     URL.revokeObjectURL(url);
   },
   exportAllNotes: async () => {
-    const r = await fetch(`${BASE}/export/notes-all`, {
+    const r = await fetch(`${BASE}/api/export/notes-all`, {
       headers: { "Authorization": `Bearer ${tok()}` },
     });
     if (!r.ok) throw new Error("Export failed");

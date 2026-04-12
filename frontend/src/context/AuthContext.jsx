@@ -28,10 +28,28 @@ export function AuthProvider({ children }) {
     applyUser(d.user);
   };
 
-  const register = async (name, email, password, username) => {
-    const d = await api.register({ name, email, password, username });
+  // OTP-based registration — step 1: send OTP
+  const sendOtp = async (name, email, password, username) => {
+    const d = await api.sendOtp({ name, email, password, username });
+    // If GMAIL not configured, backend auto-creates account (skipOTP flag)
+    if (d.skipOTP && d.token) {
+      localStorage.setItem("es_token", d.token);
+      applyUser(d.user);
+      return { skipOTP: true };
+    }
+    return { skipOTP: false, message: d.message };
+  };
+
+  // OTP-based registration — step 2: verify OTP
+  const verifyOtp = async (email, otp) => {
+    const d = await api.verifyOtp({ email, otp });
     localStorage.setItem("es_token", d.token);
     applyUser(d.user);
+  };
+
+  // Resend OTP
+  const resendOtp = async (email) => {
+    await api.resendOtp({ email });
   };
 
   const googleLogin = async (credential) => {
@@ -57,7 +75,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <Ctx.Provider value={{ user, loading, login, register, googleLogin, pinLogin, logout, refreshUser, applyUser }}>
+    <Ctx.Provider value={{ user, loading, login, sendOtp, verifyOtp, resendOtp, googleLogin, pinLogin, logout, refreshUser, applyUser }}>
       {children}
     </Ctx.Provider>
   );
