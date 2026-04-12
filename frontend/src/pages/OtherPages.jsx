@@ -211,7 +211,18 @@ export function NotesPage() {
 
   return (
     <div style={{ display:"flex", flexDirection:"column", height:"100vh", overflow:"hidden" }}>
-
+  <style>{`
+    @media (min-width: 769px) {
+      .notes-layout { flex-direction: row !important; }
+      .notes-list {
+        width: 280px !important;
+        border-right: 1px solid var(--border) !important;
+        border-bottom: none !important;
+        height: 100% !important;
+        max-height: none !important;
+      }
+    }
+  `}</style>
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={() => setToast(null)} />}
 
       <div className="notes-layout" style={{ display:"flex", flex:1, overflow:"hidden", flexDirection:"column" }}>
