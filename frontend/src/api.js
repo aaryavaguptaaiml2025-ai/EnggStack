@@ -1,9 +1,10 @@
 // In production (Vercel), VITE_API_URL = https://enggstack-1.onrender.com
 // This module appends /api to all paths
 // In development, falls back to "" which Vite proxies to localhost:5000
-const RAW = import.meta.env.VITE_API_URL || "";
-// Ensure no trailing slash
-const BASE = RAW.endsWith("/") ? RAW.slice(0, -1) : RAW;
+const RAW = (import.meta.env.VITE_API_URL || "").trim();
+// Strip trailing slash and /api suffix so we always have a clean base like https://host.com
+let BASE = RAW.endsWith("/") ? RAW.slice(0, -1) : RAW;
+if (BASE.endsWith("/api")) BASE = BASE.slice(0, -4);
 const tok  = () => localStorage.getItem("es_token") || "";
 
 async function req(method, path, body) {
