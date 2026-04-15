@@ -29,17 +29,18 @@ function AuthWrap({ children, title, sub }) {
 }
 
 /* ───────────────── GOOGLE LOGIN ───────────────── */
+// Returns the Google Client ID from env or window, or null if not configured
+function getGoogleClientId() {
+  const e = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const w = typeof window !== "undefined" && window.__GOOGLE_CLIENT_ID__;
+  if (e && !e.includes("YOUR")) return e;
+  if (w && !w.includes("YOUR")) return w;
+  return null;
+}
+
 function GoogleBtn({ onSuccess, label="Continue with Google" }) {
   const [busy, setBusy] = useState(false);
   const initialised = useRef(false);
-
-  const getClientId = () => {
-    const e = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    const w = window.__GOOGLE_CLIENT_ID__;
-    if (e && !e.includes("YOUR")) return e;
-    if (w && !w.includes("YOUR")) return w;
-    return null;
-  };
 
   const runPrompt = (clientId) => {
     if (!initialised.current) {
@@ -59,8 +60,8 @@ function GoogleBtn({ onSuccess, label="Continue with Google" }) {
   };
 
   const handleClick = () => {
-    const id = getClientId();
-    if (!id) return alert("Google Client ID missing");
+    const id = getGoogleClientId();
+    if (!id) return; // should never happen — button is hidden when no client ID
 
     setBusy(true);
 
@@ -68,6 +69,7 @@ function GoogleBtn({ onSuccess, label="Continue with Google" }) {
       const s = document.createElement("script");
       s.src = "https://accounts.google.com/gsi/client";
       s.onload = () => runPrompt(id);
+      s.onerror = () => { setBusy(false); };
       document.head.appendChild(s);
     } else {
       runPrompt(id);
@@ -193,9 +195,12 @@ export function LoginPage() {
     } catch(e) { setErr(e.message); sfx.error(); }
   };
 
+  // ── FIX: Only show Google button when client ID is configured ──────
+  const hasGoogle = !!getGoogleClientId();
+
   return (
     <AuthWrap title="Welcome back" sub="Sign in to EnggStack">
-      <GoogleBtn onSuccess={handleGoogle} />
+      {hasGoogle && <GoogleBtn onSuccess={handleGoogle} />}
       <Input label="Email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/>
       <Input label="Password" type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Enter password"
         onKeyDown={e => e.key === "Enter" && go()}
@@ -266,9 +271,12 @@ export function RegisterPage() {
     return <OTPStep email={email} onVerified={onVerified} onBack={() => setStep(1)} />;
   }
 
+  // ── FIX: Only show Google button when client ID is configured ──────
+  const hasGoogle = !!getGoogleClientId();
+
   return (
     <AuthWrap title="Create account" sub="Sign up to start studying smarter">
-      <GoogleBtn onSuccess={handleGoogle} />
+      {hasGoogle && <GoogleBtn onSuccess={handleGoogle} />}
       <Input label="Full Name" value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Rahul Sharma"/>
       <Input label="Email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com"/>
       <Input label="Username (optional)" value={username} onChange={e=>setUsername(e.target.value)} placeholder="@username"/>

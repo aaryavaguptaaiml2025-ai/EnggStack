@@ -33,6 +33,11 @@ export function StatsProvider({ children }) {
   const [prevBadges, setPrevBadges] = useState([]);
 
   const refresh = useCallback(async () => {
+    // ── FIX: Only fetch stats when user is authenticated ──────────────
+    // Without this guard, StatsProvider (which wraps the entire app including
+    // the login page) fires GET /api/stats on mount with no JWT token,
+    // causing a 401 error in the console on every page load.
+    if (!localStorage.getItem("es_token")) return;
     try { const s = await api.getStats(); setStats(s); } catch {}
   }, []);
 

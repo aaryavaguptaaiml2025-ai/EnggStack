@@ -7,8 +7,41 @@ let BASE = RAW.endsWith("/") ? RAW.slice(0, -1) : RAW;
 if (BASE.endsWith("/api")) BASE = BASE.slice(0, -4);
 const tok  = () => localStorage.getItem("es_token") || "";
 
+// ── Retry wrapper for Render cold-start resilience ────────────────────────────
+// Render free-tier spins down after 15 min idle; first request can fail with
+// ERR_NETWORK_CHANGED / TypeError: Failed to fetch. We retry up to 3 times
+// with exponential backoff so the user just sees a brief delay, not an error.
+async function fetchWithRetry(url, opts, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      const r = await fetch(url, { ...opts, signal: controller.signal });
+      clearTimeout(timeout);
+      return r;
+    } catch (err) {
+      const isNetworkError =
+        err.name === "TypeError" ||
+        err.name === "AbortError" ||
+        err.message?.includes("Failed to fetch") ||
+        err.message?.includes("NetworkError") ||
+        err.message?.includes("ERR_NETWORK");
+
+      if (isNetworkError && i < retries - 1) {
+        // Wait 1s, 2s, 4s before retrying
+        await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, i)));
+        continue;
+      }
+      // Final attempt failed — throw a user-friendly message
+      throw new Error(
+        "Cannot reach the server. It may be waking up — please wait a moment and try again."
+      );
+    }
+  }
+}
+
 async function req(method, path, body) {
-  const r = await fetch(`${BASE}/api${path}`, {
+  const r = await fetchWithRetry(`${BASE}/api${path}`, {
     method,
     headers: {
       "Content-Type":  "application/json",
@@ -89,7 +122,7 @@ export const api = {
 
   // export PDFs — sends token in Authorization header via fetch
   exportNote: async (id) => {
-    const r = await fetch(`${BASE}/api/export/notes/${id}`, {
+    const r = await fetchWithRetry(`${BASE}/api/export/notes/${id}`, {
       headers: { "Authorization": `Bearer ${tok()}` },
     });
     if (!r.ok) throw new Error("Export failed");
@@ -100,7 +133,7 @@ export const api = {
     URL.revokeObjectURL(url);
   },
   exportAllNotes: async () => {
-    const r = await fetch(`${BASE}/api/export/notes-all`, {
+    const r = await fetchWithRetry(`${BASE}/api/export/notes-all`, {
       headers: { "Authorization": `Bearer ${tok()}` },
     });
     if (!r.ok) throw new Error("Export failed");
