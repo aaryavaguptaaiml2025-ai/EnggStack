@@ -8,12 +8,12 @@ const CHIPS = ["Explain Big O notation","TCP vs UDP","Binary search algorithm","
 
 function md(text) {
   return text
-    .replace(/```(\w*)\n?([\s\S]*?)```/g,(_,lang,code)=>`<pre style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px;overflow-x:auto;font-size:12px;margin:8px 0;font-family:'JetBrains Mono',monospace;color:#4ade80;line-height:1.6">${code.trim()}</pre>`)
-    .replace(/`([^`]+)`/g,`<code style="background:rgba(167,139,250,.15);padding:2px 6px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#a78bfa">$1</code>`)
-    .replace(/\*\*(.*?)\*\*/g,"<strong style='color:var(--text)'>$1</strong>")
-    .replace(/^### (.+)$/gm,"<div style='font-size:14px;font-weight:700;color:var(--text);margin:12px 0 4px'>$1</div>")
-    .replace(/^## (.+)$/gm,"<div style='font-size:15px;font-weight:800;color:var(--text);margin:14px 0 6px'>$1</div>")
-    .replace(/^- (.+)$/gm,"<div style='padding-left:16px;margin:3px 0;color:var(--text)'>• $1</div>")
+    .replace(/```(\w*)\n?([\s\S]*?)```/g,(_,lang,code)=>`<pre class="bg-bg-2 border border-white/5 rounded-xl p-4 overflow-x-auto text-xs font-mono text-primary leading-relaxed my-2">${code.trim()}</pre>`)
+    .replace(/`([^`]+)`/g,`<code class="bg-purple/15 px-1.5 py-0.5 rounded font-mono text-xs text-purple">$1</code>`)
+    .replace(/\*\*(.*?)\*\*/g,"<strong class='text-on-surface'>$1</strong>")
+    .replace(/^### (.+)$/gm,"<div class='text-sm font-bold text-on-surface my-3'>$1</div>")
+    .replace(/^## (.+)$/gm,"<div class='text-base font-extrabold text-on-surface my-3'>$1</div>")
+    .replace(/^- (.+)$/gm,"<div class='pl-4 my-1 text-on-surface'>• $1</div>")
     .replace(/\n/g,"<br/>");
 }
 
@@ -28,27 +28,79 @@ export default function AIChatPage() {
     try { const {reply}=await api.chat(h); setMsgs(prev=>[...prev,{role:"assistant",content:reply}]); sfx.notify(); }
     catch(e) { setErr(e.message); sfx.error(); } finally { setLoading(false); setTimeout(()=>inputRef.current?.focus(),80); }
   };
+
   return (
-    <div style={{display:"flex",flexDirection:"column",height:"100vh",padding:"20px 28px"}}>
-      <h1 style={{color:"var(--text)",fontSize:20,fontWeight:800,margin:"0 0 14px",flexShrink:0}}>AI Study Assistant <span style={{fontSize:13,color:"var(--muted)",fontWeight:400}}>Powered by GPT-4o</span></h1>
-      <div style={{flex:1,overflowY:"auto",display:"flex",flexDirection:"column",gap:14,marginBottom:12,paddingRight:4}}>
+    <div className="flex flex-col h-[calc(100vh-64px)] p-6">
+      <h1 className="section-title mb-4 flex-shrink-0 flex items-center gap-3">
+        <span className="material-symbols-outlined text-primary text-2xl">psychology</span>
+        AI Study Assistant
+        <span className="text-sm text-muted font-normal ml-1">Powered by GPT-4o</span>
+      </h1>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto flex flex-col gap-4 mb-3 pr-1">
         {msgs.map((m,i)=>(
-          <div key={i} className="fade-up" style={{display:"flex",gap:10,flexDirection:m.role==="user"?"row-reverse":"row",alignItems:"flex-start"}}>
-            <div style={{width:32,height:32,borderRadius:"50%",flexShrink:0,background:m.role==="assistant"?"var(--ac-dim)":"rgba(96,165,250,.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>{m.role==="assistant"?"E":"U"}</div>
-            <div style={{maxWidth:"78%",padding:"11px 15px",borderRadius:m.role==="user"?"16px 4px 16px 16px":"4px 16px 16px 16px",background:m.role==="user"?"rgba(74,222,128,.1)":"var(--card)",border:`1px solid ${m.role==="user"?"rgba(74,222,128,.25)":"var(--border)"}`,fontSize:13,color:"var(--text)",lineHeight:1.65}} dangerouslySetInnerHTML={{__html:md(m.content)}}/>
+          <div key={i} className="fade-up flex gap-3" style={{flexDirection:m.role==="user"?"row-reverse":"row",alignItems:"flex-start"}}>
+            <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center"
+              style={{background:m.role==="assistant"?"rgba(75,226,119,.15)":"rgba(96,165,250,.15)"}}>
+              <span className="material-symbols-outlined text-sm"
+                style={{color:m.role==="assistant"?"#4be277":"#60a5fa"}}>
+                {m.role==="assistant"?"smart_toy":"person"}
+              </span>
+            </div>
+            <div className="max-w-[78%] px-4 py-3 text-sm text-on-surface leading-relaxed"
+              style={{
+                borderRadius:m.role==="user"?"16px 4px 16px 16px":"4px 16px 16px 16px",
+                background:m.role==="user"?"rgba(75,226,119,.1)":"rgba(45,52,73,.6)",
+                border:`1px solid ${m.role==="user"?"rgba(75,226,119,.25)":"rgba(255,255,255,.05)"}`
+              }}
+              dangerouslySetInnerHTML={{__html:md(m.content)}}/>
           </div>
         ))}
-        {loading&&<div style={{display:"flex",gap:10,alignItems:"center"}}>
-          <div style={{width:32,height:32,borderRadius:"50%",background:"var(--ac-dim)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>E</div>
-          <div style={{display:"flex",gap:5,padding:"12px 16px",background:"var(--card)",border:"1px solid var(--border)",borderRadius:"4px 16px 16px 16px"}}>{[0,1,2].map(i=><div key={i} style={{width:7,height:7,borderRadius:"50%",background:"var(--ac)",animation:`bounce .9s infinite ${i*.15}s`}}/>)}</div>
+        {loading&&(
+          <div className="flex gap-3 items-center">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="material-symbols-outlined text-sm text-primary">smart_toy</span>
+            </div>
+            <div className="flex gap-1.5 px-4 py-3 glass-card rounded-2xl">
+              {[0,1,2].map(i=><div key={i} className="w-2 h-2 rounded-full bg-primary animate-bounce-dot"
+                style={{animationDelay:`${i*.15}s`}}/>)}
+            </div>
+          </div>
+        )}
+        {err&&<div className="p-3 bg-danger/10 border border-danger/30 rounded-xl text-xs text-danger">
+          Error: {err} — check your backend OPENAI_API_KEY
         </div>}
-        {err&&<div style={{padding:"10px 14px",background:"rgba(248,113,113,.1)",border:"1px solid rgba(248,113,113,.3)",borderRadius:10,fontSize:12,color:"#f87171"}}>Error: {err} — check your backend OPENAI_API_KEY</div>}
         <div ref={bottom}/>
       </div>
-      {msgs.length<=1&&<div style={{display:"flex",gap:7,flexWrap:"wrap",marginBottom:10,flexShrink:0}}>{CHIPS.map((c,i)=><button key={i} onClick={()=>send(c)} style={{background:"var(--card)",border:"1px solid var(--border)",borderRadius:8,padding:"6px 12px",cursor:"pointer",color:"var(--muted)",fontSize:12,transition:"all .2s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--ac)55";e.currentTarget.style.color="var(--ac)";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)"}}>{c}</button>)}</div>}
-      <div style={{display:"flex",gap:10,flexShrink:0}}>
-        <input ref={inputRef} value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send()} placeholder="Ask any engineering question... (Enter to send)" style={{flex:1,background:"var(--card)",border:"1px solid var(--border)",borderRadius:12,padding:"12px 16px",color:"var(--text)",fontSize:13,outline:"none",transition:"border-color .2s,box-shadow .2s"}} onFocus={e=>{e.target.style.borderColor="var(--ac)55";e.target.style.boxShadow="0 0 0 3px var(--ac-dim)";}} onBlur={e=>{e.target.style.borderColor="var(--border)";e.target.style.boxShadow="none";}}/>
-        <button onClick={()=>send()} disabled={!input.trim()||loading} style={{background:input.trim()&&!loading?"var(--ac)":"var(--border)",border:"none",borderRadius:12,width:48,height:48,cursor:input.trim()&&!loading?"pointer":"default",fontSize:16,color:"#000",display:"flex",alignItems:"center",justifyContent:"center",transition:"background .2s",flexShrink:0}}>{loading?<Spinner color="#000" size={18}/>:">"}</button>
+
+      {/* Chips */}
+      {msgs.length<=1&&(
+        <div className="flex gap-2 flex-wrap mb-3 flex-shrink-0">
+          {CHIPS.map((c,i)=>(
+            <button key={i} onClick={()=>send(c)}
+              className="glass-card px-3 py-1.5 text-xs text-dim
+                hover:border-primary/30 hover:text-primary transition-all duration-200">
+              {c}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Input */}
+      <div className="flex gap-3 flex-shrink-0">
+        <input ref={inputRef} value={input} onChange={e=>setInput(e.target.value)}
+          onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send()}
+          placeholder="Ask any engineering question... (Enter to send)"
+          className="input-field flex-1"/>
+        <button onClick={()=>send()} disabled={!input.trim()||loading}
+          className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
+            transition-all duration-200"
+          style={{background:input.trim()&&!loading?"#4be277":"#374151",
+            cursor:input.trim()&&!loading?"pointer":"default"}}>
+          {loading?<Spinner color="#000" size={18}/>:
+            <span className="material-symbols-outlined text-black text-xl">send</span>}
+        </button>
       </div>
     </div>
   );

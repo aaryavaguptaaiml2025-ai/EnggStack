@@ -2,9 +2,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useStats } from "../context/StatsContext";
 import { Toast } from "../components/ui";
 import { sfx } from "../hooks/useSfx";
+
 const DUR = { focus:25*60, short:5*60, long:15*60 };
-const CLR = { focus:"#60a5fa", short:"#4ade80", long:"#a78bfa" };
+const CLR = { focus:"#60a5fa", short:"#4be277", long:"#a78bfa" };
 const LBL = { focus:"Focus Session", short:"Short Break", long:"Long Break" };
+
 export default function PomodoroPage() {
   const { logPomodoro } = useStats();
   const [mode,setMode]=useState("focus"); const [tl,setTl]=useState(DUR.focus);
@@ -25,35 +27,76 @@ export default function PomodoroPage() {
   const progress=((DUR[mode]-tl)/DUR[mode])*100;
   const mins=String(Math.floor(tl/60)).padStart(2,"0"); const secs=String(tl%60).padStart(2,"0");
   const R=110; const circ=2*Math.PI*R;
+
   return (
-    <div style={{padding:"20px 16px",display:"flex",flexDirection:"column",alignItems:"center",gap:22}}>
+    <div className="page-container flex flex-col items-center gap-6">
       {toast&&<Toast msg={toast} color={color} onClose={()=>setToast(null)}/>}
-      <h1 style={{color:"var(--text)",fontSize:22,fontWeight:800,margin:0}}>Pomodoro Timer</h1>
-      <div style={{display:"flex",background:"var(--card)",border:"1px solid var(--border)",borderRadius:12,padding:4,gap:3}}>
-        {Object.entries(LBL).map(([m,label])=><button key={m} onClick={()=>{sfx.click();sw(m);}} style={{background:mode===m?color+"22":"transparent",border:`1px solid ${mode===m?color+"88":"transparent"}`,borderRadius:8,padding:"8px 18px",cursor:"pointer",color:mode===m?color:"var(--muted)",fontSize:13,fontWeight:mode===m?600:400,transition:"all .2s"}}>{label}</button>)}
+
+      <h1 className="section-title">Pomodoro Timer</h1>
+
+      {/* Mode tabs */}
+      <div className="glass-card flex p-1 gap-1">
+        {Object.entries(LBL).map(([m,label])=>(
+          <button key={m} onClick={()=>{sfx.click();sw(m);}}
+            className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+              ${mode===m ? "font-semibold" : "text-dim hover:text-on-surface"}`}
+            style={{background:mode===m?color+"22":"transparent",
+              border:`1px solid ${mode===m?color+"88":"transparent"}`,
+              color:mode===m?color:undefined}}>
+            {label}
+          </button>
+        ))}
       </div>
-      <div style={{position:"relative",width:264,height:264,display:"flex",alignItems:"center",justifyContent:"center"}}>
-        <svg width={264} height={264} style={{position:"absolute",transform:"rotate(-90deg)"}}>
+
+      {/* Timer ring */}
+      <div className="relative w-[264px] h-[264px] flex items-center justify-center">
+        <svg width={264} height={264} className="absolute" style={{transform:"rotate(-90deg)"}}>
           <circle cx={132} cy={132} r={R} fill="none" stroke="rgba(255,255,255,.07)" strokeWidth={10}/>
-          <circle cx={132} cy={132} r={R} fill="none" stroke={color} strokeWidth={10} strokeDasharray={circ} strokeDashoffset={circ*(1-progress/100)} strokeLinecap="round" style={{transition:"stroke-dashoffset 1s linear",filter:`drop-shadow(0 0 8px ${color}88)`}}/>
+          <circle cx={132} cy={132} r={R} fill="none" stroke={color} strokeWidth={10}
+            strokeDasharray={circ} strokeDashoffset={circ*(1-progress/100)}
+            strokeLinecap="round"
+            style={{transition:"stroke-dashoffset 1s linear",filter:`drop-shadow(0 0 8px ${color}88)`}}/>
         </svg>
-        <div style={{textAlign:"center"}}>
-          <div style={{fontSize:54,fontWeight:800,color,fontFamily:"'JetBrains Mono',monospace",letterSpacing:2}}>{mins}:{secs}</div>
-          <div style={{fontSize:13,color:"var(--muted)",marginTop:4}}>{LBL[mode]}</div>
-          <div style={{display:"flex",gap:5,justifyContent:"center",marginTop:8}}>{[0,1,2,3].map(i=><div key={i} style={{width:8,height:8,borderRadius:"50%",background:i<(sess%4)?color:"rgba(255,255,255,.1)",transition:"background .3s",boxShadow:i<(sess%4)?`0 0 4px ${color}`:""}}/>)}</div>
+        <div className="text-center">
+          <div className="text-5xl font-extrabold font-mono tracking-wider" style={{color}}>{mins}:{secs}</div>
+          <div className="text-sm text-muted mt-1">{LBL[mode]}</div>
+          <div className="flex gap-1.5 justify-center mt-2">
+            {[0,1,2,3].map(i=>(
+              <div key={i} className="w-2 h-2 rounded-full transition-all duration-300"
+                style={{background:i<(sess%4)?color:"rgba(255,255,255,.1)",
+                  boxShadow:i<(sess%4)?`0 0 4px ${color}`:""}}/>
+            ))}
+          </div>
         </div>
       </div>
-      <div style={{display:"flex",alignItems:"center",gap:20}}>
-        <button onClick={()=>{sfx.click();clearInterval(ref.current);setRun(false);setTl(DUR[mode]);}} style={{background:"var(--card)",border:"1px solid var(--border)",borderRadius:"50%",width:46,height:46,cursor:"pointer",color:"var(--muted)",fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor=color;e.currentTarget.style.color=color;}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--muted)";}}>o</button>
-        <button onClick={()=>{sfx.click();setRun(r=>!r);}} style={{background:color,border:"none",borderRadius:"50%",width:66,height:66,cursor:"pointer",fontSize:22,color:"#000",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 0 22px ${color}66`,transition:"transform .1s"}} onMouseDown={e=>e.currentTarget.style.transform="scale(.92)"} onMouseUp={e=>e.currentTarget.style.transform="scale(1)"}>{run?"||":">"}</button>
-        <button onClick={()=>{sfx.click();sw(mode==="focus"?"short":"focus");}} title="Skip (no XP)" style={{background:"var(--card)",border:"1px solid var(--border)",borderRadius:"50%",width:46,height:46,cursor:"pointer",color:"var(--muted)",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center",transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="var(--border)";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";}}>skip</button>
+
+      {/* Controls */}
+      <div className="flex items-center gap-5">
+        <button onClick={()=>{sfx.click();clearInterval(ref.current);setRun(false);setTl(DUR[mode]);}}
+          className="w-12 h-12 rounded-full glass-card flex items-center justify-center
+            text-dim hover:text-primary hover:border-primary/30 transition-all duration-200">
+          <span className="material-symbols-outlined text-xl">restart_alt</span>
+        </button>
+        <button onClick={()=>{sfx.click();setRun(r=>!r);}}
+          className="w-16 h-16 rounded-full flex items-center justify-center text-black text-xl
+            transition-transform active:scale-90"
+          style={{background:color,boxShadow:`0 0 22px ${color}66`}}>
+          <span className="material-symbols-outlined text-2xl">{run?"pause":"play_arrow"}</span>
+        </button>
+        <button onClick={()=>{sfx.click();sw(mode==="focus"?"short":"focus");}} title="Skip (no XP)"
+          className="w-12 h-12 rounded-full glass-card flex items-center justify-center
+            text-dim hover:text-on-surface transition-all duration-200">
+          <span className="material-symbols-outlined text-xl">skip_next</span>
+        </button>
       </div>
-      <div style={{background:"var(--card)",border:"1px solid var(--border)",borderRadius:16,padding:"20px 48px",textAlign:"center"}}>
-        <div style={{fontSize:12,color:"var(--muted)",marginBottom:4}}>Sessions today</div>
-        <div style={{fontSize:44,fontWeight:800,color:"var(--text)",fontFamily:"'JetBrains Mono',monospace"}}>{sess}</div>
-        <div style={{fontSize:13,color:"var(--muted)",marginTop:4}}>{sess*25} minutes of deep work</div>
-        {sess>0&&<div style={{marginTop:8,fontSize:12,color:"#4ade80"}}>+{sess*30} XP earned</div>}
-        <div style={{marginTop:10,fontSize:10,color:"var(--dim)"}}>Skip does NOT award XP — only completing counts</div>
+
+      {/* Session stats */}
+      <div className="glass-card px-12 py-5 text-center">
+        <div className="text-xs text-muted mb-1">Sessions today</div>
+        <div className="text-4xl font-extrabold text-on-surface font-mono">{sess}</div>
+        <div className="text-sm text-muted mt-1">{sess*25} minutes of deep work</div>
+        {sess>0&&<div className="text-xs text-primary mt-2">+{sess*30} XP earned</div>}
+        <div className="text-[10px] text-dim mt-2">Skip does NOT award XP — only completing counts</div>
       </div>
     </div>
   );

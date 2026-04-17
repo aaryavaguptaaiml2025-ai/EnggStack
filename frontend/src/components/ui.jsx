@@ -1,48 +1,68 @@
 import { useEffect, useState, useRef } from "react";
 
-export function ProgressBar({ value, max, color = "var(--ac)", height = 7, glow = false }) {
+export function ProgressBar({ value, max, color = "#4be277", height = 7, glow = false }) {
   const [w, setW] = useState(0);
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   useEffect(() => { const t = setTimeout(() => setW(pct), 100); return () => clearTimeout(t); }, [pct]);
   return (
-    <div style={{ background:"rgba(255,255,255,.07)", borderRadius:99, height, overflow:"hidden" }}>
-      <div style={{ width:`${w}%`, height:"100%", background:color, borderRadius:99, transition:"width 1s cubic-bezier(.4,0,.2,1)", boxShadow:glow?`0 0 8px ${color}`:"none", position:"relative", overflow:"hidden" }}>
-        <div style={{ position:"absolute",inset:0,background:"linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent)",backgroundSize:"200% 100%",animation:"shimmer 2s infinite" }}/>
+    <div className="rounded-full overflow-hidden" style={{ background:"rgba(255,255,255,.07)", height }}>
+      <div className="h-full rounded-full relative overflow-hidden transition-all duration-1000 ease-out"
+        style={{ width:`${w}%`, background:color, boxShadow:glow?`0 0 8px ${color}`:"none" }}>
+        <div className="absolute inset-0" style={{background:"linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent)",backgroundSize:"200% 100%",animation:"shimmer 2s infinite"}}/>
       </div>
     </div>
   );
 }
 
-export function Card({ children, style, accent, onClick }) {
+export function Card({ children, style, accent, onClick, className="" }) {
   return (
-    <div onClick={onClick} style={{ background:"var(--card)",border:`1px solid ${accent?accent+"33":"var(--border)"}`,borderRadius:16,padding:20,borderTop:accent?`2px solid ${accent}`:undefined,cursor:onClick?"pointer":"default",transition:"all .2s ease",...style }}
-      onMouseEnter={e=>{e.currentTarget.style.background="var(--card2)";}}
-      onMouseLeave={e=>{e.currentTarget.style.background="var(--card)";}}
-    >{children}</div>
+    <div onClick={onClick}
+      className={`glass-card p-5 transition-all duration-300 hover:bg-card-2
+        ${onClick ? "cursor-pointer" : ""} ${className}`}
+      style={{ borderTop:accent?`2px solid ${accent}`:undefined, ...style }}>
+      {children}
+    </div>
   );
 }
 
-export function Badge({ children, color = "var(--ac)", dot }) {
-  return <span style={{ display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontWeight:600,background:color+"22",color,padding:"3px 9px",borderRadius:20,border:`1px solid ${color}33`,whiteSpace:"nowrap" }}>{dot&&<span style={{width:5,height:5,borderRadius:"50%",background:color,animation:"pulse 1.5s infinite"}}/>}{children}</span>;
+export function Badge({ children, color = "#4be277", dot }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold
+      px-2.5 py-1 rounded-full whitespace-nowrap"
+      style={{ background:color+"1a", color, border:`1px solid ${color}33` }}>
+      {dot && <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{background:color}}/>}
+      {children}
+    </span>
+  );
 }
 
-export function Toast({ msg, color = "var(--ac)", onClose }) {
+export function Toast({ msg, color = "#4be277", onClose }) {
   useEffect(() => { const t = setTimeout(onClose, 4000); return () => clearTimeout(t); }, [onClose]);
   return (
-    <div className="slide-in" style={{ position:"fixed",top:20,right:20,zIndex:9999,background:"var(--card)",border:`1px solid ${color}`,borderRadius:14,padding:"13px 20px",color,fontSize:14,maxWidth:340,boxShadow:`0 8px 32px rgba(0,0,0,.5),0 0 16px ${color}33`,display:"flex",alignItems:"center",gap:10 }}>
-      <span style={{flex:1}}>{msg}</span>
-      <button onClick={onClose} style={{background:"none",border:"none",color,cursor:"pointer",fontSize:18}}>x</button>
+    <div className="slide-in fixed top-5 right-5 z-[9999] glass-card px-5 py-3.5
+      flex items-center gap-3 max-w-[340px] shadow-2xl"
+      style={{ borderColor:color }}>
+      <span className="flex-1 text-sm" style={{color}}>{msg}</span>
+      <button onClick={onClose} className="text-dim hover:text-on-surface transition-colors">
+        <span className="material-symbols-outlined text-lg">close</span>
+      </button>
     </div>
   );
 }
 
 export function Modal({ title, onClose, children, width = 480 }) {
   return (
-    <div className="fade-in" style={{ position:"fixed",inset:0,background:"rgba(0,0,0,.82)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2000,padding:16 }} onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="slide-up" style={{ background:"var(--card)",border:"1px solid var(--border)",borderRadius:20,padding:28,width:"100%",maxWidth:width,maxHeight:"90vh",overflowY:"auto",boxShadow:"0 24px 64px rgba(0,0,0,.6)" }}>
-        <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:22 }}>
-          <span style={{ fontSize:17,fontWeight:700,color:"var(--text)" }}>{title}</span>
-          <button onClick={onClose} style={{ background:"rgba(255,255,255,.06)",border:"1px solid var(--border)",color:"var(--muted)",fontSize:16,width:32,height:32,borderRadius:8,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center" }}>x</button>
+    <div className="fade-in fixed inset-0 bg-black/80 flex items-center justify-center z-[2000] p-4"
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="slide-up glass-card p-7 w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        style={{ maxWidth:width }}>
+        <div className="flex justify-between items-center mb-6">
+          <span className="text-lg font-bold text-on-surface">{title}</span>
+          <button onClick={onClose}
+            className="w-8 h-8 rounded-lg bg-white/5 border border-white/10
+              flex items-center justify-center text-dim hover:text-on-surface transition-colors">
+            <span className="material-symbols-outlined text-lg">close</span>
+          </button>
         </div>
         {children}
       </div>
@@ -50,29 +70,57 @@ export function Modal({ title, onClose, children, width = 480 }) {
   );
 }
 
-export function Input({ label, error, style, ...props }) {
-  const [focus, setFocus] = useState(false);
+export function Input({ label, error, style, className="", ...props }) {
   return (
-    <div style={{marginBottom:14}}>
-      {label&&<div style={{fontSize:12,color:"var(--muted)",marginBottom:6,fontWeight:500}}>{label}</div>}
-      <input {...props} onFocus={e=>{setFocus(true);props.onFocus?.(e);}} onBlur={e=>{setFocus(false);props.onBlur?.(e);}} style={{ width:"100%",background:"var(--bg2)",color:"var(--text)",border:`1px solid ${focus?"var(--ac)":"var(--border)"}`,borderRadius:10,padding:"11px 14px",fontSize:13,outline:"none",transition:"border-color .2s,box-shadow .2s",boxShadow:focus?"0 0 0 3px var(--ac-dim)":"none",...style }}/>
-      {error&&<div style={{color:"#f87171",fontSize:11,marginTop:4}}>{error}</div>}
+    <div className="mb-3.5">
+      {label && <div className="text-xs text-muted mb-1.5 font-medium ml-1">{label}</div>}
+      <input {...props}
+        className={`input-field ${className}`}
+        style={style}/>
+      {error && <div className="text-danger text-[11px] mt-1 ml-1">{error}</div>}
     </div>
   );
 }
 
 export function Btn({ children, color, onClick, disabled, full, variant="fill", style, size="md" }) {
-  const c = color||"var(--ac)";
-  const pad = size==="sm"?"7px 14px":size==="lg"?"13px 28px":"10px 20px";
-  const fs  = size==="sm"?12:size==="lg"?15:13;
-  const base = { borderRadius:10,fontSize:fs,fontWeight:600,cursor:disabled?"default":"pointer",width:full?"100%":"auto",padding:pad,transition:"all .15s ease",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:7,whiteSpace:"nowrap",...style };
-  if(variant==="fill")    return <button onClick={onClick} disabled={disabled} style={{...base,background:disabled?"var(--border)":c,color:disabled?"var(--dim)":"#000",border:"none",boxShadow:disabled?"none":`0 4px 14px ${c}44`}} onMouseEnter={e=>{if(!disabled)e.currentTarget.style.filter="brightness(1.1)";}} onMouseLeave={e=>e.currentTarget.style.filter=""}>{children}</button>;
-  if(variant==="outline") return <button onClick={onClick} disabled={disabled} style={{...base,background:"transparent",color:disabled?"var(--dim)":c,border:`1px solid ${disabled?"var(--border)":c+"66"}`}} onMouseEnter={e=>{if(!disabled)e.currentTarget.style.background=c+"15";}} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>{children}</button>;
-  return <button onClick={onClick} disabled={disabled} style={{...base,background:"transparent",color:disabled?"var(--dim)":"var(--muted)",border:"1px solid var(--border)"}} onMouseEnter={e=>{if(!disabled)e.currentTarget.style.color="var(--text)";}} onMouseLeave={e=>e.currentTarget.style.color="var(--muted)"}>{children}</button>;
+  const c = color || "#4be277";
+  const sizeClasses = {
+    sm: "text-xs px-3.5 py-2",
+    md: "text-sm px-5 py-2.5",
+    lg: "text-base px-7 py-3.5",
+  }[size];
+
+  const base = `inline-flex items-center justify-center gap-2 font-semibold
+    rounded-xl whitespace-nowrap transition-all duration-200
+    ${full ? "w-full" : ""} ${sizeClasses}
+    ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer active:scale-95"}`;
+
+  if (variant === "fill") return (
+    <button onClick={onClick} disabled={disabled}
+      className={`${base} text-black hover:brightness-110`}
+      style={{ background:disabled?"#374151":c, boxShadow:disabled?"none":`0 4px 14px ${c}44`, ...style }}>
+      {children}
+    </button>
+  );
+  if (variant === "outline") return (
+    <button onClick={onClick} disabled={disabled}
+      className={`${base} bg-transparent hover:bg-white/5`}
+      style={{ color:disabled?"#6b7280":c, border:`1px solid ${disabled?"#374151":c+"66"}`, ...style }}>
+      {children}
+    </button>
+  );
+  return (
+    <button onClick={onClick} disabled={disabled}
+      className={`${base} bg-transparent border border-white/10 text-dim hover:text-on-surface hover:bg-white/5`}
+      style={style}>
+      {children}
+    </button>
+  );
 }
 
-export function Spinner({ color="var(--ac)", size=20 }) {
-  return <div style={{width:size,height:size,border:"2px solid rgba(255,255,255,.1)",borderTop:`2px solid ${color}`,borderRadius:"50%",animation:"spin .7s linear infinite",display:"inline-block",flexShrink:0}}/>;
+export function Spinner({ color="#4be277", size=20 }) {
+  return <div className="inline-block flex-shrink-0 rounded-full animate-spin"
+    style={{width:size,height:size,border:"2px solid rgba(255,255,255,.1)",borderTopColor:color}}/>;
 }
 
 export function AnimNum({ value, duration=800 }) {
@@ -83,9 +131,16 @@ export function AnimNum({ value, duration=800 }) {
 
 export function Tabs({ tabs, active, onChange }) {
   return (
-    <div style={{display:"flex",background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:12,padding:4,gap:3}}>
-      {tabs.map(t=>(
-        <button key={t.id} onClick={()=>onChange(t.id)} style={{ background:active===t.id?"var(--card)":"transparent",border:`1px solid ${active===t.id?"var(--border)":"transparent"}`,borderRadius:9,padding:"7px 16px",cursor:"pointer",color:active===t.id?"var(--text)":"var(--muted)",fontSize:13,fontWeight:active===t.id?600:400,transition:"all .18s",display:"flex",alignItems:"center",gap:6,boxShadow:active===t.id?"0 2px 8px rgba(0,0,0,.3)":"none" }}>{t.icon&&<span>{t.icon}</span>}{t.label}</button>
+    <div className="flex bg-bg-2 border border-white/5 rounded-2xl p-1 gap-1">
+      {tabs.map(t => (
+        <button key={t.id} onClick={() => onChange(t.id)}
+          className={`rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200
+            flex items-center gap-2
+            ${active === t.id
+              ? "bg-surface-top border border-white/10 text-on-surface shadow-lg"
+              : "text-dim hover:text-on-surface"}`}>
+          {t.icon && <span>{t.icon}</span>}{t.label}
+        </button>
       ))}
     </div>
   );
@@ -112,30 +167,34 @@ export function Heatmap({ data = {} }) {
   const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const DAYS=["S","M","T","W","T","F","S"];
   return (
-    <div style={{overflowX:"auto"}}>
-      <div style={{display:"flex",gap:3,alignItems:"flex-start",minWidth:"max-content"}}>
-        <div style={{display:"flex",flexDirection:"column",gap:3,marginTop:22}}>
-          {DAYS.map((day,i)=><div key={i} style={{height:12,fontSize:9,color:"var(--dim)",width:12,textAlign:"center",lineHeight:"12px"}}>{day}</div>)}
+    <div className="overflow-x-auto">
+      <div className="flex gap-[3px] items-start" style={{minWidth:"max-content"}}>
+        <div className="flex flex-col gap-[3px] mt-[22px]">
+          {DAYS.map((day,i)=><div key={i} className="h-3 text-[9px] text-dim w-3 text-center leading-3">{day}</div>)}
         </div>
         <div>
-          <div style={{display:"flex",gap:3,marginBottom:4}}>
-            {weeks.map((w,i)=>{const f=w.find(c=>c.date.getDate()<=7);return <div key={i} style={{width:12,fontSize:9,color:"var(--dim)",textAlign:"center"}}>{f&&f.date.getDate()<=7?MONTHS[f.date.getMonth()][0]:""}</div>;})}
+          <div className="flex gap-[3px] mb-1">
+            {weeks.map((w,i)=>{const f=w.find(c=>c.date.getDate()<=7);return <div key={i} className="w-3 text-[9px] text-dim text-center">{f&&f.date.getDate()<=7?MONTHS[f.date.getMonth()][0]:""}</div>;})}
           </div>
-          <div style={{display:"flex",gap:3}}>
+          <div className="flex gap-[3px]">
             {weeks.map((week,wi)=>(
-              <div key={wi} style={{display:"flex",flexDirection:"column",gap:3}}>
+              <div key={wi} className="flex flex-col gap-[3px]">
                 {week.map(cell=>(
-                  <div key={cell.key} title={`${cell.key}: ${cell.mins}m`} style={{ width:12,height:12,borderRadius:2,background:cell.mins?`rgba(74,222,128,${opacity(cell.mins)})`:"rgba(255,255,255,.04)",transition:"transform .1s",cursor:"default" }} onMouseEnter={e=>e.currentTarget.style.transform="scale(1.5)"} onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}/>
+                  <div key={cell.key} title={`${cell.key}: ${cell.mins}m`}
+                    className="w-3 h-3 rounded-sm cursor-default transition-transform duration-100
+                      hover:scale-150"
+                    style={{background:cell.mins?`rgba(75,226,119,${opacity(cell.mins)})`:"rgba(255,255,255,.04)"}}/>
                 ))}
               </div>
             ))}
           </div>
         </div>
       </div>
-      <div style={{display:"flex",alignItems:"center",gap:5,marginTop:8,justifyContent:"flex-end"}}>
-        <span style={{fontSize:10,color:"var(--dim)"}}>Less</span>
-        {[0,.25,.5,.75,1].map(v=><div key={v} style={{width:10,height:10,borderRadius:2,background:v?`rgba(74,222,128,${v})`:"rgba(255,255,255,.04)"}}/>)}
-        <span style={{fontSize:10,color:"var(--dim)"}}>More</span>
+      <div className="flex items-center gap-1.5 mt-2 justify-end">
+        <span className="text-[10px] text-dim">Less</span>
+        {[0,.25,.5,.75,1].map(v=><div key={v} className="w-2.5 h-2.5 rounded-sm"
+          style={{background:v?`rgba(75,226,119,${v})`:"rgba(255,255,255,.04)"}}/>)}
+        <span className="text-[10px] text-dim">More</span>
       </div>
     </div>
   );

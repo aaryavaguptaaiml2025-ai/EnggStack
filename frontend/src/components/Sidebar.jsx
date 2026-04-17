@@ -5,19 +5,19 @@ import XPBar from "./XPBar";
 import { sfx } from "../hooks/useSfx";
 
 const NAV = [
-  { to:"/dashboard",    icon:"⊞", label:"Dashboard"    },
-  { to:"/timetable",    icon:"📅", label:"Timetable"    },
-  { to:"/checklist",    icon:"✅", label:"Checklist"    },
-  { to:"/pomodoro",     icon:"🍅", label:"Pomodoro"     },
-  { to:"/focus",        icon:"🌙", label:"Focus Mode"   },
-  { to:"/notes",        icon:"📝", label:"Notes"        },
-  { to:"/subjects",     icon:"📚", label:"Subjects"     },
-  { to:"/deadlines",    icon:"🔔", label:"Deadlines"    },
-  { to:"/analytics",    icon:"📊", label:"Analytics"    },
-  { to:"/calendar",     icon:"🗓️", label:"Calendar"     },
-  { to:"/gamification", icon:"🏆", label:"Achievements" },
-  { to:"/music",        icon:"🎵", label:"Music"        },
-  { to:"/settings",     icon:"⚙️", label:"Settings"     },
+  { to:"/dashboard",    icon:"dashboard",       label:"Dashboard"    },
+  { to:"/timetable",    icon:"calendar_month",   label:"Timetable"    },
+  { to:"/checklist",    icon:"checklist",        label:"Checklist"    },
+  { to:"/pomodoro",     icon:"timer",            label:"Pomodoro"     },
+  { to:"/focus",        icon:"dark_mode",        label:"Focus Mode"   },
+  { to:"/notes",        icon:"edit_note",        label:"Notes"        },
+  { to:"/subjects",     icon:"menu_book",        label:"Subjects"     },
+  { to:"/deadlines",    icon:"notifications",    label:"Deadlines"    },
+  { to:"/analytics",    icon:"analytics",        label:"Analytics"    },
+  { to:"/calendar",     icon:"event",            label:"Calendar"     },
+  { to:"/gamification", icon:"emoji_events",     label:"Achievements" },
+  { to:"/music",        icon:"music_note",       label:"Music"        },
+  { to:"/settings",     icon:"settings",         label:"Settings"     },
 ];
 
 export default function Sidebar({ onClose }) {
@@ -30,91 +30,80 @@ export default function Sidebar({ onClose }) {
 
   const handleNav = () => {
     sfx.click();
-    if (onClose) onClose(); // close on mobile after tap
+    if (onClose) onClose();
   };
 
   return (
-    <aside style={{
-      width: 224,
-      background: "var(--bg2)",
-      borderRight: "1px solid var(--border)",
-      display: "flex",
-      flexDirection: "column",
-      height: "100vh",
-      overflowY: "auto",
-    }}>
-      {/* Logo + close button (close only shows on mobile via CSS) */}
-      <div style={{ padding:"16px 14px 10px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:34, height:34, background:"var(--ac)", borderRadius:9,
-            display:"flex", alignItems:"center", justifyContent:"center",
-            fontSize:18, fontWeight:900, color:"#000", boxShadow:"0 0 12px var(--ac-dim)" }}>E</div>
+    <aside className="glass-sidebar w-[240px] flex flex-col h-screen overflow-y-auto">
+      {/* Logo + close */}
+      <div className="p-4 pb-2 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary-container rounded-xl
+            flex items-center justify-center shadow-[0_0_20px_rgba(75,226,119,0.2)]">
+            <span className="material-symbols-outlined text-black text-lg font-bold">terminal</span>
+          </div>
           <div>
-            <div style={{ fontWeight:800, fontSize:14, color:"var(--text)" }}>EnggStack</div>
-            <div style={{ fontSize:10, color:"var(--muted)" }}>Study Platform</div>
+            <div className="text-sm font-extrabold text-on-surface tracking-tight">EnggStack</div>
+            <div className="text-[9px] text-dim uppercase tracking-[0.15em] font-bold">Study Platform</div>
           </div>
         </div>
-        {/* Close button — only relevant on mobile */}
         {onClose && (
-          <button onClick={onClose} style={{ background:"none", border:"none", color:"var(--muted)", cursor:"pointer", fontSize:20, padding:4, lineHeight:1 }}>×</button>
+          <button onClick={onClose}
+            className="text-dim hover:text-on-surface p-1 transition-colors duration-200">
+            <span className="material-symbols-outlined text-lg">close</span>
+          </button>
         )}
       </div>
 
       {/* Nav links */}
-      <nav style={{ flex:1, padding:"4px 8px", overflowY:"auto" }}>
+      <nav className="flex-1 px-3 py-2 overflow-y-auto space-y-0.5">
         {NAV.map(n => (
           <NavLink key={n.to} to={n.to} onClick={handleNav}
-            style={({ isActive }) => ({
-              display: "flex", alignItems: "center", gap:10,
-              padding: "9px 11px", borderRadius:10, marginBottom:1,
-              background: isActive ? "var(--ac-dim)" : "transparent",
-              border: `1px solid ${isActive ? "rgba(74,222,128,.2)" : "transparent"}`,
-              color: isActive ? "var(--ac)" : "var(--muted)",
-              fontSize: 13, fontWeight: isActive ? 600 : 400,
-              transition: "all .15s", textDecoration: "none",
-            })}
+            className={({ isActive }) => isActive ? "nav-link-active" : "nav-link"}
           >
-            <span style={{ fontSize:15, width:20, textAlign:"center", flexShrink:0 }}>{n.icon}</span>
-            <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{n.label}</span>
+            <span className="material-symbols-outlined text-[20px]">{n.icon}</span>
+            <span className="text-[13px] font-medium truncate">{n.label}</span>
           </NavLink>
         ))}
       </nav>
 
       {/* XP bar */}
-      <div style={{ padding:"0 10px 8px" }}>
+      <div className="px-3 pb-2">
         <XPBar xp={stats.xp || 0} compact />
       </div>
 
       {/* Streak */}
       {(stats.streak || 0) > 0 && (
-        <div style={{ margin:"0 10px 8px", background:"rgba(249,115,22,.1)", border:"1px solid rgba(249,115,22,.25)", borderRadius:10, padding:"8px 12px", display:"flex", alignItems:"center", gap:8 }}>
-          <span style={{ fontSize:16 }}>🔥</span>
+        <div className="mx-3 mb-2 bg-orange-500/10 border border-orange-500/20 rounded-xl
+          px-3 py-2 flex items-center gap-2">
+          <span className="material-symbols-outlined text-orange-400 text-lg filled">local_fire_department</span>
           <div>
-            <div style={{ fontSize:12, fontWeight:600, color:"#f97316" }}>{stats.streak}d streak!</div>
-            <div style={{ fontSize:10, color:"var(--muted)" }}>Keep it up</div>
+            <div className="text-xs font-bold text-orange-400">{stats.streak}d streak!</div>
+            <div className="text-[10px] text-dim">Keep it up</div>
           </div>
         </div>
       )}
 
       {/* User + sign out */}
-      <div style={{ padding:"10px 12px 14px", borderTop:"1px solid var(--border)" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
-          <div style={{ width:32, height:32, borderRadius:"50%", flexShrink:0, overflow:"hidden", border:"2px solid var(--ac)" }}>
+      <div className="p-3 pt-2 border-t border-white/5">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden border-2 border-primary/30">
             {avatar
-              ? <img src={avatar} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
-              : <div style={{ width:"100%", height:"100%", background:"#a78bfa22", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#a78bfa" }}>{user?.avatarEmoji || initials}</div>
+              ? <img src={avatar} alt="" className="w-full h-full object-cover"/>
+              : <div className="w-full h-full bg-purple/10 flex items-center justify-center
+                  text-xs font-bold text-purple">{user?.avatarEmoji || initials}</div>
             }
           </div>
-          <div style={{ minWidth:0 }}>
-            <div style={{ fontSize:12, fontWeight:600, color:"var(--text)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{user?.name}</div>
-            <div style={{ fontSize:10, color:"var(--dim)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>@{user?.username || user?.email?.split("@")[0]}</div>
+          <div className="min-w-0">
+            <div className="text-xs font-semibold text-on-surface truncate">{user?.name}</div>
+            <div className="text-[10px] text-dim truncate">@{user?.username || user?.email?.split("@")[0]}</div>
           </div>
         </div>
         <button onClick={() => { sfx.click(); logout(); navigate("/login"); }}
-          style={{ width:"100%", background:"none", border:"1px solid var(--border)", borderRadius:8, padding:"7px", color:"var(--dim)", fontSize:12, cursor:"pointer", transition:"all .15s" }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor="#f87171"; e.currentTarget.style.color="#f87171"; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor="var(--border)"; e.currentTarget.style.color="var(--dim)"; }}
-        >Sign out</button>
+          className="w-full border border-white/10 rounded-xl py-2 text-dim text-xs
+            hover:border-danger/50 hover:text-danger transition-all duration-200">
+          Sign out
+        </button>
       </div>
     </aside>
   );
