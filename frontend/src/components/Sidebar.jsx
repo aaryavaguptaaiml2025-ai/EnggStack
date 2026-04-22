@@ -34,17 +34,17 @@ export default function Sidebar({ onClose }) {
   };
 
   return (
-    <aside className="glass-sidebar w-[240px] flex flex-col h-screen overflow-y-auto">
+    <aside className="glass-sidebar w-[250px] flex flex-col h-screen overflow-y-auto">
       {/* Logo + close */}
-      <div className="p-4 pb-2 flex items-center justify-between">
+      <div className="p-5 pb-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary-container rounded-xl
-            flex items-center justify-center shadow-[0_0_20px_rgba(75,226,119,0.2)]">
+          <div className="w-9 h-9 bg-[#00FFB2] rounded-xl
+            flex items-center justify-center shadow-[0_0_20px_rgba(0,255,178,0.2)]">
             <span className="material-symbols-outlined text-black text-lg font-bold">terminal</span>
           </div>
           <div>
             <div className="text-sm font-extrabold text-on-surface tracking-tight">EnggStack</div>
-            <div className="text-[9px] text-dim uppercase tracking-[0.15em] font-bold">Study Platform</div>
+            <div className="text-[9px] text-[#00FFB2] uppercase tracking-[0.15em] font-bold">Premium Tier</div>
           </div>
         </div>
         {onClose && (
@@ -74,24 +74,24 @@ export default function Sidebar({ onClose }) {
 
       {/* Streak */}
       {(stats.streak || 0) > 0 && (
-        <div className="mx-3 mb-2 bg-orange-500/10 border border-orange-500/20 rounded-xl
-          px-3 py-2 flex items-center gap-2">
+        <div className="mx-3 mb-2 bg-white/5 border border-white/10 rounded-xl
+          px-3 py-2 flex items-center gap-2 backdrop-blur-sm">
           <span className="material-symbols-outlined text-orange-400 text-lg filled">local_fire_department</span>
           <div>
-            <div className="text-xs font-bold text-orange-400">{stats.streak}d streak!</div>
+            <div className="text-xs font-bold text-orange-400">{stats.streak}d streak</div>
             <div className="text-[10px] text-dim">Keep it up</div>
           </div>
         </div>
       )}
 
       {/* User + sign out */}
-      <div className="p-3 pt-2 border-t border-white/5">
+      <div className="p-4 pt-2 border-t border-white/10">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden border-2 border-primary/30">
+          <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden border-2 border-white/10">
             {avatar
               ? <img src={avatar} alt="" className="w-full h-full object-cover"/>
-              : <div className="w-full h-full bg-purple/10 flex items-center justify-center
-                  text-xs font-bold text-purple">{user?.avatarEmoji || initials}</div>
+              : <div className="w-full h-full bg-white/5 flex items-center justify-center
+                  text-xs font-bold text-on-surface">{initials}</div>
             }
           </div>
           <div className="min-w-0">

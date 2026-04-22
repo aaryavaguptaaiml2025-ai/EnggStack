@@ -51,7 +51,7 @@ export default function CalendarPage() {
     try {
       await api.addReminder(form);
       sfx.success();
-      setToast({ msg:"Reminder set!", color:"#4be277" });
+      setToast({ msg:"Reminder set!", color:"#00FFB2" });
       setModal(false);
       setForm({ title:"", body:"", fireAt:"", repeat:"none" });
       api.getReminders().then(setReminders).catch(()=>{});
@@ -70,43 +70,43 @@ export default function CalendarPage() {
     <div className="page-container">
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={()=>setToast(null)}/>}
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="section-title flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-2xl">calendar_month</span>
+            <span className="material-symbols-outlined text-[#00FFB2] text-2xl">calendar_month</span>
             Calendar
           </h1>
           <p className="text-xs text-muted mt-1">View deadlines, classes, and reminders</p>
         </div>
-        <Btn color="#4be277" onClick={()=>setModal(true)}>
+        <Btn color="#00FFB2" onClick={()=>setModal(true)}>
           <span className="material-symbols-outlined text-base">add</span> Add Reminder
         </Btn>
       </div>
 
       {/* Month nav */}
-      <div className="flex items-center gap-4 mb-5">
+      <div className="flex items-center gap-4 mb-6">
         <button onClick={()=>{ sfx.click(); if(month===0){setMonth(11);setYear(y=>y-1);}else setMonth(m=>m-1); }}
           className="w-9 h-9 rounded-xl glass-card flex items-center justify-center
-            text-on-surface hover:bg-card-2 transition-all">
+            text-on-surface hover:bg-white/[.08] transition-all duration-200">
           <span className="material-symbols-outlined text-lg">chevron_left</span>
         </button>
         <div className="text-lg font-bold text-on-surface min-w-[180px] text-center">{MONTHS[month]} {year}</div>
         <button onClick={()=>{ sfx.click(); if(month===11){setMonth(0);setYear(y=>y+1);}else setMonth(m=>m+1); }}
           className="w-9 h-9 rounded-xl glass-card flex items-center justify-center
-            text-on-surface hover:bg-card-2 transition-all">
+            text-on-surface hover:bg-white/[.08] transition-all duration-200">
           <span className="material-symbols-outlined text-lg">chevron_right</span>
         </button>
         <button onClick={()=>{ sfx.click(); setYear(today.getFullYear()); setMonth(today.getMonth()); }}
-          className="bg-primary/10 border border-primary/30 rounded-xl px-3 py-1.5
-            text-primary text-xs font-semibold hover:bg-primary/20 transition-all">
+          className="bg-[#00FFB2]/10 border border-[#00FFB2]/25 rounded-xl px-3 py-1.5
+            text-[#00FFB2] text-xs font-semibold hover:bg-[#00FFB2]/15 transition-all duration-200">
           Today
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5">
         {/* Calendar grid */}
         <div className="glass-card overflow-hidden">
-          <div className="grid grid-cols-7 border-b border-white/5">
+          <div className="grid grid-cols-7 border-b border-white/10">
             {DAYS_OF_WEEK.map(d=>(
               <div key={d} className="py-2.5 text-center text-xs font-semibold text-muted">{d}</div>
             ))}
@@ -120,18 +120,18 @@ export default function CalendarPage() {
                 return (
                   <div key={i} onClick={()=>{ if(day){sfx.click();setSelected(day===selected?null:day);} }}
                     className={`min-h-[72px] p-1.5 border-r border-b border-white/5 transition-colors duration-150
-                      ${day ? "cursor-pointer hover:bg-card-2" : ""}
-                      ${isSel ? "bg-primary/10" : isToday ? "bg-primary/5" : ""}`}>
+                      ${day ? "cursor-pointer hover:bg-white/[.03]" : ""}
+                      ${isSel ? "bg-[#00FFB2]/8" : isToday ? "bg-[#00FFB2]/5" : ""}`}>
                     {day && (
                       <>
                         <div className={`text-sm w-6 h-6 flex items-center justify-center rounded-full mb-1
-                          ${isToday ? "bg-primary/20 text-primary font-bold" : isSel ? "text-primary" : "text-on-surface"}`}>
+                          ${isToday ? "bg-[#00FFB2]/20 text-[#00FFB2] font-bold" : isSel ? "text-[#00FFB2]" : "text-on-surface"}`}>
                           {day}
                         </div>
                         <div className="flex flex-col gap-0.5">
                           {events.slice(0,2).map((ev,ei)=>(
                             <div key={ei} className="text-[9px] truncate rounded px-1 py-[1px]"
-                              style={{color:ev.color,background:ev.color+"15"}}>
+                              style={{color:ev.color,background:ev.color+"10"}}>
                               {ev.title}
                             </div>
                           ))}
@@ -151,14 +151,14 @@ export default function CalendarPage() {
           {selected ? (
             <Card>
               <div className="text-sm font-bold text-on-surface mb-3 flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-lg">event</span>
+                <span className="material-symbols-outlined text-[#00FFB2] text-lg">event</span>
                 {MONTHS[month]} {selected}, {year}
               </div>
               {selectedEvents.length===0
                 ? <div className="text-xs text-muted py-3">Nothing scheduled</div>
                 : selectedEvents.map((ev,i)=>(
                   <div key={i} className="p-2.5 rounded-xl mb-2"
-                    style={{background:ev.color+"10",border:`1px solid ${ev.color}28`}}>
+                    style={{background:ev.color+"0a",border:`1px solid ${ev.color}20`}}>
                     <div className="text-sm font-semibold flex items-center gap-1.5" style={{color:ev.color}}>
                       <span className="material-symbols-outlined text-sm">{ev.icon}</span>{ev.title}
                     </div>
@@ -190,15 +190,15 @@ export default function CalendarPage() {
                     </div>
                   </div>
                   <button onClick={()=>deleteReminder(r._id)}
-                    className="text-dim hover:text-danger transition-colors p-1">
+                    className="text-dim hover:text-danger transition-colors duration-200 p-1">
                     <span className="material-symbols-outlined text-sm">close</span>
                   </button>
                 </div>
               ))
             }
             <button onClick={()=>setModal(true)}
-              className="mt-3 w-full bg-primary/10 border border-primary/20 rounded-xl py-2
-                text-primary text-xs font-semibold hover:bg-primary/20 transition-all">
+              className="mt-3 w-full bg-[#00FFB2]/10 border border-[#00FFB2]/20 rounded-xl py-2
+                text-[#00FFB2] text-xs font-semibold hover:bg-[#00FFB2]/15 transition-all duration-200">
               + Add Reminder
             </button>
           </Card>
@@ -231,14 +231,14 @@ export default function CalendarPage() {
                 <button key={r} onClick={()=>setForm({...form,repeat:r})}
                   className="flex-1 py-2 rounded-xl text-xs font-medium capitalize transition-all duration-200"
                   style={{
-                    border:`1px solid ${form.repeat===r?"rgba(75,226,119,.4)":"rgba(255,255,255,.05)"}`,
-                    background:form.repeat===r?"rgba(75,226,119,.1)":"transparent",
-                    color:form.repeat===r?"#4be277":"#6b7280"
+                    border:`1px solid ${form.repeat===r?"rgba(0,255,178,.3)":"rgba(255,255,255,.05)"}`,
+                    background:form.repeat===r?"rgba(0,255,178,.08)":"transparent",
+                    color:form.repeat===r?"#00FFB2":"#4a5568"
                   }}>{r}</button>
               ))}
             </div>
           </div>
-          <Btn full color="#4be277" onClick={addReminder}>Set Reminder</Btn>
+          <Btn full color="#00FFB2" onClick={addReminder}>Set Reminder</Btn>
         </Modal>
       )}
     </div>

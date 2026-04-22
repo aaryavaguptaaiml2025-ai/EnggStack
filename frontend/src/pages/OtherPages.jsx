@@ -28,7 +28,7 @@ export function DeadlinesPage() {
     try {
       await api.addDeadline(form);
       sfx.success();
-      setToast({ msg:"Deadline added!", color:"#4be277" });
+      setToast({ msg:"Deadline added!", color:"#00FFB2" });
       setModal(false);
       setForm({ title:"", subject:"", dueDate:"", priority:"medium" });
       load();
@@ -47,7 +47,7 @@ export function DeadlinesPage() {
   };
   const urgencyColor = (d) => {
     const diff = Math.ceil((new Date(d) - Date.now()) / 86400000);
-    return diff < 0 ? "#ef4444" : diff <= 1 ? "#f87171" : diff <= 3 ? "#fbbf24" : "#4be277";
+    return diff < 0 ? "#ef4444" : diff <= 1 ? "#f87171" : diff <= 3 ? "#fbbf24" : "#00FFB2";
   };
 
   const pending = items.filter(x => !x.done);
@@ -56,7 +56,7 @@ export function DeadlinesPage() {
   return (
     <div className="page-container">
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={() => setToast(null)} />}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="section-title">Deadlines</h1>
           <p className="text-xs text-muted mt-1">Track your upcoming tasks and submissions</p>
@@ -83,12 +83,12 @@ export function DeadlinesPage() {
               <div className="label-text mb-3 ml-1">Pending ({pending.length})</div>
               <div className="space-y-2">
                 {pending.map(it => (
-                  <div key={it._id} className="fade-up glass-card flex items-center gap-4 p-4
-                    hover:bg-card-2 transition-all duration-200"
+                  <div key={it._id} className="fade-up glass-card flex items-center gap-4 p-5
+                    hover:bg-white/[.08] transition-all duration-200"
                     style={{ borderLeft:`3px solid ${urgencyColor(it.dueDate)}` }}>
                     <div onClick={() => toggle(it)}
                       className="w-5 h-5 rounded-full border-2 cursor-pointer flex-shrink-0
-                        hover:scale-110 transition-transform"
+                        hover:scale-110 transition-transform duration-200"
                       style={{borderColor:urgencyColor(it.dueDate)}}/>
                     <div className="flex-1">
                       <div className="text-sm font-semibold text-on-surface">{it.title}</div>
@@ -99,7 +99,7 @@ export function DeadlinesPage() {
                       {new Date(it.dueDate).toLocaleDateString("en-IN")}
                     </div>
                     <button onClick={() => del(it._id)}
-                      className="text-dim hover:text-danger transition-colors p-1">
+                      className="text-dim hover:text-danger transition-colors duration-200 p-1">
                       <span className="material-symbols-outlined text-lg">close</span>
                     </button>
                   </div>
@@ -113,13 +113,15 @@ export function DeadlinesPage() {
               <div className="label-text mb-3 ml-1 text-dim">Completed ({done.length})</div>
               <div className="space-y-2">
                 {done.map(it => (
-                  <div key={it._id} className="flex items-center gap-4 p-3 bg-bg-2 rounded-xl opacity-50">
+                  <div key={it._id} className="flex items-center gap-4 p-3 bg-white/[.03] rounded-xl opacity-50">
                     <div onClick={() => toggle(it)}
-                      className="w-5 h-5 rounded-full bg-primary cursor-pointer flex-shrink-0
-                        flex items-center justify-center text-[11px]">✓</div>
+                      className="w-5 h-5 rounded-full bg-[#00FFB2] cursor-pointer flex-shrink-0
+                        flex items-center justify-center">
+                      <span className="material-symbols-outlined text-black text-xs">check</span>
+                    </div>
                     <span className="flex-1 text-sm text-muted line-through">{it.title}</span>
                     <button onClick={() => del(it._id)}
-                      className="text-dim hover:text-danger transition-colors p-1">
+                      className="text-dim hover:text-danger transition-colors duration-200 p-1">
                       <span className="material-symbols-outlined text-lg">close</span>
                     </button>
                   </div>
@@ -139,13 +141,13 @@ export function DeadlinesPage() {
             <div className="label-text mb-2 ml-1">Priority</div>
             <div className="flex gap-2">
               {["low","medium","high"].map(p => {
-                const c = {low:"#4be277",medium:"#fbbf24",high:"#f87171"}[p];
+                const c = {low:"#00FFB2",medium:"#fbbf24",high:"#f87171"}[p];
                 return <button key={p} onClick={() => setForm({...form, priority:p})}
                   className="flex-1 py-2 rounded-xl text-xs font-semibold capitalize transition-all duration-200"
                   style={{
-                    border:`1px solid ${form.priority===p?c+"66":"rgba(255,255,255,.05)"}`,
-                    background:form.priority===p?c+"15":"transparent",
-                    color:form.priority===p?c:"#6b7280"
+                    border:`1px solid ${form.priority===p?c+"44":"rgba(255,255,255,.05)"}`,
+                    background:form.priority===p?c+"0d":"transparent",
+                    color:form.priority===p?c:"#4a5568"
                   }}>{p}</button>;
               })}
             </div>
@@ -184,7 +186,7 @@ export function NotesPage() {
       sfx.success();
       setModal(false);
       setForm({ title:"", subject:"", content:"" });
-      setToast({ msg:"Note created!", color:"#4be277" });
+      setToast({ msg:"Note created!", color:"#00FFB2" });
       await load();
       setActive(n);
       setEditing(false);
@@ -197,7 +199,7 @@ export function NotesPage() {
       await api.updateNote(active._id, { title:active.title, content:active.content, subject:active.subject });
       sfx.xp();
       setEditing(false);
-      setToast({ msg:"Saved!", color:"#4be277" });
+      setToast({ msg:"Saved!", color:"#00FFB2" });
       load();
     } catch(e) { sfx.error(); }
   };
@@ -231,7 +233,7 @@ export function NotesPage() {
           .notes-layout { flex-direction: row !important; }
           .notes-list {
             width: 300px !important;
-            border-right: 1px solid rgba(255,255,255,.05) !important;
+            border-right: 1px solid rgba(255,255,255,.1) !important;
             border-bottom: none !important;
             height: 100% !important;
             max-height: none !important;
@@ -242,13 +244,13 @@ export function NotesPage() {
 
       <div className="notes-layout flex flex-1 overflow-hidden flex-col">
         {/* Note list */}
-        <div className="notes-list border-b border-white/5 flex flex-col flex-shrink-0 bg-bg max-h-[40vh]">
-          <div className="p-4 pb-3 border-b border-white/5">
+        <div className="notes-list border-b border-white/10 flex flex-col flex-shrink-0 bg-[#0B132B] max-h-[40vh]">
+          <div className="p-4 pb-3 border-b border-white/10">
             <div className="flex justify-between items-center mb-3">
               <span className="font-bold text-base text-on-surface">Notes</span>
               <button onClick={() => setModal(true)}
-                className="bg-primary/10 border border-primary/20 rounded-xl px-3 py-1.5
-                  text-primary text-xs font-semibold hover:bg-primary/20 transition-all">
+                className="bg-[#00FFB2]/10 border border-[#00FFB2]/20 rounded-xl px-3 py-1.5
+                  text-[#00FFB2] text-xs font-semibold hover:bg-[#00FFB2]/15 transition-all duration-200">
                 <span className="material-symbols-outlined text-sm align-middle mr-1">add</span>New
               </button>
             </div>
@@ -267,10 +269,10 @@ export function NotesPage() {
               <div key={n._id} onClick={() => { setActive(n); setEditing(false); sfx.click(); }}
                 className={`p-3 rounded-xl cursor-pointer mb-1 transition-all duration-200
                   ${active?._id===n._id
-                    ? "bg-primary/10 border border-primary/20"
+                    ? "bg-[#00FFB2]/8 border border-[#00FFB2]/20"
                     : "border border-transparent hover:bg-white/5"}`}>
                 <div className="text-sm font-semibold text-on-surface truncate mb-1">
-                  {n.pinned ? "📌 " : ""}{n.title}
+                  {n.pinned && <span className="material-symbols-outlined text-xs align-middle mr-1 text-[#00FFB2]">push_pin</span>}{n.title}
                 </div>
                 <div className="text-[11px] text-muted truncate mb-1.5">
                   {n.content?.slice(0,50) || "Empty note"}
@@ -291,8 +293,8 @@ export function NotesPage() {
               <span className="material-symbols-outlined text-5xl">edit_note</span>
               <div className="text-sm">Select a note or create a new one</div>
               <button onClick={() => setModal(true)}
-                className="bg-primary/10 border border-primary/20 rounded-xl px-6 py-3
-                  text-primary text-sm font-semibold hover:bg-primary/20 transition-all">
+                className="bg-[#00FFB2]/10 border border-[#00FFB2]/20 rounded-xl px-6 py-3
+                  text-[#00FFB2] text-sm font-semibold hover:bg-[#00FFB2]/15 transition-all duration-200">
                 <span className="material-symbols-outlined text-base align-middle mr-1">add</span>Create Note
               </button>
             </div>
@@ -313,13 +315,13 @@ export function NotesPage() {
                 <div className="flex gap-2 flex-shrink-0 ml-4">
                   {editing ? (
                     <>
-                      <Btn color="#4be277" size="sm" onClick={save}>Save</Btn>
+                      <Btn color="#00FFB2" size="sm" onClick={save}>Save</Btn>
                       <Btn variant="ghost" size="sm" onClick={() => setEditing(false)}>Cancel</Btn>
                     </>
                   ) : (
                     <Btn color="#60a5fa" size="sm" variant="outline" onClick={() => setEditing(true)}>Edit</Btn>
                   )}
-                  <Btn color="#4be277" size="sm" variant="outline" onClick={() => exportPDF(active._id)}>PDF</Btn>
+                  <Btn color="#00FFB2" size="sm" variant="outline" onClick={() => exportPDF(active._id)}>PDF</Btn>
                   <Btn color="#f87171" size="sm" variant="outline" onClick={() => del(active._id)}>Delete</Btn>
                 </div>
               </div>
@@ -337,7 +339,7 @@ export function NotesPage() {
                     className="input-field h-full resize-none leading-7 text-sm"/>
                 ) : (
                   <div className="h-full overflow-y-auto text-sm text-on-surface leading-7
-                    p-4 bg-bg-2 rounded-2xl border border-white/5 whitespace-pre-wrap">
+                    p-4 bg-white/[.03] rounded-2xl border border-white/10 whitespace-pre-wrap">
                     {active.content || <span className="text-dim">Empty — click Edit to add content</span>}
                   </div>
                 )}
@@ -356,7 +358,7 @@ export function NotesPage() {
             <textarea value={form.content} onChange={e => setForm({...form, content:e.target.value})} rows={5}
               className="input-field resize-none"/>
           </div>
-          <Btn full color="#4be277" onClick={add}>Create Note</Btn>
+          <Btn full color="#00FFB2" onClick={add}>Create Note</Btn>
         </Modal>
       )}
     </div>
@@ -396,19 +398,19 @@ export function ChecklistPage() {
   return (
     <div className="page-container">
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={() => setToast(null)} />}
-      <div className="mb-6">
+      <div className="mb-8">
         <h1 className="section-title">Checklist</h1>
         <p className="text-xs text-muted mt-1">Track your daily tasks</p>
       </div>
 
-      <Card className="mb-5">
+      <Card className="mb-6">
         <div className="flex gap-3">
           <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key==="Enter" && add()}
             placeholder="Add a task... (press Enter)"
             className="input-field flex-1"/>
           <input value={sub} onChange={e => setSub(e.target.value)} placeholder="Subject"
             className="input-field w-[120px]"/>
-          <Btn color="#4be277" onClick={add}>
+          <Btn color="#00FFB2" onClick={add}>
             <span className="material-symbols-outlined text-base">add</span> Add
           </Btn>
         </div>
@@ -417,26 +419,26 @@ export function ChecklistPage() {
       {loading ? <div className="text-center py-20"><Spinner /></div> : (
         <>
           {items.length > 0 && (
-            <div className="mb-4">
+            <div className="mb-5">
               <div className="flex justify-between mb-2 px-1">
                 <span className="text-xs text-muted">{done.length} / {items.length} completed</span>
-                <span className="text-xs text-primary font-bold">{Math.round((done.length / items.length) * 100)}%</span>
+                <span className="text-xs text-[#00FFB2] font-bold">{Math.round((done.length / items.length) * 100)}%</span>
               </div>
-              <ProgressBar value={done.length} max={items.length} color="#4be277" glow />
+              <ProgressBar value={done.length} max={items.length} color="#00FFB2" glow />
             </div>
           )}
 
           <div className="space-y-2 mb-5">
             {pending.map(it => (
-              <div key={it._id} className="fade-up glass-card flex items-center gap-3 p-4
-                hover:bg-card-2 transition-all duration-200">
+              <div key={it._id} className="fade-up glass-card flex items-center gap-3 p-5
+                hover:bg-white/[.08] transition-all duration-200">
                 <div onClick={() => toggle(it)}
-                  className="w-5 h-5 rounded-md border-2 border-primary cursor-pointer flex-shrink-0
-                    hover:bg-primary/20 transition-all"/>
+                  className="w-5 h-5 rounded-md border-2 border-[#00FFB2] cursor-pointer flex-shrink-0
+                    hover:bg-[#00FFB2]/15 transition-all duration-200"/>
                 <span className="flex-1 text-sm text-on-surface">{it.text}</span>
                 {it.subject && <Badge color="#60a5fa">{it.subject}</Badge>}
                 <button onClick={() => del(it._id)}
-                  className="text-dim hover:text-danger transition-colors p-1">
+                  className="text-dim hover:text-danger transition-colors duration-200 p-1">
                   <span className="material-symbols-outlined text-lg">close</span>
                 </button>
               </div>
@@ -448,13 +450,15 @@ export function ChecklistPage() {
               <div className="label-text mb-3 ml-1 text-dim">Done ({done.length})</div>
               <div className="space-y-2">
                 {done.map(it => (
-                  <div key={it._id} className="flex items-center gap-3 p-3 bg-bg-2 rounded-xl opacity-50">
+                  <div key={it._id} className="flex items-center gap-3 p-3 bg-white/[.03] rounded-xl opacity-50">
                     <div onClick={() => toggle(it)}
-                      className="w-5 h-5 rounded-md bg-primary cursor-pointer flex-shrink-0
-                        flex items-center justify-center text-[11px]">✓</div>
+                      className="w-5 h-5 rounded-md bg-[#00FFB2] cursor-pointer flex-shrink-0
+                        flex items-center justify-center">
+                      <span className="material-symbols-outlined text-black text-xs">check</span>
+                    </div>
                     <span className="flex-1 text-sm text-muted line-through">{it.text}</span>
                     <button onClick={() => del(it._id)}
-                      className="text-dim hover:text-danger transition-colors">
+                      className="text-dim hover:text-danger transition-colors duration-200">
                       <span className="material-symbols-outlined text-lg">close</span>
                     </button>
                   </div>
@@ -471,15 +475,15 @@ export function ChecklistPage() {
 // ─────────────────────────────────────────────────────────────────────────────
 // SUBJECTS
 // ─────────────────────────────────────────────────────────────────────────────
-const SC = ["#60a5fa","#4be277","#fbbf24","#a78bfa","#f87171","#f472b6","#34d399","#fb923c"];
-const ICONS_LIST = ["📚","🔬","📐","💻","⚗️","🧮","🌍","📖","🎯","🧲"];
+const SC = ["#60a5fa","#00FFB2","#fbbf24","#a78bfa","#f87171","#f472b6","#34d399","#fb923c"];
+const SUBJECT_ICONS = ["menu_book","science","architecture","code","biotech","calculate","public","auto_stories","target","electric_bolt"];
 
 export function SubjectsPage() {
   const [subs,    setSubs]    = useState([]);
   const [loading, setLoad]    = useState(true);
   const [modal,   setModal]   = useState(false);
   const [toast,   setToast]   = useState(null);
-  const [form,    setForm]    = useState({ name:"", color:"#60a5fa", totalTopics:0, icon:"📚" });
+  const [form,    setForm]    = useState({ name:"", color:"#60a5fa", totalTopics:0, icon:"menu_book" });
 
   const load = async () => {
     setLoad(true);
@@ -494,7 +498,7 @@ export function SubjectsPage() {
       await api.addSubject(form);
       sfx.success();
       setModal(false);
-      setForm({ name:"", color:"#60a5fa", totalTopics:0, icon:"📚" });
+      setForm({ name:"", color:"#60a5fa", totalTopics:0, icon:"menu_book" });
       load();
     } catch(e) { sfx.error(); setToast({ msg:e.message, color:"#f87171" }); }
   };
@@ -509,7 +513,7 @@ export function SubjectsPage() {
   return (
     <div className="page-container">
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={() => setToast(null)} />}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="section-title">Subjects</h1>
           <p className="text-xs text-muted mt-1">Track your syllabus coverage</p>
@@ -535,11 +539,13 @@ export function SubjectsPage() {
               <Card key={s._id} className="fade-up" style={{borderLeft:`3px solid ${c}`,animationDelay:`${i*.06}s`}}>
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl">{s.icon || "📚"}</span>
+                    <span className="material-symbols-outlined text-2xl" style={{color:c}}>
+                      {typeof s.icon === 'string' && s.icon.length <= 3 ? "menu_book" : (s.icon || "menu_book")}
+                    </span>
                     <div className="text-base font-bold text-on-surface">{s.name}</div>
                   </div>
                   <button onClick={() => del(s._id)}
-                    className="text-dim hover:text-danger transition-colors p-1">
+                    className="text-dim hover:text-danger transition-colors duration-200 p-1">
                     <span className="material-symbols-outlined text-lg">close</span>
                   </button>
                 </div>
@@ -551,10 +557,10 @@ export function SubjectsPage() {
                 <button onClick={() => inc(s)} disabled={s.doneTopics >= s.totalTopics}
                   className="mt-3 w-full rounded-xl py-2 text-xs font-semibold transition-all duration-200"
                   style={{
-                    background:c+"14", border:`1px solid ${c}33`, color:c,
+                    background:c+"0d", border:`1px solid ${c}25`, color:c,
                     opacity:s.doneTopics>=s.totalTopics?.5:1
                   }}>
-                  {s.doneTopics >= s.totalTopics ? "✓ All Done" : "+ Mark Topic Done"}
+                  {s.doneTopics >= s.totalTopics ? "All Done" : "+ Mark Topic Done"}
                 </button>
               </Card>
             );
@@ -568,13 +574,15 @@ export function SubjectsPage() {
           <div className="mb-3">
             <div className="text-xs text-muted mb-2 font-medium ml-1">Icon</div>
             <div className="flex gap-2 flex-wrap">
-              {ICONS_LIST.map(ic => (
+              {SUBJECT_ICONS.map(ic => (
                 <button key={ic} onClick={() => setForm({...form, icon:ic})}
-                  className="text-xl w-10 h-10 rounded-xl transition-all duration-200"
+                  className="w-10 h-10 rounded-xl transition-all duration-200 flex items-center justify-center"
                   style={{
-                    background:form.icon===ic?"rgba(75,226,119,.15)":"rgba(17,24,39,.5)",
-                    border:`2px solid ${form.icon===ic?"#4be277":"rgba(255,255,255,.05)"}`
-                  }}>{ic}</button>
+                    background:form.icon===ic?"rgba(0,255,178,.1)":"rgba(255,255,255,.03)",
+                    border:`2px solid ${form.icon===ic?"#00FFB2":"rgba(255,255,255,.05)"}`
+                  }}>
+                  <span className="material-symbols-outlined text-xl" style={{color:form.icon===ic?"#00FFB2":"#4a5568"}}>{ic}</span>
+                </button>
               ))}
             </div>
           </div>
@@ -635,7 +643,7 @@ export function TimetablePage() {
   return (
     <div className="page-container">
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={() => setToast(null)} />}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="section-title">Timetable</h1>
           <p className="text-xs text-muted mt-1">Your weekly class schedule</p>
@@ -653,11 +661,11 @@ export function TimetablePage() {
               const isToday = day === todayShort;
               return (
                 <div key={day}>
-                  <div className={`text-center py-2 rounded-xl mb-2 text-sm font-medium transition-all
+                  <div className={`text-center py-2 rounded-xl mb-2 text-sm font-medium transition-all duration-200
                     ${isToday
-                      ? "bg-primary/10 border border-primary/20 text-primary font-bold"
-                      : "bg-surface-low border border-white/5 text-muted"}`}>
-                    {day}{isToday ? " ✦" : ""}
+                      ? "bg-[#00FFB2]/10 border border-[#00FFB2]/20 text-[#00FFB2] font-bold"
+                      : "bg-white/5 border border-white/10 text-muted"}`}>
+                    {day}
                   </div>
                   <div className="space-y-2">
                     {dayEntries.map(e => (
@@ -668,7 +676,7 @@ export function TimetablePage() {
                         {e.room && <div className="text-[10px] text-dim mt-0.5">{e.room}</div>}
                         <button onClick={() => del(e._id)}
                           className="absolute top-1 right-1 text-dim hover:text-danger
-                            transition-colors p-0.5">
+                            transition-colors duration-200 p-0.5">
                           <span className="material-symbols-outlined text-sm">close</span>
                         </button>
                       </div>
@@ -693,9 +701,9 @@ export function TimetablePage() {
                 <button key={d} onClick={() => setForm({...form, day:d})}
                   className="px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200"
                   style={{
-                    background:form.day===d?"rgba(75,226,119,.15)":"transparent",
-                    border:`1px solid ${form.day===d?"rgba(75,226,119,.4)":"rgba(255,255,255,.05)"}`,
-                    color:form.day===d?"#4be277":"#6b7280"
+                    background:form.day===d?"rgba(0,255,178,.1)":"transparent",
+                    border:`1px solid ${form.day===d?"rgba(0,255,178,.3)":"rgba(255,255,255,.05)"}`,
+                    color:form.day===d?"#00FFB2":"#4a5568"
                   }}>{d}</button>
               ))}
             </div>
@@ -729,7 +737,6 @@ const MOCK_BOARD = [
   { name:"Priya Singh",  xp:380 },
   { name:"Arjun Mehta",  xp:290 },
 ];
-const RANK = ["🥇","🥈","🥉","4️⃣","5️⃣"];
 
 export function GamificationPage() {
   const { stats }  = useStats();
@@ -744,17 +751,21 @@ export function GamificationPage() {
     ...MOCK_BOARD,
   ].sort((a,b) => b.xp - a.xp);
 
+  const RANK_ICONS = ["trophy","workspace_premium","military_tech","filter_4","filter_5"];
+
   return (
     <div className="page-container">
-      <div className="mb-6">
+      <div className="mb-8">
         <h1 className="section-title">Achievements</h1>
         <p className="text-xs text-muted mt-1">Track your progress and earn badges</p>
       </div>
 
       {/* Level hero */}
-      <div className="fade-up bg-gradient-to-r from-purple/10 to-info/10
-        border border-purple/20 rounded-2xl p-7 mb-6 flex gap-6 items-center">
-        <div className="text-5xl">{LEVEL_ICONS[lv]}</div>
+      <div className="fade-up bg-white/5 backdrop-blur-xl
+        border border-white/10 rounded-2xl p-8 mb-6 flex gap-6 items-center">
+        <div className="w-14 h-14 rounded-full bg-purple/15 flex items-center justify-center flex-shrink-0">
+          <span className="material-symbols-outlined text-3xl text-purple filled">workspace_premium</span>
+        </div>
         <div className="flex-1">
           <div className="text-2xl font-extrabold text-on-surface mb-1">Level {lv+1} — {LEVEL_NAMES[lv]}</div>
           <div className="text-sm text-muted mb-3">{stats.xp||0} XP · {hi-(stats.xp||0)} XP to next level</div>
@@ -768,9 +779,9 @@ export function GamificationPage() {
           { l:"Total XP",  v:stats.xp||0,                              i:"bolt", c:"#fbbf24" },
           { l:"Streak",    v:`${stats.streak||0}d`,                    i:"local_fire_department", c:"#f97316" },
           { l:"Pomodoros", v:stats.pomodoros||0,                       i:"timer", c:"#f87171" },
-          { l:"Hours",     v:`${Math.floor((stats.totalMins||0)/60)}h`,i:"schedule", c:"#4be277" },
+          { l:"Hours",     v:`${Math.floor((stats.totalMins||0)/60)}h`,i:"schedule", c:"#00FFB2" },
         ].map((s,i) => (
-          <div key={i} className="fade-up glass-card text-center p-5"
+          <div key={i} className="fade-up glass-card text-center p-6"
             style={{borderTop:`2px solid ${s.c}`,animationDelay:`${i*.08}s`}}>
             <span className="material-symbols-outlined text-3xl mb-2 block" style={{color:s.c}}>{s.i}</span>
             <div className="text-xl font-extrabold" style={{color:s.c}}>{s.v}</div>
@@ -780,25 +791,27 @@ export function GamificationPage() {
       </div>
 
       {/* Badges */}
-      <Card className="mb-5">
+      <Card className="mb-6">
         <div className="text-base font-bold text-on-surface mb-4 flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary filled">workspace_premium</span>Badges
+          <span className="material-symbols-outlined text-[#00FFB2] filled">workspace_premium</span>Badges
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {BADGES.map(b => {
             const earned = b.check(stats);
             return (
-              <div key={b.id} className="p-3 rounded-xl flex gap-3 items-center transition-all duration-300"
+              <div key={b.id} className="p-4 rounded-xl flex gap-3 items-center transition-all duration-200"
                 style={{
-                  border:`1px solid ${earned?b.color+"55":"rgba(255,255,255,.05)"}`,
-                  background:earned?b.color+"0e":"rgba(17,24,39,.5)",
+                  border:`1px solid ${earned?b.color+"30":"rgba(255,255,255,.05)"}`,
+                  background:earned?b.color+"0a":"rgba(255,255,255,.03)",
                   opacity:earned?1:.35
                 }}>
-                <span className="text-2xl">{b.icon}</span>
+                <span className="material-symbols-outlined text-2xl" style={{color:earned?b.color:"#4a5568"}}>
+                  {b.icon}
+                </span>
                 <div>
-                  <div className="text-xs font-semibold" style={{color:earned?"#dae2fd":"#6b7280"}}>{b.label}</div>
-                  <div className="text-[10px] mt-0.5" style={{color:earned?b.color:"#6b7280"}}>
-                    {earned?"✓ Earned":"Locked"}
+                  <div className="text-xs font-semibold" style={{color:earned?"#e0e6f0":"#4a5568"}}>{b.label}</div>
+                  <div className="text-[10px] mt-0.5" style={{color:earned?b.color:"#4a5568"}}>
+                    {earned?"Earned":"Locked"}
                   </div>
                 </div>
               </div>
@@ -814,14 +827,17 @@ export function GamificationPage() {
         </div>
         <div className="space-y-2">
           {board.map((u, i) => (
-            <div key={u.name} className={`flex items-center gap-3 p-3 rounded-xl transition-all
-              ${u.you ? "bg-primary/10 border border-primary/20" : "hover:bg-white/5"}`}>
-              <span className="text-lg w-7 text-center">{RANK[i] || `${i+1}.`}</span>
+            <div key={u.name} className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200
+              ${u.you ? "bg-[#00FFB2]/8 border border-[#00FFB2]/20" : "hover:bg-white/5"}`}>
+              <span className="material-symbols-outlined text-lg w-7 text-center"
+                style={{color:i===0?"#fbbf24":i===1?"#94a3b8":i===2?"#cd7f32":"#4a5568"}}>
+                {RANK_ICONS[i] || "tag"}
+              </span>
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                style={{background:u.you?"rgba(75,226,119,.2)":"rgba(255,255,255,.08)",color:u.you?"#4be277":"#6b7280"}}>
+                style={{background:u.you?"rgba(0,255,178,.15)":"rgba(255,255,255,.05)",color:u.you?"#00FFB2":"#4a5568"}}>
                 {u.name[0]}
               </div>
-              <span className={`flex-1 text-sm ${u.you ? "text-primary font-bold" : "text-on-surface"}`}>
+              <span className={`flex-1 text-sm ${u.you ? "text-[#00FFB2] font-bold" : "text-on-surface"}`}>
                 {u.name}{u.you ? " (You)" : ""}
               </span>
               <span className="text-sm text-warning font-bold">{u.xp} XP</span>

@@ -3,21 +3,21 @@ import { createContext, useContext, useState, useRef, useEffect, useCallback } f
 const MusicCtx = createContext(null);
 
 export const PLAYLISTS = [
-  { id:"lofi",      name:"Lo-Fi Hip Hop",   icon:"🎵", color:"#60a5fa", desc:"Chill beats to study to",          ytId:"jfKfPfyJRdk" },
-  { id:"classical", name:"Classical Focus", icon:"🎻", color:"#a78bfa", desc:"Bach & Mozart for deep focus",      ytId:"4Tr0otuiQuU" },
-  { id:"nature",    name:"Nature & Rain",   icon:"🌧️", color:"#34d399", desc:"Rain, forest, ocean sounds",        ytId:"q76bMs-NwRk" },
-  { id:"hiphop",    name:"Study Hip-Hop",   icon:"🎤", color:"#fbbf24", desc:"Upbeat tracks to stay motivated",   ytId:"36YnV9STBqc" },
-  { id:"ambient",   name:"Ambient Space",   icon:"🚀", color:"#f472b6", desc:"Atmospheric space soundscapes",     ytId:"F9L4q-0Pi4E" },
-  { id:"jazz",      name:"Study Jazz",      icon:"🎷", color:"#fb923c", desc:"Smooth jazz for focused work",      ytId:"Dx5qFachd3A" },
+  { id:"lofi",      name:"Lo-Fi Hip Hop",   color:"#60a5fa", desc:"Chill beats to study to",          ytId:"jfKfPfyJRdk" },
+  { id:"classical", name:"Classical Focus", color:"#a78bfa", desc:"Bach & Mozart for deep focus",      ytId:"4Tr0otuiQuU" },
+  { id:"nature",    name:"Nature & Rain",   color:"#34d399", desc:"Rain, forest, ocean sounds",        ytId:"q76bMs-NwRk" },
+  { id:"hiphop",    name:"Study Hip-Hop",   color:"#fbbf24", desc:"Upbeat tracks to stay motivated",   ytId:"36YnV9STBqc" },
+  { id:"ambient",   name:"Ambient Space",   color:"#f472b6", desc:"Atmospheric space soundscapes",     ytId:"F9L4q-0Pi4E" },
+  { id:"jazz",      name:"Study Jazz",      color:"#fb923c", desc:"Smooth jazz for focused work",      ytId:"Dx5qFachd3A" },
 ];
 
 const AMBIENT_SOUNDS = [
-  { id:"off",        icon:"🔇", label:"Off" },
-  { id:"rain",       icon:"🌧️", label:"Rain" },
-  { id:"whitenoise", icon:"〰️", label:"White Noise" },
-  { id:"lofi",       icon:"🎵", label:"Lo-Fi Hum" },
-  { id:"binaural",   icon:"🧠", label:"Binaural Beats" },
-  { id:"fire",       icon:"🔥", label:"Fireplace" },
+  { id:"off",        label:"Off" },
+  { id:"rain",       label:"Rain" },
+  { id:"whitenoise", label:"White Noise" },
+  { id:"lofi",       label:"Lo-Fi Hum" },
+  { id:"binaural",   label:"Binaural Beats" },
+  { id:"fire",       label:"Fireplace" },
 ];
 export { AMBIENT_SOUNDS };
 
@@ -136,11 +136,11 @@ function MiniPlayer() {
   return (
     <div style={{
       position: "fixed", bottom: 16, right: 16, zIndex: 500,
-      background: "var(--card)", border: "1px solid var(--border)",
+      background: "rgba(11,19,43,0.9)", border: "1px solid rgba(255,255,255,.1)",
       borderRadius: 14, padding: "10px 16px",
       display: "flex", alignItems: "center", gap: 12,
       boxShadow: "0 8px 32px rgba(0,0,0,.5)",
-      backdropFilter: "blur(10px)",
+      backdropFilter: "blur(20px)",
       animation: "slideIn .3s ease",
       minWidth: 220,
     }}>
@@ -157,19 +157,31 @@ function MiniPlayer() {
           ))}
         </div>
       )}
-      {ambient !== "off" && !playing && <span style={{fontSize:16}}>🔊</span>}
+      {ambient !== "off" && !playing && (
+        <span className="material-symbols-outlined text-[#00FFB2]" style={{fontSize:16}}>volume_up</span>
+      )}
 
       <div style={{ flex:1, minWidth:0 }}>
-        <div style={{ fontSize:12, fontWeight:600, color:"var(--text)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+        <div style={{ fontSize:12, fontWeight:600, color:"#e0e6f0", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
           {playing && activePL ? activePL.name : `Ambient: ${ambient}`}
         </div>
-        <div style={{ fontSize:10, color:"var(--muted)", fontFamily:"monospace" }}>{fmt(studyTime)}</div>
+        <div style={{ fontSize:10, color:"#8892a8", fontFamily:"monospace" }}>{fmt(studyTime)}</div>
       </div>
 
-      <button onClick={() => setTimerOn(t => !t)} style={{ background:"none", border:"none", color:"var(--muted)", cursor:"pointer", fontSize:14, padding:3 }} title={timerOn?"Pause timer":"Start timer"}>
-        {timerOn ? "⏸" : "▶"}
+      <button onClick={() => setTimerOn(t => !t)}
+        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors duration-200"
+        style={{ background:"none", border:"none", cursor:"pointer" }}
+        title={timerOn?"Pause timer":"Start timer"}>
+        <span className="material-symbols-outlined text-sm" style={{color:"#8892a8"}}>
+          {timerOn ? "pause" : "play_arrow"}
+        </span>
       </button>
-      <button onClick={stopAll} style={{ background:"none", border:"none", color:"var(--muted)", cursor:"pointer", fontSize:14, padding:3 }} title="Stop all">✕</button>
+      <button onClick={stopAll}
+        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors duration-200"
+        style={{ background:"none", border:"none", cursor:"pointer" }}
+        title="Stop all">
+        <span className="material-symbols-outlined text-sm" style={{color:"#8892a8"}}>close</span>
+      </button>
     </div>
   );
 }

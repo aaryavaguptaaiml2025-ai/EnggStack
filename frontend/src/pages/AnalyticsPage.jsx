@@ -4,9 +4,9 @@ import { api } from "../api";
 import { Card, ProgressBar, Heatmap, Tabs } from "../components/ui";
 
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const COLORS = ["#60a5fa","#4be277","#fbbf24","#a78bfa","#f87171","#f472b6","#34d399","#fb923c"];
+const COLORS = ["#60a5fa","#00FFB2","#fbbf24","#a78bfa","#f87171","#f472b6","#34d399","#fb923c"];
 
-function BarChart({ data, labels, color = "#4be277", height = 120, unit = "" }) {
+function BarChart({ data, labels, color = "#00FFB2", height = 120, unit = "" }) {
   const max = Math.max(...data.map(Number), 1);
   return (
     <div className="flex items-end gap-1.5" style={{ height }}>
@@ -17,8 +17,8 @@ function BarChart({ data, labels, color = "#4be277", height = 120, unit = "" }) 
             <div title={`${labels[i]}: ${v}${unit}`}
               className="w-full rounded-t relative overflow-hidden transition-all duration-1000"
               style={{minHeight:4, height:`${Math.round((Number(v)/max)*100)}%`,
-                background:color, boxShadow:`0 0 6px ${color}44`}}>
-              <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/15"/>
+                background:color, boxShadow:`0 0 6px ${color}33`}}>
+              <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/10"/>
             </div>
           </div>
           <span className="text-[9px] text-dim whitespace-nowrap">{labels[i]}</span>
@@ -41,7 +41,7 @@ function LineChart({ data, labels, color = "#60a5fa", height = 100 }) {
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full overflow-visible">
         <defs>
           <linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.3"/>
+            <stop offset="0%" stopColor={color} stopOpacity="0.25"/>
             <stop offset="100%" stopColor={color} stopOpacity="0"/>
           </linearGradient>
         </defs>
@@ -66,20 +66,20 @@ export default function AnalyticsPage() {
 
   return (
     <div className="page-container max-w-5xl">
-      <div className="mb-6">
+      <div className="mb-8">
         <h1 className="section-title">Analytics</h1>
         <p className="text-xs text-muted mt-1">Deep dive into your study patterns</p>
       </div>
 
       <Tabs tabs={[
-        {id:"overview",label:"Overview",icon:"📊"},
-        {id:"heatmap",label:"Study Heatmap",icon:"🔥"},
-        {id:"subjects",label:"Subjects",icon:"📚"}
+        {id:"overview",label:"Overview",icon:"bar_chart"},
+        {id:"heatmap",label:"Study Heatmap",icon:"local_fire_department"},
+        {id:"subjects",label:"Subjects",icon:"menu_book"}
       ]} active={tab} onChange={setTab}/>
 
-      <div className="mt-5">
+      <div className="mt-6">
         {tab==="overview" && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 {label:"Total Study Time",value:`${Math.floor((stats.totalMins||0)/60)}h ${(stats.totalMins||0)%60}m`,icon:"schedule",color:"#60a5fa"},
@@ -87,7 +87,7 @@ export default function AnalyticsPage() {
                 {label:"Current Streak",value:`${stats.streak||0} days`,icon:"local_fire_department",color:"#f97316"},
                 {label:"Pomodoros Done",value:stats.pomodoros||0,icon:"timer",color:"#f87171"},
               ].map((s,i)=>(
-                <div key={i} className="glass-card p-5" style={{borderLeft:`3px solid ${s.color}`}}>
+                <div key={i} className="glass-card p-6" style={{borderLeft:`3px solid ${s.color}`}}>
                   <span className="material-symbols-outlined text-2xl mb-2 block" style={{color:s.color}}>{s.icon}</span>
                   <div className="text-xl font-extrabold" style={{color:s.color}}>{s.value}</div>
                   <div className="text-[11px] text-muted mt-1">{s.label}</div>
@@ -95,13 +95,13 @@ export default function AnalyticsPage() {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Card>
                 <div className="text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-lg">bar_chart</span>
+                  <span className="material-symbols-outlined text-[#00FFB2] text-lg">bar_chart</span>
                   Daily Study (this week)
                 </div>
-                <BarChart data={wMins} labels={DAYS} color="#4be277" unit="m"/>
+                <BarChart data={wMins} labels={DAYS} color="#00FFB2" unit="m"/>
               </Card>
               <Card>
                 <div className="text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
@@ -110,7 +110,7 @@ export default function AnalyticsPage() {
                 </div>
                 <LineChart data={last4Weeks.map(v=>Math.max(0,v))} labels={["3w ago","2w ago","Last w","This w"]} color="#60a5fa" height={110}/>
                 <div className="flex gap-3 mt-3 flex-wrap">
-                  {last4Weeks.map((v,i)=><div key={i} className="text-[11px] text-muted">{["3w ago","2w ago","Last w","This w"][i]}: <b className="text-primary">{Math.max(0,v)}m</b></div>)}
+                  {last4Weeks.map((v,i)=><div key={i} className="text-[11px] text-muted">{["3w ago","2w ago","Last w","This w"][i]}: <b className="text-[#00FFB2]">{Math.max(0,v)}m</b></div>)}
                 </div>
               </Card>
             </div>
@@ -126,12 +126,12 @@ export default function AnalyticsPage() {
                   const current=lv===i;
                   return <div key={i} style={{opacity:i>lv+1?.3:1}}>
                     <div className="flex justify-between mb-1">
-                      <span className={`text-xs ${current?"text-primary font-semibold":"text-muted"}`}>
-                        {current?"→ ":""}{LEVEL_NAMES[i]} (Lv.{i+1})
+                      <span className={`text-xs ${current?"text-[#00FFB2] font-semibold":"text-muted"}`}>
+                        {current?"* ":""}{LEVEL_NAMES[i]} (Lv.{i+1})
                       </span>
                       <span className="text-[11px] text-dim">{Math.min(stats.xp||0,hi)}/{hi} XP</span>
                     </div>
-                    <ProgressBar value={done} max={total} color={current?"#4be277":"rgba(255,255,255,.15)"} height={5} glow={current}/>
+                    <ProgressBar value={done} max={total} color={current?"#00FFB2":"rgba(255,255,255,.1)"} height={5} glow={current}/>
                   </div>;
                 })}
               </div>
@@ -140,10 +140,10 @@ export default function AnalyticsPage() {
         )}
 
         {tab==="heatmap" && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <Card>
               <div className="text-sm font-bold text-on-surface mb-1 flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-lg filled">local_fire_department</span>
+                <span className="material-symbols-outlined text-[#00FFB2] text-lg filled">local_fire_department</span>
                 Study Activity — Last 12 Months
               </div>
               <div className="text-xs text-muted mb-4">Each square = one day. Darker = more minutes studied.</div>
@@ -155,8 +155,8 @@ export default function AnalyticsPage() {
                 {label:"Best day (mins)",value:Math.max(...Object.values(heatmapData).map(Number),0)},
                 {label:"Study days this month",value:Object.entries(heatmapData).filter(([k])=>k.startsWith(new Date().toISOString().slice(0,7))).filter(([,v])=>Number(v)>0).length},
               ].map((s,i)=>(
-                <div key={i} className="glass-card text-center p-5">
-                  <div className="text-2xl font-extrabold text-primary mb-1">{s.value}</div>
+                <div key={i} className="glass-card text-center p-6">
+                  <div className="text-2xl font-extrabold text-[#00FFB2] mb-1">{s.value}</div>
                   <div className="text-xs text-muted">{s.label}</div>
                 </div>
               ))}
@@ -165,7 +165,7 @@ export default function AnalyticsPage() {
         )}
 
         {tab==="subjects" && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {subjects.length===0?<Card className="text-center py-10"><div className="text-muted">No subjects yet. Add them in the Subjects page.</div></Card>:(
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -173,7 +173,6 @@ export default function AnalyticsPage() {
                     const pct=s.totalTopics>0?Math.round((s.doneTopics/s.totalTopics)*100):0;
                     const c=COLORS[i%COLORS.length];
                     return <Card key={s._id} style={{borderLeft:`3px solid ${c}`}}>
-                      <div className="text-lg mb-1.5">{s.icon||"📚"}</div>
                       <div className="text-sm font-bold text-on-surface mb-0.5">{s.name}</div>
                       <div className="text-xs text-muted mb-3">{s.doneTopics}/{s.totalTopics} topics</div>
                       <div className="flex justify-between mb-1.5">

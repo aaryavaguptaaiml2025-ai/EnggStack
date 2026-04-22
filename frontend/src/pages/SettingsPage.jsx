@@ -5,7 +5,7 @@ import { Card, Input, Btn, Toast, Spinner, Tabs } from "../components/ui";
 import { sfx } from "../hooks/useSfx";
 
 const THEMES = [
-  { id:"dark", label:"Dark", bg:"#0d0d0d", ac:"#4be277" },
+  { id:"dark", label:"Dark", bg:"#0B132B", ac:"#00FFB2" },
   { id:"midnight", label:"Midnight", bg:"#060818", ac:"#60a5fa" },
   { id:"forest", label:"Forest", bg:"#080d08", ac:"#34d399" },
   { id:"ocean", label:"Ocean", bg:"#050d14", ac:"#38bdf8" },
@@ -13,11 +13,9 @@ const THEMES = [
 ];
 
 const ACCENTS = [
-  "#4be277","#60a5fa","#a78bfa","#fbbf24","#f87171","#f472b6",
+  "#00FFB2","#60a5fa","#a78bfa","#fbbf24","#f87171","#f472b6",
   "#34d399","#38bdf8","#fb923c","#e879f9","#facc15","#a3e635",
 ];
-
-const EMOJIS = ["🎓","⚡","🚀","💡","🔥","🎯","📚","🧠","👑","🌟","💎","⭐"];
 
 export default function SettingsPage() {
   const { user, refreshUser, applyUser } = useAuth();
@@ -27,9 +25,8 @@ export default function SettingsPage() {
 
   const [name, setName] = useState(user?.name || "");
   const [username, setUsername] = useState(user?.username || "");
-  const [emoji, setEmoji] = useState(user?.avatarEmoji || "🎓");
   const [theme, setTheme] = useState(user?.theme || "dark");
-  const [accent, setAccent] = useState(user?.accentColor || "#4be277");
+  const [accent, setAccent] = useState(user?.accentColor || "#00FFB2");
 
   const [goalMins, setGoalMins] = useState(user?.dailyGoalMins || 120);
   const [goalPomos, setGoalPomos] = useState(user?.dailyGoalPomos || 4);
@@ -40,16 +37,16 @@ export default function SettingsPage() {
   const [pin, setPin] = useState("");
   const [pinConfirm, setPinConfirm] = useState("");
 
-  const toast_ok  = (msg) => { sfx.success(); setToast({ msg, color:"#4be277" }); };
+  const toast_ok  = (msg) => { sfx.success(); setToast({ msg, color:"#00FFB2" }); };
   const toast_err = (msg) => { sfx.error(); setToast({ msg, color:"#f87171" }); };
 
   const saveProfile = async () => {
     setSaving(true);
     try {
-      const updated = await api.updateProfile({ name, username: username || undefined, avatarEmoji: emoji, theme, accentColor: accent });
+      const updated = await api.updateProfile({ name, username: username || undefined, theme, accentColor: accent });
       applyUser(updated);
       await refreshUser();
-      toast_ok("✅ Profile saved!");
+      toast_ok("Profile saved!");
     } catch(e) { toast_err(e.message); }
     finally { setSaving(false); }
   };
@@ -60,7 +57,7 @@ export default function SettingsPage() {
       const qs = quotes.split("\n").map(q=>q.trim()).filter(Boolean);
       const updated = await api.updateProfile({ dailyGoalMins:goalMins, dailyGoalPomos:goalPomos, customQuotes:qs });
       applyUser(updated);
-      toast_ok("✅ Goals saved!");
+      toast_ok("Goals saved!");
     } catch(e) { toast_err(e.message); }
     finally { setSaving(false); }
   };
@@ -70,7 +67,7 @@ export default function SettingsPage() {
     try {
       const updated = await api.updateProfile({ theme, accentColor: accent });
       applyUser(updated);
-      toast_ok("✅ Theme applied!");
+      toast_ok("Theme applied!");
     } catch(e) { toast_err(e.message); }
     finally { setSaving(false); }
   };
@@ -81,7 +78,7 @@ export default function SettingsPage() {
     try {
       await api.changePassword({ currentPassword: curPass, newPassword: newPass });
       setCurPass(""); setNewPass("");
-      toast_ok("✅ Password changed!");
+      toast_ok("Password changed!");
     } catch(e) { toast_err(e.message); }
     finally { setSaving(false); }
   };
@@ -94,7 +91,7 @@ export default function SettingsPage() {
       await api.setPin({ pin });
       setPin(""); setPinConfirm("");
       await refreshUser();
-      toast_ok("✅ PIN set! You can now log in with it.");
+      toast_ok("PIN set! You can now log in with it.");
     } catch(e) { toast_err(e.message); }
     finally { setSaving(false); }
   };
@@ -110,19 +107,19 @@ export default function SettingsPage() {
   };
 
   const TABS = [
-    { id:"profile", label:"Profile", icon:"👤" },
-    { id:"theme", label:"Theme", icon:"🎨" },
-    { id:"goals", label:"Goals", icon:"🎯" },
-    { id:"security", label:"Security", icon:"🔒" },
+    { id:"profile", label:"Profile", icon:"person" },
+    { id:"theme", label:"Theme", icon:"palette" },
+    { id:"goals", label:"Goals", icon:"flag" },
+    { id:"security", label:"Security", icon:"lock" },
   ];
 
   return (
     <div className="page-container max-w-2xl">
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={()=>setToast(null)}/>}
 
-      <div className="mb-6">
+      <div className="mb-8">
         <h1 className="section-title flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-2xl">settings</span>
+          <span className="material-symbols-outlined text-[#00FFB2] text-2xl">settings</span>
           Settings
         </h1>
         <p className="text-xs text-muted mt-1">Customize your EnggStack experience</p>
@@ -130,35 +127,20 @@ export default function SettingsPage() {
 
       <Tabs tabs={TABS} active={tab} onChange={setTab}/>
 
-      <div className="mt-5">
+      <div className="mt-6">
         {/* PROFILE */}
         {tab === "profile" && (
           <Card>
-            <div className="text-base font-bold text-on-surface mb-5 flex items-center gap-2">
+            <div className="text-base font-bold text-on-surface mb-6 flex items-center gap-2">
               <span className="material-symbols-outlined text-lg">person</span> Profile
             </div>
             <Input label="Full Name" value={name} onChange={e=>setName(e.target.value)} placeholder="Your name"/>
             <Input label="Username" value={username} onChange={e=>setUsername(e.target.value)} placeholder="@username"/>
 
-            <div className="mb-5">
-              <div className="text-xs text-muted mb-2 font-medium ml-1">Avatar Emoji</div>
-              <div className="flex gap-2 flex-wrap">
-                {EMOJIS.map(em=>(
-                  <button key={em} onClick={()=>setEmoji(em)}
-                    className="text-xl w-10 h-10 rounded-xl transition-all duration-200"
-                    style={{
-                      background:emoji===em?"rgba(75,226,119,.15)":"rgba(17,24,39,.5)",
-                      border:`2px solid ${emoji===em?"#4be277":"rgba(255,255,255,.05)"}`
-                    }}>{em}</button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 mb-5 p-4 bg-bg-2 rounded-2xl border border-white/5">
-              <div className="w-14 h-14 rounded-full flex-shrink-0 flex items-center justify-center text-3xl
-                border-[3px] border-primary overflow-hidden"
-                style={{background:"rgba(17,24,39,.5)"}}>
-                {user?.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover rounded-full"/> : emoji}
+            <div className="flex items-center gap-4 mb-6 p-4 bg-white/[.03] rounded-2xl border border-white/10">
+              <div className="w-14 h-14 rounded-full flex-shrink-0 flex items-center justify-center text-lg font-bold
+                border-[3px] border-[#00FFB2]/30 overflow-hidden bg-white/5 text-on-surface">
+                {user?.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover rounded-full"/> : (name?.[0]?.toUpperCase() || "?")}
               </div>
               <div>
                 <div className="text-sm font-semibold text-on-surface">{name || "Your Name"}</div>
@@ -166,7 +148,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <Btn full color="#4be277" onClick={saveProfile} disabled={saving}>
+            <Btn full color="#00FFB2" onClick={saveProfile} disabled={saving}>
               {saving ? <><Spinner size={14}/> Saving...</> : "Save Profile"}
             </Btn>
           </Card>
@@ -175,11 +157,11 @@ export default function SettingsPage() {
         {/* THEME */}
         {tab === "theme" && (
           <Card>
-            <div className="text-base font-bold text-on-surface mb-5 flex items-center gap-2">
+            <div className="text-base font-bold text-on-surface mb-6 flex items-center gap-2">
               <span className="material-symbols-outlined text-lg">palette</span> Theme & Colors
             </div>
 
-            <div className="mb-5">
+            <div className="mb-6">
               <div className="text-xs text-muted mb-3 font-medium ml-1">Theme</div>
               <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
                 {THEMES.map(t=>(
@@ -188,20 +170,20 @@ export default function SettingsPage() {
                     style={{
                       background:t.bg,
                       border:`2px solid ${theme===t.id?t.ac:"rgba(255,255,255,.05)"}`,
-                      boxShadow:theme===t.id?`0 0 14px ${t.ac}33`:""
+                      boxShadow:theme===t.id?`0 0 14px ${t.ac}25`:""
                     }}>
-                    <div className="w-5 h-5 rounded-full mx-auto mb-2" style={{background:t.ac,boxShadow:`0 0 6px ${t.ac}66`}}/>
-                    <div className="text-xs" style={{color:theme===t.id?t.ac:"#888",fontWeight:theme===t.id?700:400}}>{t.label}</div>
+                    <div className="w-5 h-5 rounded-full mx-auto mb-2" style={{background:t.ac,boxShadow:`0 0 6px ${t.ac}44`}}/>
+                    <div className="text-xs" style={{color:theme===t.id?t.ac:"#6b7280",fontWeight:theme===t.id?700:400}}>{t.label}</div>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="mb-5">
+            <div className="mb-6">
               <div className="text-xs text-muted mb-3 font-medium ml-1">Accent Color</div>
               <div className="flex gap-2.5 flex-wrap">
                 {ACCENTS.map(c=>(
-                  <div key={c} onClick={()=>{setAccent(c);document.documentElement.style.setProperty("--ac",c);document.documentElement.style.setProperty("--ac-dim",c+"20");sfx.click();}}
+                  <div key={c} onClick={()=>{setAccent(c);document.documentElement.style.setProperty("--ac",c);document.documentElement.style.setProperty("--ac-dim",c+"15");sfx.click();}}
                     className="w-8 h-8 rounded-full cursor-pointer transition-all duration-200"
                     style={{
                       background:c,
@@ -221,20 +203,20 @@ export default function SettingsPage() {
         {/* GOALS */}
         {tab === "goals" && (
           <Card>
-            <div className="text-base font-bold text-on-surface mb-5 flex items-center gap-2">
+            <div className="text-base font-bold text-on-surface mb-6 flex items-center gap-2">
               <span className="material-symbols-outlined text-lg">flag</span> Study Goals
             </div>
 
-            <div className="mb-5">
+            <div className="mb-6">
               <div className="text-xs text-muted mb-2 font-medium ml-1">
                 Daily Study Goal: <b className="text-on-surface">{goalMins} min</b> ({Math.floor(goalMins/60)}h {goalMins%60}m)
               </div>
               <input type="range" min={15} max={480} step={15} value={goalMins} onChange={e=>setGoalMins(+e.target.value)}
-                className="w-full" style={{accentColor:"#4be277"}}/>
+                className="w-full" style={{accentColor:"#00FFB2"}}/>
               <div className="flex justify-between text-[11px] text-dim mt-1"><span>15m</span><span>8h</span></div>
             </div>
 
-            <div className="mb-5">
+            <div className="mb-6">
               <div className="text-xs text-muted mb-2 font-medium ml-1">
                 Daily Pomodoro Goal: <b className="text-on-surface">{goalPomos} sessions</b>
               </div>
@@ -243,7 +225,7 @@ export default function SettingsPage() {
               <div className="flex justify-between text-[11px] text-dim mt-1"><span>1</span><span>20</span></div>
             </div>
 
-            <div className="mb-5">
+            <div className="mb-6">
               <div className="text-xs text-muted mb-1.5 font-medium ml-1">Custom Motivational Quotes</div>
               <div className="text-[11px] text-dim mb-1.5 ml-1">One per line. Shown on your dashboard.</div>
               <textarea value={quotes} onChange={e=>setQuotes(e.target.value)} rows={4}
@@ -251,7 +233,7 @@ export default function SettingsPage() {
                 className="input-field resize-none"/>
             </div>
 
-            <Btn full color="#4be277" onClick={saveGoals} disabled={saving}>
+            <Btn full color="#00FFB2" onClick={saveGoals} disabled={saving}>
               {saving ? <><Spinner size={14}/> Saving...</> : "Save Goals"}
             </Btn>
           </Card>
@@ -259,9 +241,9 @@ export default function SettingsPage() {
 
         {/* SECURITY */}
         {tab === "security" && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             <Card>
-              <div className="text-base font-bold text-on-surface mb-5 flex items-center gap-2">
+              <div className="text-base font-bold text-on-surface mb-6 flex items-center gap-2">
                 <span className="material-symbols-outlined text-lg">key</span> Change Password
               </div>
               {user?.hasPassword && (
@@ -277,12 +259,12 @@ export default function SettingsPage() {
               <div className="text-base font-bold text-on-surface mb-1 flex items-center gap-2">
                 <span className="material-symbols-outlined text-lg">pin</span> Quick PIN Login
               </div>
-              <div className="text-xs text-muted mb-5">Set a 4-digit PIN for fast login.</div>
+              <div className="text-xs text-muted mb-6">Set a 4-digit PIN for fast login.</div>
 
               {user?.hasPin ? (
                 <div className="flex items-center gap-3">
                   <div className="flex-1 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-primary"/>
+                    <div className="w-2 h-2 rounded-full bg-[#00FFB2]"/>
                     <span className="text-sm text-on-surface">PIN is active</span>
                   </div>
                   <Btn color="#f87171" size="sm" variant="outline" onClick={removePin} disabled={saving}>Remove PIN</Btn>
@@ -291,7 +273,7 @@ export default function SettingsPage() {
                 <>
                   <Input label="New PIN (4 digits)" type="password" value={pin} onChange={e=>setPin(e.target.value.replace(/\D/g,"").slice(0,4))} placeholder="e.g. 1234"/>
                   <Input label="Confirm PIN" type="password" value={pinConfirm} onChange={e=>setPinConfirm(e.target.value.replace(/\D/g,"").slice(0,4))} placeholder="Re-enter PIN"/>
-                  <Btn full color="#4be277" onClick={setNewPin} disabled={saving}>
+                  <Btn full color="#00FFB2" onClick={setNewPin} disabled={saving}>
                     {saving ? <><Spinner size={14}/> Saving...</> : "Set PIN"}
                   </Btn>
                 </>

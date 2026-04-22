@@ -8,7 +8,7 @@ const CHIPS = ["Explain Big O notation","TCP vs UDP","Binary search algorithm","
 
 function md(text) {
   return text
-    .replace(/```(\w*)\n?([\s\S]*?)```/g,(_,lang,code)=>`<pre class="bg-bg-2 border border-white/5 rounded-xl p-4 overflow-x-auto text-xs font-mono text-primary leading-relaxed my-2">${code.trim()}</pre>`)
+    .replace(/```(\w*)\n?([\s\S]*?)```/g,(_,lang,code)=>`<pre class="bg-white/[.03] border border-white/10 rounded-xl p-4 overflow-x-auto text-xs font-mono text-[#00FFB2] leading-relaxed my-2">${code.trim()}</pre>`)
     .replace(/`([^`]+)`/g,`<code class="bg-purple/15 px-1.5 py-0.5 rounded font-mono text-xs text-purple">$1</code>`)
     .replace(/\*\*(.*?)\*\*/g,"<strong class='text-on-surface'>$1</strong>")
     .replace(/^### (.+)$/gm,"<div class='text-sm font-bold text-on-surface my-3'>$1</div>")
@@ -18,7 +18,7 @@ function md(text) {
 }
 
 export default function AIChatPage() {
-  const [msgs, setMsgs] = useState([{ role:"assistant", content:"Hi! I'm your AI study assistant powered by **GPT-4o**.\n\nAsk me anything about engineering — algorithms, networks, OS, DBMS, maths, physics. 🚀" }]);
+  const [msgs, setMsgs] = useState([{ role:"assistant", content:"Hi! I'm your AI study assistant powered by **GPT-4o**.\n\nAsk me anything about engineering — algorithms, networks, OS, DBMS, maths, physics." }]);
   const [input, setInput] = useState(""); const [loading, setLoading] = useState(false); const [err, setErr] = useState("");
   const bottom = useRef(null); const inputRef = useRef(null);
   useEffect(()=>bottom.current?.scrollIntoView({behavior:"smooth"}),[msgs,loading]);
@@ -32,7 +32,7 @@ export default function AIChatPage() {
   return (
     <div className="flex flex-col h-[calc(100vh-64px)] p-6">
       <h1 className="section-title mb-4 flex-shrink-0 flex items-center gap-3">
-        <span className="material-symbols-outlined text-primary text-2xl">psychology</span>
+        <span className="material-symbols-outlined text-[#00FFB2] text-2xl">psychology</span>
         AI Study Assistant
         <span className="text-sm text-muted font-normal ml-1">Powered by GPT-4o</span>
       </h1>
@@ -42,28 +42,28 @@ export default function AIChatPage() {
         {msgs.map((m,i)=>(
           <div key={i} className="fade-up flex gap-3" style={{flexDirection:m.role==="user"?"row-reverse":"row",alignItems:"flex-start"}}>
             <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center"
-              style={{background:m.role==="assistant"?"rgba(75,226,119,.15)":"rgba(96,165,250,.15)"}}>
+              style={{background:m.role==="assistant"?"rgba(0,255,178,.1)":"rgba(96,165,250,.1)"}}>
               <span className="material-symbols-outlined text-sm"
-                style={{color:m.role==="assistant"?"#4be277":"#60a5fa"}}>
+                style={{color:m.role==="assistant"?"#00FFB2":"#60a5fa"}}>
                 {m.role==="assistant"?"smart_toy":"person"}
               </span>
             </div>
             <div className="max-w-[78%] px-4 py-3 text-sm text-on-surface leading-relaxed"
               style={{
                 borderRadius:m.role==="user"?"16px 4px 16px 16px":"4px 16px 16px 16px",
-                background:m.role==="user"?"rgba(75,226,119,.1)":"rgba(45,52,73,.6)",
-                border:`1px solid ${m.role==="user"?"rgba(75,226,119,.25)":"rgba(255,255,255,.05)"}`
+                background:m.role==="user"?"rgba(0,255,178,.06)":"rgba(255,255,255,.05)",
+                border:`1px solid ${m.role==="user"?"rgba(0,255,178,.15)":"rgba(255,255,255,.1)"}`
               }}
               dangerouslySetInnerHTML={{__html:md(m.content)}}/>
           </div>
         ))}
         {loading&&(
           <div className="flex gap-3 items-center">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="material-symbols-outlined text-sm text-primary">smart_toy</span>
+            <div className="w-8 h-8 rounded-full bg-[#00FFB2]/10 flex items-center justify-center">
+              <span className="material-symbols-outlined text-sm text-[#00FFB2]">smart_toy</span>
             </div>
             <div className="flex gap-1.5 px-4 py-3 glass-card rounded-2xl">
-              {[0,1,2].map(i=><div key={i} className="w-2 h-2 rounded-full bg-primary animate-bounce-dot"
+              {[0,1,2].map(i=><div key={i} className="w-2 h-2 rounded-full bg-[#00FFB2] animate-bounce-dot"
                 style={{animationDelay:`${i*.15}s`}}/>)}
             </div>
           </div>
@@ -80,7 +80,7 @@ export default function AIChatPage() {
           {CHIPS.map((c,i)=>(
             <button key={i} onClick={()=>send(c)}
               className="glass-card px-3 py-1.5 text-xs text-dim
-                hover:border-primary/30 hover:text-primary transition-all duration-200">
+                hover:border-[#00FFB2]/30 hover:text-[#00FFB2] transition-all duration-200">
               {c}
             </button>
           ))}
@@ -96,7 +96,7 @@ export default function AIChatPage() {
         <button onClick={()=>send()} disabled={!input.trim()||loading}
           className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0
             transition-all duration-200"
-          style={{background:input.trim()&&!loading?"#4be277":"#374151",
+          style={{background:input.trim()&&!loading?"#00FFB2":"#374151",
             cursor:input.trim()&&!loading?"pointer":"default"}}>
           {loading?<Spinner color="#000" size={18}/>:
             <span className="material-symbols-outlined text-black text-xl">send</span>}

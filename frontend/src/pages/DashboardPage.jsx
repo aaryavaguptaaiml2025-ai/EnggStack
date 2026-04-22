@@ -25,10 +25,10 @@ function StatCard({ icon, label, value, color, delay=0, sub, filled }) {
       {/* Decorative glow */}
       <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full blur-2xl opacity-0
         group-hover:opacity-100 transition-opacity duration-500"
-        style={{background:`${color}15`}}/>
+        style={{background:`${color}10`}}/>
       <div className="flex items-center gap-3 relative">
         <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{background:`${color}1a`}}>
+          style={{background:`${color}15`}}>
           <span className={`material-symbols-outlined text-xl ${filled?"filled":""}`}
             style={{color}}>{icon}</span>
         </div>
@@ -76,7 +76,7 @@ export default function DashboardPage() {
   const weak = subjects.find(s=>s.totalTopics>0&&(s.doneTopics/s.totalTopics)<0.4);
   if (weak) suggestions.push({icon:"trending_up",text:`${weak.name} needs attention`,color:"#fbbf24"});
   if ((stats.minsToday||0)<30) suggestions.push({icon:"target",text:"Start a study session today!",color:"#60a5fa"});
-  if (!suggestions.length) suggestions.push({icon:"auto_awesome",text:"Great job! Keep the streak alive.",color:"#4be277"});
+  if (!suggestions.length) suggestions.push({icon:"auto_awesome",text:"Great job! Keep the streak alive.",color:"#00FFB2"});
 
   const daysLeft = (d) => {
     const diff=Math.ceil((new Date(d)-Date.now())/86400000);
@@ -86,37 +86,37 @@ export default function DashboardPage() {
   return (
     <div className="page-container">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-8">
         <div className="text-xs text-dim font-mono mb-1">
           {new Date().toLocaleDateString("en-IN",{weekday:"long",year:"numeric",month:"long",day:"numeric"})}
         </div>
         <h1 className="text-2xl md:text-3xl font-extrabold text-on-surface tracking-tight mb-1">
-          {greeting}, {user?.name?.split(" ")[0]} 👋
+          {greeting}, {user?.name?.split(" ")[0]}
         </h1>
-        <p className="text-sm text-primary/80 italic">"{quote}"</p>
+        <p className="text-sm text-[#00FFB2]/70 italic">"{quote}"</p>
       </div>
 
       {/* Daily goal */}
-      <div className="glass-card p-4 mb-5 flex items-center gap-4">
-        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-          <span className="material-symbols-outlined text-primary">flag</span>
+      <div className="glass-card p-5 mb-6 flex items-center gap-4">
+        <div className="w-10 h-10 rounded-xl bg-[#00FFB2]/10 flex items-center justify-center flex-shrink-0">
+          <span className="material-symbols-outlined text-[#00FFB2]">flag</span>
         </div>
         <div className="flex-1">
           <div className="flex justify-between mb-1.5">
             <span className="text-xs font-semibold text-on-surface">
               Daily Goal — {stats.minsToday||0}/{goal} mins
             </span>
-            <span className="text-xs text-primary font-bold">{goalPct}%</span>
+            <span className="text-xs text-[#00FFB2] font-bold">{goalPct}%</span>
           </div>
-          <ProgressBar value={stats.minsToday||0} max={goal} color="#4be277" height={7} glow/>
+          <ProgressBar value={stats.minsToday||0} max={goal} color="#00FFB2" height={7} glow/>
         </div>
         {goalPct>=100 && (
-          <span className="material-symbols-outlined text-warning text-2xl filled">celebration</span>
+          <span className="material-symbols-outlined text-warning text-2xl filled">check_circle</span>
         )}
       </div>
 
       {/* Stat cards — bento grid */}
-      <div className="stagger grid-4 grid grid-cols-4 gap-3 mb-5">
+      <div className="stagger grid-4 grid grid-cols-4 gap-4 mb-6">
         <StatCard icon={STAT_CONFIG[0].icon} label={STAT_CONFIG[0].label}
           value={`${stats.streak||0}d`} color={STAT_CONFIG[0].color}
           delay={0} filled={STAT_CONFIG[0].filled}/>
@@ -132,10 +132,10 @@ export default function DashboardPage() {
       </div>
 
       {/* XP bar */}
-      <div className="mb-5"><XPBar xp={stats.xp||0}/></div>
+      <div className="mb-6"><XPBar xp={stats.xp||0}/></div>
 
       {/* Row 1 — 3 cols */}
-      <div className="grid-3 grid grid-cols-3 gap-4 mb-4">
+      <div className="grid-3 grid grid-cols-3 gap-5 mb-5">
         {/* Suggestions */}
         <Card accent="#f97316">
           <div className="flex items-center gap-2 mb-4">
@@ -145,7 +145,7 @@ export default function DashboardPage() {
           <div className="space-y-2">
             {suggestions.map((s,i)=>(
               <div key={i} className="p-3 rounded-xl flex gap-3 items-start"
-                style={{background:s.color+"11",border:`1px solid ${s.color}28`}}>
+                style={{background:s.color+"0d",border:`1px solid ${s.color}20`}}>
                 <span className="material-symbols-outlined text-base flex-shrink-0 mt-0.5"
                   style={{color:s.color}}>{s.icon}</span>
                 <span className="text-xs text-on-surface leading-relaxed">{s.text}</span>
@@ -162,15 +162,15 @@ export default function DashboardPage() {
               <span className="text-sm font-bold text-on-surface">Subjects</span>
             </div>
             <button onClick={()=>navigate("/subjects")}
-              className="text-[11px] text-primary hover:underline font-semibold">Manage →</button>
+              className="text-[11px] text-[#00FFB2] hover:underline font-semibold">Manage</button>
           </div>
           {subjects.length===0?(
             <div className="text-center py-5">
               <span className="material-symbols-outlined text-dim text-3xl mb-3 block">library_books</span>
               <div className="text-xs text-muted mb-3">No subjects yet</div>
               <button onClick={()=>navigate("/subjects")}
-                className="bg-primary/10 border border-primary/20 rounded-xl px-4 py-2
-                  text-primary text-xs font-semibold hover:bg-primary/20 transition-all">
+                className="bg-[#00FFB2]/10 border border-[#00FFB2]/20 rounded-xl px-4 py-2
+                  text-[#00FFB2] text-xs font-semibold hover:bg-[#00FFB2]/15 transition-all duration-200">
                 Add Subjects
               </button>
             </div>
@@ -178,7 +178,7 @@ export default function DashboardPage() {
             const pct=s.totalTopics>0?Math.round((s.doneTopics/s.totalTopics)*100):0;
             return <div key={i} className="mb-3">
               <div className="flex justify-between mb-1">
-                <span className="text-xs text-on-surface">{s.icon||"📚"} {s.name}</span>
+                <span className="text-xs text-on-surface">{s.name}</span>
                 <span className="text-xs font-bold" style={{color:s.color||"#60a5fa"}}>{pct}%</span>
               </div>
               <ProgressBar value={pct} max={100} color={s.color||"#60a5fa"}/>
@@ -187,9 +187,9 @@ export default function DashboardPage() {
         </Card>
 
         {/* Weekly chart */}
-        <Card accent="#4be277">
+        <Card accent="#00FFB2">
           <div className="flex items-center gap-2 mb-4">
-            <span className="material-symbols-outlined text-primary text-lg">bar_chart</span>
+            <span className="material-symbols-outlined text-[#00FFB2] text-lg">bar_chart</span>
             <span className="text-sm font-bold text-on-surface">This Week</span>
           </div>
           <div className="flex items-end gap-1 h-20 mb-2">
@@ -201,12 +201,12 @@ export default function DashboardPage() {
                       minHeight:3,
                       height:`${Math.round((m/maxMins)*100)}%`,
                       background:i===todayIdx
-                        ?"linear-gradient(180deg, #4be277, #4be27788)"
-                        :"rgba(255,255,255,.1)",
-                      boxShadow:i===todayIdx?"0 0 10px rgba(75,226,119,.4)":"none"
+                        ?"linear-gradient(180deg, #00FFB2, #00FFB288)"
+                        :"rgba(255,255,255,.08)",
+                      boxShadow:i===todayIdx?"0 0 10px rgba(0,255,178,.3)":"none"
                     }}/>
                 </div>
-                <span className={`text-[8px] ${i===todayIdx?"text-primary font-bold":"text-dim"}`}>
+                <span className={`text-[8px] ${i===todayIdx?"text-[#00FFB2] font-bold":"text-dim"}`}>
                   {DAYS[i]}
                 </span>
               </div>
@@ -214,7 +214,7 @@ export default function DashboardPage() {
           </div>
           <div className="border-t border-white/5 pt-2 flex justify-between">
             <span className="text-[11px] text-muted">Total</span>
-            <span className="text-[11px] text-primary font-bold">
+            <span className="text-[11px] text-[#00FFB2] font-bold">
               {wMins.reduce((a,b)=>a+b,0)} mins
             </span>
           </div>
@@ -222,7 +222,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Row 2 — 3 cols */}
-      <div className="grid-3 grid grid-cols-[1.3fr_1fr_1fr] gap-4 mb-4">
+      <div className="grid-3 grid grid-cols-[1.3fr_1fr_1fr] gap-5 mb-5">
         {/* Notes */}
         <Card>
           <div className="flex justify-between items-center mb-4">
@@ -231,23 +231,23 @@ export default function DashboardPage() {
               <span className="text-sm font-bold text-on-surface">Recent Notes</span>
             </div>
             <button onClick={()=>navigate("/notes")}
-              className="text-[11px] text-primary hover:underline font-semibold">View all →</button>
+              className="text-[11px] text-[#00FFB2] hover:underline font-semibold">View all</button>
           </div>
           {notes.length===0?(
             <div className="text-center py-5">
               <span className="material-symbols-outlined text-dim text-3xl mb-3 block">note_add</span>
               <div className="text-xs text-muted">
                 No notes.{" "}
-                <button onClick={()=>navigate("/notes")} className="text-primary hover:underline">Add one</button>
+                <button onClick={()=>navigate("/notes")} className="text-[#00FFB2] hover:underline">Add one</button>
               </div>
             </div>
           ):notes.map((n,i)=>(
             <div key={i} onClick={()=>navigate("/notes")}
-              className="p-3 rounded-xl border border-white/5 bg-bg-2 mb-2 cursor-pointer
-                hover:border-primary/20 transition-all duration-200">
+              className="p-3 rounded-xl border border-white/5 bg-white/[.03] mb-2 cursor-pointer
+                hover:border-[#00FFB2]/20 transition-all duration-200">
               <div className="flex justify-between mb-1">
                 <span className="text-xs font-semibold text-on-surface truncate max-w-[70%]">{n.title}</span>
-                <Badge color="#60a5fa">{n.subject||"—"}</Badge>
+                <Badge color="#60a5fa">{n.subject||"--"}</Badge>
               </div>
               <div className="text-[11px] text-muted truncate">{n.content?.slice(0,50)||"Empty"}</div>
             </div>
@@ -262,21 +262,21 @@ export default function DashboardPage() {
               <span className="text-sm font-bold text-on-surface">Deadlines</span>
             </div>
             <button onClick={()=>navigate("/deadlines")}
-              className="text-[11px] text-primary hover:underline font-semibold">View all →</button>
+              className="text-[11px] text-[#00FFB2] hover:underline font-semibold">View all</button>
           </div>
           {deadlines.length===0?(
             <div className="text-center py-5">
               <span className="material-symbols-outlined text-dim text-3xl mb-3 block">event_available</span>
               <div className="text-xs text-muted">
                 No deadlines.{" "}
-                <button onClick={()=>navigate("/deadlines")} className="text-primary hover:underline">Add one</button>
+                <button onClick={()=>navigate("/deadlines")} className="text-[#00FFB2] hover:underline">Add one</button>
               </div>
             </div>
           ):deadlines.map((d,i)=>{
             const diff=Math.ceil((new Date(d.dueDate)-Date.now())/86400000);
-            const c=diff<=1?"#f87171":diff<=3?"#fbbf24":"#4be277";
+            const c=diff<=1?"#f87171":diff<=3?"#fbbf24":"#00FFB2";
             return <div key={i} className="flex justify-between items-center p-2.5 rounded-xl
-              bg-bg-2 mb-2">
+              bg-white/[.03] mb-2">
               <div className="min-w-0 flex-1 mr-2">
                 <div className="text-xs text-on-surface font-medium truncate">{d.title}</div>
                 <div className="text-[10px] text-muted">{d.subject}</div>
@@ -294,21 +294,23 @@ export default function DashboardPage() {
               <span className="text-sm font-bold text-on-surface">Badges</span>
             </div>
             <button onClick={()=>navigate("/gamification")}
-              className="text-[11px] text-primary hover:underline font-semibold">All →</button>
+              className="text-[11px] text-[#00FFB2] hover:underline font-semibold">All</button>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {BADGES.slice(0,6).map(b=>{
               const e=b.check(stats);
               return <div key={b.id} title={b.label}
-                className="p-2.5 rounded-xl flex gap-2 items-center transition-all duration-300"
+                className="p-2.5 rounded-xl flex gap-2 items-center transition-all duration-200"
                 style={{
-                  border:`1px solid ${e?b.color+"44":"rgba(255,255,255,.05)"}`,
-                  background:e?b.color+"0e":"rgba(17,24,39,.5)",
+                  border:`1px solid ${e?b.color+"30":"rgba(255,255,255,.05)"}`,
+                  background:e?b.color+"0a":"rgba(255,255,255,.03)",
                   opacity:e?1:.35
                 }}>
-                <span className="text-base">{b.icon}</span>
+                <span className="material-symbols-outlined text-base" style={{color:e?b.color:"#4a5568"}}>
+                  {b.icon}
+                </span>
                 <div className="text-[10px] font-semibold leading-tight truncate"
-                  style={{color:e?b.color:"#6b7280"}}>{b.label}</div>
+                  style={{color:e?b.color:"#4a5568"}}>{b.label}</div>
               </div>;
             })}
           </div>
@@ -318,21 +320,21 @@ export default function DashboardPage() {
       {/* Quick actions */}
       <Card>
         <div className="flex items-center gap-2 mb-4">
-          <span className="material-symbols-outlined text-primary text-lg">bolt</span>
+          <span className="material-symbols-outlined text-[#00FFB2] text-lg">bolt</span>
           <span className="text-sm font-bold text-on-surface">Quick Actions</span>
         </div>
         <div className="flex gap-3 overflow-x-auto pb-1">
           {[
             {icon:"timer",label:"Pomodoro",to:"/pomodoro",c:"#f87171"},
             {icon:"dark_mode",label:"Focus",to:"/focus",c:"#60a5fa"},
-            {icon:"checklist",label:"Checklist",to:"/checklist",c:"#4be277"},
+            {icon:"checklist",label:"Checklist",to:"/checklist",c:"#00FFB2"},
             {icon:"notifications",label:"Deadlines",to:"/deadlines",c:"#fbbf24"},
             {icon:"analytics",label:"Analytics",to:"/analytics",c:"#a78bfa"},
           ].map((a,i)=>(
             <button key={i} onClick={()=>navigate(a.to)}
-              className="flex flex-col items-center gap-2 p-3 rounded-xl min-w-[80px]
+              className="flex flex-col items-center gap-2 p-4 rounded-xl min-w-[90px]
                 flex-shrink-0 transition-all duration-200 hover:-translate-y-0.5"
-              style={{background:a.c+"11",border:`1px solid ${a.c}28`,color:a.c}}>
+              style={{background:a.c+"0d",border:`1px solid ${a.c}20`,color:a.c}}>
               <span className="material-symbols-outlined text-xl">{a.icon}</span>
               <span className="text-[11px] font-semibold">{a.label}</span>
             </button>

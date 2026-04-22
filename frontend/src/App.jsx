@@ -17,21 +17,21 @@ function AppLayout() {
   const { user, loading } = useAuth();
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-bg relative">
+    <div className="min-h-screen flex items-center justify-center bg-[#0B132B] relative">
       {/* Ambient orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%]
-          bg-primary/10 blur-[120px] rounded-full"/>
+          bg-[#00FFB2]/5 blur-[140px] rounded-full"/>
       </div>
       <div className="text-center z-10">
-        <div className="w-16 h-16 bg-primary rounded-2xl inline-flex items-center justify-center
-          text-3xl font-black text-black mb-5 shadow-[0_0_32px_rgba(75,226,119,0.3)] animate-glow">
+        <div className="w-16 h-16 bg-[#00FFB2] rounded-2xl inline-flex items-center justify-center
+          text-3xl font-black text-black mb-5 shadow-[0_0_32px_rgba(0,255,178,0.3)] animate-glow">
           E
         </div>
         <div className="text-muted text-sm mb-3">Loading EnggStack...</div>
         <div className="flex gap-1.5 justify-center">
           {[0,1,2].map(i => (
-            <div key={i} className="w-2 h-2 rounded-full bg-primary animate-bounce-dot"
+            <div key={i} className="w-2 h-2 rounded-full bg-[#00FFB2] animate-bounce-dot"
               style={{animationDelay:`${i*0.2}s`}}/>
           ))}
         </div>

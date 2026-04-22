@@ -6,19 +6,19 @@ const Ctx = createContext(null);
 
 export const XP_THRESHOLDS = [0,100,250,500,900,1500,2500,4000,6000,10000];
 export const LEVEL_NAMES   = ["Beginner","Learner","Student","Scholar","Expert","Master","Legend","Genius","Prodigy","Einstein"];
-export const LEVEL_ICONS   = ["🌱","📖","🎓","🔬","💡","🚀","⭐","👑","🧠","🔱"];
+export const LEVEL_ICONS   = ["eco","auto_stories","school","science","lightbulb","rocket_launch","star","crown","psychology","bolt"];
 export const BADGES = [
-  { id:"streak3",   icon:"🔥", label:"3-Day Streak",    color:"#f97316", check:(s)=>s.streak>=3 },
-  { id:"streak7",   icon:"🔥", label:"7-Day Streak",    color:"#ef4444", check:(s)=>s.streak>=7 },
-  { id:"streak30",  icon:"🏆", label:"30-Day Streak",   color:"#fbbf24", check:(s)=>s.streak>=30 },
-  { id:"hours5",    icon:"⏱️", label:"5 Hrs Studied",   color:"#60a5fa", check:(s)=>s.totalMins>=300 },
-  { id:"hours50",   icon:"💯", label:"50 Hrs Studied",  color:"#a78bfa", check:(s)=>s.totalMins>=3000 },
-  { id:"hours200",  icon:"🎯", label:"200 Hrs Studied", color:"#ec4899", check:(s)=>s.totalMins>=12000 },
-  { id:"pomo10",    icon:"🍅", label:"10 Pomodoros",    color:"#f87171", check:(s)=>s.pomodoros>=10 },
-  { id:"pomo50",    icon:"🍎", label:"50 Pomodoros",    color:"#fbbf24", check:(s)=>s.pomodoros>=50 },
-  { id:"nightowl",  icon:"🦉", label:"Night Owl",       color:"#c084fc", check:(s)=>s.nightSessions>=3 },
-  { id:"scholar",   icon:"🎓", label:"Scholar",         color:"#34d399", check:(s)=>s.xp>=500 },
-  { id:"master",    icon:"🧙", label:"Master",          color:"#818cf8", check:(s)=>s.xp>=2500 },
+  { id:"streak3",   icon:"local_fire_department", label:"3-Day Streak",    color:"#f97316", check:(s)=>s.streak>=3 },
+  { id:"streak7",   icon:"local_fire_department", label:"7-Day Streak",    color:"#ef4444", check:(s)=>s.streak>=7 },
+  { id:"streak30",  icon:"emoji_events",          label:"30-Day Streak",   color:"#fbbf24", check:(s)=>s.streak>=30 },
+  { id:"hours5",    icon:"timer",                 label:"5 Hrs Studied",   color:"#60a5fa", check:(s)=>s.totalMins>=300 },
+  { id:"hours50",   icon:"stars",                 label:"50 Hrs Studied",  color:"#a78bfa", check:(s)=>s.totalMins>=3000 },
+  { id:"hours200",  icon:"target",                label:"200 Hrs Studied", color:"#ec4899", check:(s)=>s.totalMins>=12000 },
+  { id:"pomo10",    icon:"clock_loader_40",       label:"10 Pomodoros",    color:"#f87171", check:(s)=>s.pomodoros>=10 },
+  { id:"pomo50",    icon:"nutrition",             label:"50 Pomodoros",    color:"#fbbf24", check:(s)=>s.pomodoros>=50 },
+  { id:"nightowl",  icon:"nightlight",            label:"Night Owl",       color:"#c084fc", check:(s)=>s.nightSessions>=3 },
+  { id:"scholar",   icon:"school",                label:"Scholar",         color:"#34d399", check:(s)=>s.xp>=500 },
+  { id:"master",    icon:"auto_awesome",           label:"Master",          color:"#818cf8", check:(s)=>s.xp>=2500 },
 ];
 
 export function getLevel(xp) {
