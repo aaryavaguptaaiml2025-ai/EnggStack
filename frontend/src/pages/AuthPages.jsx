@@ -4,35 +4,32 @@ import { useAuth } from "../context/AuthContext";
 import { Input, Btn, Spinner } from "../components/ui";
 import { sfx } from "../hooks/useSfx";
 
-/* ───────────────── AUTH WRAPPER ───────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ AUTH WRAPPER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function AuthWrap({ children, title, sub }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0B132B] p-4 md:p-12 overflow-hidden">
       {/* Ambient orbs */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%]
-          bg-[#00FFB2]/5 blur-[140px] rounded-full" style={{animation:"floatOrb1 18s ease-in-out infinite"}}/>
+          bg-[#00C896]/5 blur-[140px] rounded-full" style={{animation:"floatOrb1 18s ease-in-out infinite"}}/>
         <div className="absolute top-[40%] -right-[5%] w-[40%] h-[40%]
-          bg-info/5 blur-[120px] rounded-full" style={{animation:"floatOrb2 22s ease-in-out infinite"}}/>
+          bg-[#00C896]/3 blur-[120px] rounded-full" style={{animation:"floatOrb2 22s ease-in-out infinite"}}/>
       </div>
 
       <div className="relative z-10 w-full max-w-7xl flex flex-col md:flex-row items-center gap-12 lg:gap-20">
         {/* Left hero */}
         <div className="w-full md:w-1/2 flex flex-col items-start text-left">
           <div className="mb-6 flex items-center gap-3">
-            <div className="w-12 h-12 bg-[#00FFB2] rounded-2xl
-              flex items-center justify-center shadow-[0_0_30px_rgba(0,255,178,0.2)]">
-              <span className="material-symbols-outlined text-black font-bold text-xl">terminal</span>
-            </div>
-            <h1 className="text-3xl font-black text-[#00FFB2] tracking-tighter text-glow">EnggStack</h1>
+            <img src="/cognit-logo.png" alt="Cognit" className="w-12 h-12 object-contain" />
+            <h1 className="text-3xl font-black text-[#00C896] tracking-tighter text-glow">Cognit</h1>
           </div>
           <h2 className="text-4xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] mb-5 text-on-surface">
-            Master the <br/>
-            <span className="text-[#00FFB2] italic">engineering</span> <br/>
-            stack.
+            Master your <br/>
+            <span className="text-[#00C896] italic">learning</span> <br/>
+            journey.
           </h2>
           <p className="text-muted text-base lg:text-lg max-w-md leading-relaxed mb-8">
-            The high-fidelity platform for modern engineer-creators. Build, practice, and scale with professional precision.
+            The intelligent study platform built for focused learners. Plan, track, and conquer with precision.
           </p>
           <div className="hidden md:flex items-center gap-5 p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
             <div className="flex -space-x-2">
@@ -45,7 +42,7 @@ function AuthWrap({ children, title, sub }) {
               ))}
             </div>
             <div>
-              <p className="text-sm font-semibold text-on-surface">Join 2,400+ engineers</p>
+              <p className="text-sm font-semibold text-on-surface">Join 2,400+ learners</p>
               <p className="text-[10px] text-muted uppercase tracking-widest font-bold">Already on board</p>
             </div>
           </div>
@@ -60,7 +57,7 @@ function AuthWrap({ children, title, sub }) {
               <p className="text-muted text-sm">{sub}</p>
             </div>
             {children}
-            <div className="absolute -bottom-16 -right-16 w-32 h-32 bg-[#00FFB2]/5 rounded-full blur-3xl"/>
+            <div className="absolute -bottom-16 -right-16 w-32 h-32 bg-[#00C896]/5 rounded-full blur-3xl"/>
           </div>
           <p className="text-center mt-6 text-dim/50 text-[10px] uppercase tracking-[0.2em] font-black">
             Secure 256-bit AES Encryption
@@ -71,7 +68,7 @@ function AuthWrap({ children, title, sub }) {
   );
 }
 
-/* ───────────────── GOOGLE LOGIN ───────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ GOOGLE LOGIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function getGoogleClientId() {
   const e = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const w = typeof window !== "undefined" && window.__GOOGLE_CLIENT_ID__;
@@ -142,7 +139,7 @@ function GoogleBtn({ onSuccess, label="Continue with Google" }) {
   );
 }
 
-/* ───────────────── OTP STEP ───────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ OTP STEP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function OTPStep({ email, onVerified, onBack }) {
   const { verifyOtp, resendOtp } = useAuth();
   const [otp, setOtp] = useState("");
@@ -184,9 +181,9 @@ function OTPStep({ email, onVerified, onBack }) {
   return (
     <AuthWrap title="Verify Email" sub="Enter the 6-digit code sent to your email">
       <div className="text-center mb-5">
-        <span className="material-symbols-outlined text-[#00FFB2] text-4xl mb-2 block">mark_email_read</span>
+        <span className="material-symbols-outlined text-[#00C896] text-4xl mb-2 block">mark_email_read</span>
         <div className="text-sm text-muted">
-          Code sent to <span className="text-[#00FFB2] font-semibold">{email}</span>
+          Code sent to <span className="text-[#00C896] font-semibold">{email}</span>
         </div>
       </div>
 
@@ -204,7 +201,7 @@ function OTPStep({ email, onVerified, onBack }) {
         </div>
       )}
       {resendMsg && (
-        <div className="text-[#00FFB2] text-xs mb-3 p-3 bg-[#00FFB2]/5 border border-[#00FFB2]/20 rounded-xl
+        <div className="text-[#00C896] text-xs mb-3 p-3 bg-[#00C896]/5 border border-[#00C896]/20 rounded-xl
           flex items-center gap-2">
           <span className="material-symbols-outlined text-sm">check_circle</span>{resendMsg}
         </div>
@@ -217,7 +214,7 @@ function OTPStep({ email, onVerified, onBack }) {
       <div className="flex justify-between items-center">
         <button onClick={onBack} className="text-dim text-xs hover:text-on-surface transition-colors duration-200">Back</button>
         <button onClick={handleResend} disabled={resending}
-          className="text-[#00FFB2] text-xs font-semibold hover:underline">
+          className="text-[#00C896] text-xs font-semibold hover:underline">
           {resending ? "Sending..." : "Resend Code"}
         </button>
       </div>
@@ -225,7 +222,7 @@ function OTPStep({ email, onVerified, onBack }) {
   );
 }
 
-/* ───────────────── LOGIN PAGE ───────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ LOGIN PAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export function LoginPage() {
   const { login, googleLogin, user } = useAuth();
   const navigate = useNavigate();
@@ -267,9 +264,9 @@ export function LoginPage() {
         <label className="label-text ml-1">Email Address</label>
         <div className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
-            text-dim text-lg group-focus-within:text-[#00FFB2] transition-colors duration-200">alternate_email</span>
+            text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">alternate_email</span>
           <input value={email} onChange={e=>setEmail(e.target.value)}
-            placeholder="dev@enggstack.com" type="email"
+            placeholder="you@cognit.app" type="email"
             className="input-field pl-12"/>
         </div>
       </div>
@@ -277,13 +274,13 @@ export function LoginPage() {
       <div className="space-y-1 mt-4">
         <div className="flex justify-between items-center px-1">
           <label className="label-text">Password</label>
-          <a className="text-[10px] font-bold text-[#00FFB2] hover:underline" href="#">Forgot?</a>
+          <a className="text-[10px] font-bold text-[#00C896] hover:underline" href="#">Forgot?</a>
         </div>
         <div className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
-            text-dim text-lg group-focus-within:text-[#00FFB2] transition-colors duration-200">lock</span>
+            text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">lock</span>
           <input value={pass} onChange={e=>setPass(e.target.value)}
-            placeholder="••••••••" type="password"
+            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" type="password"
             onKeyDown={e => e.key === "Enter" && go()}
             className="input-field pl-12"/>
         </div>
@@ -305,14 +302,14 @@ export function LoginPage() {
       <div className="mt-8 pt-6 border-t border-white/10 text-center">
         <p className="text-muted text-sm">
           Don't have an account?{" "}
-          <Link to="/register" className="text-[#00FFB2] font-bold hover:underline underline-offset-4">Sign up</Link>
+          <Link to="/register" className="text-[#00C896] font-bold hover:underline underline-offset-4">Sign up</Link>
         </p>
       </div>
     </AuthWrap>
   );
 }
 
-/* ───────────────── REGISTER PAGE ───────────────── */
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ REGISTER PAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export function RegisterPage() {
   const { sendOtp, googleLogin, user } = useAuth();
   const navigate = useNavigate();
@@ -372,7 +369,7 @@ export function RegisterPage() {
         <label className="label-text ml-1">Full Name</label>
         <div className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
-            text-dim text-lg group-focus-within:text-[#00FFB2] transition-colors duration-200">person</span>
+            text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">person</span>
           <input value={name} onChange={e=>setName(e.target.value)}
             placeholder="e.g. Rahul Sharma" className="input-field pl-12"/>
         </div>
@@ -382,7 +379,7 @@ export function RegisterPage() {
         <label className="label-text ml-1">Email</label>
         <div className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
-            text-dim text-lg group-focus-within:text-[#00FFB2] transition-colors duration-200">alternate_email</span>
+            text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">alternate_email</span>
           <input value={email} onChange={e=>setEmail(e.target.value)}
             placeholder="you@example.com" className="input-field pl-12"/>
         </div>
@@ -392,7 +389,7 @@ export function RegisterPage() {
         <label className="label-text ml-1">Username (optional)</label>
         <div className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
-            text-dim text-lg group-focus-within:text-[#00FFB2] transition-colors duration-200">alternate_email</span>
+            text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">alternate_email</span>
           <input value={username} onChange={e=>setUsername(e.target.value)}
             placeholder="@username" className="input-field pl-12"/>
         </div>
@@ -402,7 +399,7 @@ export function RegisterPage() {
         <label className="label-text ml-1">Password</label>
         <div className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
-            text-dim text-lg group-focus-within:text-[#00FFB2] transition-colors duration-200">lock</span>
+            text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">lock</span>
           <input value={pass} onChange={e=>setPass(e.target.value)}
             placeholder="Min 6 characters" type="password"
             onKeyDown={e => e.key === "Enter" && handleSendOTP()}
@@ -426,7 +423,7 @@ export function RegisterPage() {
       <div className="mt-8 pt-6 border-t border-white/10 text-center">
         <p className="text-muted text-sm">
           Already have an account?{" "}
-          <Link to="/login" className="text-[#00FFB2] font-bold hover:underline underline-offset-4">Sign in</Link>
+          <Link to="/login" className="text-[#00C896] font-bold hover:underline underline-offset-4">Sign in</Link>
         </p>
       </div>
     </AuthWrap>

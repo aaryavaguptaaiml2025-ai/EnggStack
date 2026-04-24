@@ -1,11 +1,11 @@
 import { useState, useMemo } from "react";
 
-/* ── Build a smart daily task list from real user data ── */
+/* â”€â”€ Build a smart daily task list from real user data â”€â”€ */
 function buildPlan(subjects, deadlines, stats, user) {
   const tasks = [];
   const goal = user?.dailyGoalMins || 120;
 
-  // 1. Urgent deadlines (≤3 days)
+  // 1. Urgent deadlines (â‰¤3 days)
   deadlines
     .filter(d => !d.done)
     .forEach(d => {
@@ -34,7 +34,7 @@ function buildPlan(subjects, deadlines, stats, user) {
         sub: `${Math.round((s.doneTopics / s.totalTopics) * 100)}% complete`,
         mins: 30,
         icon: "menu_book",
-        color: s.color || "#60a5fa",
+        color: s.color || "#00C896",
       });
     });
 
@@ -46,26 +46,26 @@ function buildPlan(subjects, deadlines, stats, user) {
       sub: `Goal: ${goal} mins today`,
       mins: 25,
       icon: "play_circle",
-      color: "#00FFB2",
+      color: "#00C896",
     });
   }
 
-  // 4. If nothing — positive fallback
+  // 4. If nothing â€” positive fallback
   if (!tasks.length) {
     tasks.push({
       id: "on-track",
-      label: "You're on track — keep going!",
+      label: "You're on track â€” keep going!",
       sub: `${stats.minsToday || 0} / ${goal} mins done`,
       mins: 0,
       icon: "check_circle",
-      color: "#00FFB2",
+      color: "#00C896",
     });
   }
 
   return tasks.slice(0, 5);
 }
 
-/* ── Checkable task row ── */
+/* â”€â”€ Checkable task row â”€â”€ */
 function PlanRow({ task, checked, onToggle, delay }) {
   const [pop, setPop] = useState(false);
 
@@ -83,10 +83,12 @@ function PlanRow({ task, checked, onToggle, delay }) {
       <button
         onClick={handleToggle}
         className={`w-5 h-5 rounded-md flex-shrink-0 mt-0.5 flex items-center justify-center
-          transition-all duration-200 ${pop ? "check-pop" : ""}`}
+          transition-all duration-300 ease-out ${pop ? "check-pop" : ""}`}
         style={{
           background: checked ? task.color : "transparent",
-          border: `2px solid ${checked ? task.color : "rgba(255,255,255,.15)"}`,
+          border: `2px solid ${checked ? task.color : "rgba(255,255,255,.12)"}`,
+          boxShadow: checked ? `0 0 8px ${task.color}30` : "none",
+          transform: checked ? "scale(1.05)" : "scale(1)",
         }}
         onAnimationEnd={() => setPop(false)}
       >
@@ -131,7 +133,7 @@ function PlanRow({ task, checked, onToggle, delay }) {
   );
 }
 
-/* ── Main Component ── */
+/* â”€â”€ Main Component â”€â”€ */
 export default function TodaysPlan({ subjects, deadlines, stats, user }) {
   const [checked, setChecked] = useState({});
 
@@ -147,20 +149,20 @@ export default function TodaysPlan({ subjects, deadlines, stats, user }) {
     setChecked(prev => ({ ...prev, [id]: !prev[id] }));
 
   return (
-    <div className="glass-card p-6 mb-6 scale-in" style={{ borderTop: "2px solid #00FFB2" }}>
+    <div className="hero-card p-6 mb-6 scale-in">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#00FFB2]/10 flex items-center justify-center">
-            <span className="material-symbols-outlined text-[#00FFB2] text-xl filled">
+          <div className="w-10 h-10 rounded-xl bg-[#00C896]/10 flex items-center justify-center">
+            <span className="material-symbols-outlined text-[#00C896] text-xl filled">
               task_alt
             </span>
           </div>
           <div>
-            <div className="text-sm font-bold text-on-surface">Today's Plan</div>
+            <div className="text-base font-extrabold text-on-surface">Today's Plan</div>
             <div className="text-[10px] text-muted">
               {done === total && total > 0
-                ? "All done — great work!"
+                ? "All done â€” great work!"
                 : `${done}/${total} completed`}
             </div>
           </div>
@@ -175,20 +177,20 @@ export default function TodaysPlan({ subjects, deadlines, stats, user }) {
             />
             <circle
               cx="18" cy="18" r="15" fill="none"
-              stroke="#00FFB2" strokeWidth="3"
+              stroke="#00C896" strokeWidth="3"
               strokeLinecap="round"
               strokeDasharray={`${(done / Math.max(total, 1)) * 94.2} 94.2`}
               className="transition-all duration-700 ease-out"
             />
           </svg>
-          <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-[#00FFB2]">
+          <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-[#00C896]">
             {total > 0 ? Math.round((done / total) * 100) : 0}%
           </span>
         </div>
       </div>
 
       {/* Task list */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         {tasks.map((t, i) => (
           <PlanRow
             key={t.id}

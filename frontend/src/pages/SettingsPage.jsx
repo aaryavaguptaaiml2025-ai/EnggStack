@@ -1,11 +1,11 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../api";
 import { Card, Input, Btn, Toast, Spinner, Tabs } from "../components/ui";
 import { sfx } from "../hooks/useSfx";
 
 const THEMES = [
-  { id:"dark", label:"Dark", bg:"#0B132B", ac:"#00FFB2" },
+  { id:"dark", label:"Dark", bg:"#0B132B", ac:"#00C896" },
   { id:"midnight", label:"Midnight", bg:"#060818", ac:"#60a5fa" },
   { id:"forest", label:"Forest", bg:"#080d08", ac:"#34d399" },
   { id:"ocean", label:"Ocean", bg:"#050d14", ac:"#38bdf8" },
@@ -13,7 +13,7 @@ const THEMES = [
 ];
 
 const ACCENTS = [
-  "#00FFB2","#60a5fa","#a78bfa","#fbbf24","#f87171","#f472b6",
+  "#00C896","#60a5fa","#a78bfa","#fbbf24","#f87171","#f472b6",
   "#34d399","#38bdf8","#fb923c","#e879f9","#facc15","#a3e635",
 ];
 
@@ -26,7 +26,7 @@ export default function SettingsPage() {
   const [name, setName] = useState(user?.name || "");
   const [username, setUsername] = useState(user?.username || "");
   const [theme, setTheme] = useState(user?.theme || "dark");
-  const [accent, setAccent] = useState(user?.accentColor || "#00FFB2");
+  const [accent, setAccent] = useState(user?.accentColor || "#00C896");
 
   const [goalMins, setGoalMins] = useState(user?.dailyGoalMins || 120);
   const [goalPomos, setGoalPomos] = useState(user?.dailyGoalPomos || 4);
@@ -37,7 +37,7 @@ export default function SettingsPage() {
   const [pin, setPin] = useState("");
   const [pinConfirm, setPinConfirm] = useState("");
 
-  const toast_ok  = (msg) => { sfx.success(); setToast({ msg, color:"#00FFB2" }); };
+  const toast_ok  = (msg) => { sfx.success(); setToast({ msg, color:"#00C896" }); };
   const toast_err = (msg) => { sfx.error(); setToast({ msg, color:"#f87171" }); };
 
   const saveProfile = async () => {
@@ -119,10 +119,10 @@ export default function SettingsPage() {
 
       <div className="mb-8">
         <h1 className="section-title flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#00FFB2] text-2xl">settings</span>
+          <span className="material-symbols-outlined text-[#00C896] text-2xl">settings</span>
           Settings
         </h1>
-        <p className="text-xs text-muted mt-1">Customize your EnggStack experience</p>
+        <p className="text-xs text-muted mt-1">Customize your Cognit experience</p>
       </div>
 
       <Tabs tabs={TABS} active={tab} onChange={setTab}/>
@@ -139,7 +139,7 @@ export default function SettingsPage() {
 
             <div className="flex items-center gap-4 mb-6 p-4 bg-white/[.03] rounded-2xl border border-white/10">
               <div className="w-14 h-14 rounded-full flex-shrink-0 flex items-center justify-center text-lg font-bold
-                border-[3px] border-[#00FFB2]/30 overflow-hidden bg-white/5 text-on-surface">
+                border-[3px] border-[#00C896]/30 overflow-hidden bg-white/5 text-on-surface">
                 {user?.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover rounded-full"/> : (name?.[0]?.toUpperCase() || "?")}
               </div>
               <div>
@@ -148,7 +148,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <Btn full color="#00FFB2" onClick={saveProfile} disabled={saving}>
+            <Btn full color="#00C896" onClick={saveProfile} disabled={saving}>
               {saving ? <><Spinner size={14}/> Saving...</> : "Save Profile"}
             </Btn>
           </Card>
@@ -212,7 +212,7 @@ export default function SettingsPage() {
                 Daily Study Goal: <b className="text-on-surface">{goalMins} min</b> ({Math.floor(goalMins/60)}h {goalMins%60}m)
               </div>
               <input type="range" min={15} max={480} step={15} value={goalMins} onChange={e=>setGoalMins(+e.target.value)}
-                className="w-full" style={{accentColor:"#00FFB2"}}/>
+                className="w-full" style={{accentColor:"#00C896"}}/>
               <div className="flex justify-between text-[11px] text-dim mt-1"><span>15m</span><span>8h</span></div>
             </div>
 
@@ -233,7 +233,7 @@ export default function SettingsPage() {
                 className="input-field resize-none"/>
             </div>
 
-            <Btn full color="#00FFB2" onClick={saveGoals} disabled={saving}>
+            <Btn full color="#00C896" onClick={saveGoals} disabled={saving}>
               {saving ? <><Spinner size={14}/> Saving...</> : "Save Goals"}
             </Btn>
           </Card>
@@ -264,7 +264,7 @@ export default function SettingsPage() {
               {user?.hasPin ? (
                 <div className="flex items-center gap-3">
                   <div className="flex-1 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#00FFB2]"/>
+                    <div className="w-2 h-2 rounded-full bg-[#00C896]"/>
                     <span className="text-sm text-on-surface">PIN is active</span>
                   </div>
                   <Btn color="#f87171" size="sm" variant="outline" onClick={removePin} disabled={saving}>Remove PIN</Btn>
@@ -273,7 +273,7 @@ export default function SettingsPage() {
                 <>
                   <Input label="New PIN (4 digits)" type="password" value={pin} onChange={e=>setPin(e.target.value.replace(/\D/g,"").slice(0,4))} placeholder="e.g. 1234"/>
                   <Input label="Confirm PIN" type="password" value={pinConfirm} onChange={e=>setPinConfirm(e.target.value.replace(/\D/g,"").slice(0,4))} placeholder="Re-enter PIN"/>
-                  <Btn full color="#00FFB2" onClick={setNewPin} disabled={saving}>
+                  <Btn full color="#00C896" onClick={setNewPin} disabled={saving}>
                     {saving ? <><Spinner size={14}/> Saving...</> : "Set PIN"}
                   </Btn>
                 </>

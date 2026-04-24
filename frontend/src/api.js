@@ -140,7 +140,7 @@ export const api = {
     const blob = await r.blob();
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement("a");
-    a.href = url; a.download = "EnggStack_All_Notes.pdf"; a.click();
+    a.href = url; a.download = "Cognit_All_Notes.pdf"; a.click();
     URL.revokeObjectURL(url);
   },
 };

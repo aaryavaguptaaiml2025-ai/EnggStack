@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+﻿import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useStats } from "../context/StatsContext";
 import XPBar from "./XPBar";
@@ -37,15 +37,9 @@ export default function Sidebar({ onClose }) {
     <aside className="glass-sidebar w-[250px] flex flex-col h-screen overflow-y-auto">
       {/* Logo + close */}
       <div className="p-5 pb-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-[#00FFB2] rounded-xl
-            flex items-center justify-center shadow-[0_0_20px_rgba(0,255,178,0.2)]">
-            <span className="material-symbols-outlined text-black text-lg font-bold">terminal</span>
-          </div>
-          <div>
-            <div className="text-sm font-extrabold text-on-surface tracking-tight">EnggStack</div>
-            <div className="text-[9px] text-[#00FFB2] uppercase tracking-[0.15em] font-bold">Premium Tier</div>
-          </div>
+        <div className="flex items-center gap-2.5">
+          <img src="/cognit-logo.png" alt="Cognit" className="w-8 h-8 object-contain flex-shrink-0" />
+          <span className="text-[15px] font-extrabold text-on-surface tracking-tight">Cognit</span>
         </div>
         {onClose && (
           <button onClick={onClose}

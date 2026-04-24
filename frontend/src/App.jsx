@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+﻿import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { StatsProvider } from "./context/StatsContext";
 import { MusicProvider } from "./context/MusicContext";
@@ -21,17 +21,14 @@ function AppLayout() {
       {/* Ambient orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%]
-          bg-[#00FFB2]/5 blur-[140px] rounded-full"/>
+          bg-[#00C896]/5 blur-[140px] rounded-full"/>
       </div>
       <div className="text-center z-10">
-        <div className="w-16 h-16 bg-[#00FFB2] rounded-2xl inline-flex items-center justify-center
-          text-3xl font-black text-black mb-5 shadow-[0_0_32px_rgba(0,255,178,0.3)] animate-glow">
-          E
-        </div>
-        <div className="text-muted text-sm mb-3">Loading EnggStack...</div>
+        <img src="/cognit-logo.png" alt="Cognit" className="w-16 h-16 object-contain mb-5" />
+        <div className="text-muted text-sm mb-3">Loading Cognit...</div>
         <div className="flex gap-1.5 justify-center">
           {[0,1,2].map(i => (
-            <div key={i} className="w-2 h-2 rounded-full bg-[#00FFB2] animate-bounce-dot"
+            <div key={i} className="w-2 h-2 rounded-full bg-[#00C896] animate-bounce-dot"
               style={{animationDelay:`${i*0.2}s`}}/>
           ))}
         </div>

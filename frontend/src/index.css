@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Reset ──────────────────────────────────────────── */
+/* â”€â”€ Reset â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root { height: 100%; font-family: 'Inter', system-ui, sans-serif; }
 button { font-family: inherit; cursor: pointer; }
@@ -38,11 +38,11 @@ input[type=range]::-webkit-slider-thumb {
   height:16px;
   border-radius:50%;
   cursor:pointer;
-  background: #00FFB2;
-  box-shadow: 0 0 8px rgba(0,255,178,.4);
+  background: #00C896;
+  box-shadow: 0 0 8px rgba(0,200,150,.4);
 }
 
-/* ── CSS Variables ────────────────────────────────────── */
+/* â”€â”€ CSS Variables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root {
   --bg: #0B132B;
   --bg2: #0f1a36;
@@ -53,15 +53,33 @@ input[type=range]::-webkit-slider-thumb {
   --muted: #8892a8;
   --dim: #4a5568;
   --surface: #0B132B;
-  --ac: #00FFB2;
-  --ac-dim: rgba(0,255,178,0.12);
-  --ac2: #60a5fa;
+  --ac: #00C896;
+  --ac-dim: rgba(0,200,150,0.12);
+  --ac2: #00C896;
 }
 
-/* ── Glassmorphism Utility Classes ────────────────────── */
+/* â”€â”€ Glassmorphism Utility Classes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @layer components {
   .glass-card {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg;
+    @apply bg-white/[.04] backdrop-blur-xl border border-white/[.07] rounded-2xl;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+    transition: box-shadow 0.3s ease, transform 0.3s ease, background 0.3s ease;
+  }
+  .glass-card:hover {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.22);
+    transform: translateY(-1px);
+  }
+  .hero-card {
+    @apply backdrop-blur-xl rounded-2xl;
+    background: linear-gradient(135deg, rgba(0,200,150,0.06) 0%, rgba(255,255,255,0.05) 100%);
+    border: 1px solid rgba(0,200,150,0.10);
+    border-left: 3px solid #00C896;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.22), 0 0 48px rgba(0,200,150,0.05);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+  .hero-card:hover {
+    box-shadow: 0 6px 40px rgba(0,0,0,0.25), 0 0 56px rgba(0,200,150,0.07);
+    transform: translateY(-1px);
   }
   .glass-panel {
     @apply bg-white/5 backdrop-blur-xl border border-white/10;
@@ -70,12 +88,12 @@ input[type=range]::-webkit-slider-thumb {
     @apply bg-[#0B132B]/90 backdrop-blur-xl border-r border-white/10;
   }
   .btn-primary {
-    @apply bg-[#00FFB2] text-black font-bold rounded-xl px-6 py-3
+    @apply bg-[#00C896] text-black font-bold rounded-xl px-6 py-3
            hover:brightness-110 active:scale-95 transition-all duration-200
-           shadow-[0_4px_20px_rgba(0,255,178,0.25)];
+           shadow-[0_4px_20px_rgba(0,200,150,0.25)];
   }
   .btn-primary:hover {
-    box-shadow: 0 4px 28px rgba(0,255,178,0.4);
+    box-shadow: 0 4px 28px rgba(0,200,150,0.4);
   }
   .btn-outline {
     @apply bg-transparent border border-white/10 text-on-surface font-semibold
@@ -91,12 +109,14 @@ input[type=range]::-webkit-slider-thumb {
     @apply w-full bg-white/5 border border-white/10 rounded-xl
            px-4 py-3 text-on-surface text-sm outline-none
            placeholder:text-dim/60
-           focus:border-[#00FFB2]/40 focus:ring-2 focus:ring-[#00FFB2]/15
+           focus:border-[#00C896]/40 focus:ring-2 focus:ring-[#00C896]/15
            transition-all duration-200 backdrop-blur-sm;
   }
   .stat-card {
-    @apply glass-card p-6 relative overflow-hidden
-           hover:bg-white/[.08] transition-all duration-200;
+    @apply bg-white/[.03] backdrop-blur-xl border border-white/[.05] rounded-2xl
+           p-4 relative overflow-hidden
+           hover:bg-white/[.05] transition-all duration-300;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.12);
   }
   .page-container {
     @apply p-8 md:p-10 max-w-7xl mx-auto;
@@ -114,12 +134,12 @@ input[type=range]::-webkit-slider-thumb {
   }
   .nav-link-active {
     @apply flex items-center gap-3 px-4 py-3 rounded-xl
-           bg-[#00FFB2]/10 text-[#00FFB2]
-           border-r-[3px] border-[#00FFB2];
+           bg-[#00C896]/10 text-[#00C896]
+           border-r-[3px] border-[#00C896];
   }
 }
 
-/* ── Keyframes ──────────────────────────────────────── */
+/* â”€â”€ Keyframes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 @keyframes slideIn { from{opacity:0;transform:translateX(28px)} to{opacity:1;transform:translateX(0)} }
@@ -164,7 +184,7 @@ input[type=range]::-webkit-slider-thumb {
 .stagger > *:nth-child(5){animation-delay:.25s}
 .stagger > *:nth-child(6){animation-delay:.3s}
 
-/* ── Sidebar responsive ─────────────────────────────── */
+/* â”€â”€ Sidebar responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sidebar-wrap { flex-shrink: 0; position: relative; z-index: 99; }
 .mobile-topbar { display: none; }
 .mobile-overlay { display: none !important; }
@@ -203,14 +223,14 @@ input[type=range]::-webkit-slider-thumb {
 
 /* Gradient text */
 .grad-text {
-  background: linear-gradient(135deg, var(--ac), var(--ac2, #a78bfa));
+  background: linear-gradient(135deg, var(--ac), #00e6a0);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .text-glow {
-  text-shadow: 0 0 20px rgba(0, 255, 178, 0.3);
+  text-shadow: 0 0 20px rgba(0, 200, 150, 0.25);
 }
 
 /* Today's Plan task row */
@@ -218,28 +238,31 @@ input[type=range]::-webkit-slider-thumb {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.06);
-  background: rgba(255,255,255,0.03);
-  transition: background 0.2s, border-color 0.2s, opacity 0.3s;
+  border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.025);
+  transition: background 0.25s ease, border-color 0.25s ease, opacity 0.35s ease, transform 0.25s cubic-bezier(.22,1,.36,1);
   cursor: default;
 }
 .plan-task-row:hover {
   background: rgba(255,255,255,0.055);
-  border-color: rgba(255,255,255,0.1);
+  border-color: rgba(0,200,150,0.12);
+  transform: translateX(2px);
 }
 .plan-task-row.done {
-  opacity: 0.42;
+  opacity: 0.38;
+  transform: scale(0.995);
 }
 .plan-task-row.done .plan-task-label {
   text-decoration: line-through;
-  text-decoration-color: rgba(255,255,255,0.3);
+  text-decoration-color: rgba(255,255,255,0.25);
 }
 
-/* Stat card hover border glow */
+/* Stat card hover */
 .stat-card:hover {
-  border-top-width: 2px;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.18);
+  transform: translateY(-1px);
 }
 
 /* Quick action button */
