@@ -18,12 +18,12 @@ const STAT_CONFIG = [
 ];
 
 const QUICK_ACTIONS = [
-  { icon:"timer",          label:"Pomodoro",  to:"/pomodoro",     c:"#00C896" },
-  { icon:"dark_mode",      label:"Focus",     to:"/focus",        c:"#00C896" },
-  { icon:"checklist",      label:"Checklist", to:"/checklist",    c:"#00C896" },
-  { icon:"notifications",  label:"Deadlines", to:"/deadlines",    c:"#fbbf24" },
-  { icon:"analytics",      label:"Analytics", to:"/analytics",    c:"#00C896" },
-  { icon:"forum",          label:"Ask AI",    to:"/ai",           c:"#00C896" },
+  { icon:"timer",          label:"Pomodoro",    to:"/pomodoro",     c:"#00C896" },
+  { icon:"dark_mode",      label:"Focus",       to:"/focus",        c:"#00C896" },
+  { icon:"checklist",      label:"Checklist",   to:"/checklist",    c:"#00C896" },
+  { icon:"notifications",  label:"Deadlines",   to:"/deadlines",    c:"#fbbf24" },
+  { icon:"analytics",      label:"Analytics",   to:"/analytics",    c:"#00C896" },
+  { icon:"calculate",      label:"Calculator",  to:"/calculator",   c:"#00C896" },
 ];
 
 /* â”€â”€ StatCard â”€â”€ */
@@ -351,7 +351,7 @@ export default function DashboardPage() {
                           ? "linear-gradient(180deg, #00C896, #00C89688)"
                           : "rgba(255,255,255,.08)",
                       boxShadow:
-                        i === todayIdx ? "0 0 10px rgba(0,255,178,.3)" : "none",
+                        i === todayIdx ? "0 0 10px rgba(0,200,150,.3)" : "none",
                     }}
                   />
                 </div>

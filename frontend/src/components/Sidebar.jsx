@@ -1,4 +1,4 @@
-﻿import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useStats } from "../context/StatsContext";
 import XPBar from "./XPBar";
@@ -17,6 +17,7 @@ const NAV = [
   { to:"/calendar",     icon:"event",            label:"Calendar"     },
   { to:"/gamification", icon:"emoji_events",     label:"Achievements" },
   { to:"/music",        icon:"music_note",       label:"Music"        },
+  { to:"/calculator",   icon:"calculate",        label:"Calculator"   },
   { to:"/settings",     icon:"settings",         label:"Settings"     },
 ];
 

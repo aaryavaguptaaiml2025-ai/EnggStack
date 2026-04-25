@@ -54,7 +54,7 @@ app.use("/api/reminders", require("./routes/reminders"));
 app.use("/api/export",    require("./routes/export"));
 
 // Health check — also prevents "Cannot GET /" confusion
-app.get("/",         (_, res) => res.json({ status: "EnggStack API is running" }));
+app.get("/",         (_, res) => res.json({ status: "Cognit API is running" }));
 app.get("/api/health",(_, res) => res.json({ status: "ok", time: new Date() }));
 
 // ── DB + Start ────────────────────────────────────────────────────────────────

@@ -28,7 +28,7 @@ export function DeadlinesPage() {
     try {
       await api.addDeadline(form);
       sfx.success();
-      setToast({ msg:"Deadline added!", color:"#00FFB2" });
+      setToast({ msg:"Deadline added!", color:"#00C896" });
       setModal(false);
       setForm({ title:"", subject:"", dueDate:"", priority:"medium" });
       load();
@@ -47,7 +47,7 @@ export function DeadlinesPage() {
   };
   const urgencyColor = (d) => {
     const diff = Math.ceil((new Date(d) - Date.now()) / 86400000);
-    return diff < 0 ? "#ef4444" : diff <= 1 ? "#f87171" : diff <= 3 ? "#fbbf24" : "#00FFB2";
+    return diff < 0 ? "#ef4444" : diff <= 1 ? "#f87171" : diff <= 3 ? "#fbbf24" : "#00C896";
   };
 
   const pending = items.filter(x => !x.done);
@@ -115,7 +115,7 @@ export function DeadlinesPage() {
                 {done.map(it => (
                   <div key={it._id} className="flex items-center gap-4 p-3 bg-white/[.03] rounded-xl opacity-50">
                     <div onClick={() => toggle(it)}
-                      className="w-5 h-5 rounded-full bg-[#00FFB2] cursor-pointer flex-shrink-0
+                      className="w-5 h-5 rounded-full bg-[#00C896] cursor-pointer flex-shrink-0
                         flex items-center justify-center">
                       <span className="material-symbols-outlined text-black text-xs">check</span>
                     </div>
@@ -141,7 +141,7 @@ export function DeadlinesPage() {
             <div className="label-text mb-2 ml-1">Priority</div>
             <div className="flex gap-2">
               {["low","medium","high"].map(p => {
-                const c = {low:"#00FFB2",medium:"#fbbf24",high:"#f87171"}[p];
+                const c = {low:"#00C896",medium:"#fbbf24",high:"#f87171"}[p];
                 return <button key={p} onClick={() => setForm({...form, priority:p})}
                   className="flex-1 py-2 rounded-xl text-xs font-semibold capitalize transition-all duration-200"
                   style={{
@@ -186,7 +186,7 @@ export function NotesPage() {
       sfx.success();
       setModal(false);
       setForm({ title:"", subject:"", content:"" });
-      setToast({ msg:"Note created!", color:"#00FFB2" });
+      setToast({ msg:"Note created!", color:"#00C896" });
       await load();
       setActive(n);
       setEditing(false);
@@ -199,7 +199,7 @@ export function NotesPage() {
       await api.updateNote(active._id, { title:active.title, content:active.content, subject:active.subject });
       sfx.xp();
       setEditing(false);
-      setToast({ msg:"Saved!", color:"#00FFB2" });
+      setToast({ msg:"Saved!", color:"#00C896" });
       load();
     } catch(e) { sfx.error(); }
   };
@@ -249,8 +249,8 @@ export function NotesPage() {
             <div className="flex justify-between items-center mb-3">
               <span className="font-bold text-base text-on-surface">Notes</span>
               <button onClick={() => setModal(true)}
-                className="bg-[#00FFB2]/10 border border-[#00FFB2]/20 rounded-xl px-3 py-1.5
-                  text-[#00FFB2] text-xs font-semibold hover:bg-[#00FFB2]/15 transition-all duration-200">
+                className="bg-[#00C896]/10 border border-[#00C896]/20 rounded-xl px-3 py-1.5
+                  text-[#00C896] text-xs font-semibold hover:bg-[#00C896]/15 transition-all duration-200">
                 <span className="material-symbols-outlined text-sm align-middle mr-1">add</span>New
               </button>
             </div>
@@ -269,10 +269,10 @@ export function NotesPage() {
               <div key={n._id} onClick={() => { setActive(n); setEditing(false); sfx.click(); }}
                 className={`p-3 rounded-xl cursor-pointer mb-1 transition-all duration-200
                   ${active?._id===n._id
-                    ? "bg-[#00FFB2]/8 border border-[#00FFB2]/20"
+                    ? "bg-[#00C896]/8 border border-[#00C896]/20"
                     : "border border-transparent hover:bg-white/5"}`}>
                 <div className="text-sm font-semibold text-on-surface truncate mb-1">
-                  {n.pinned && <span className="material-symbols-outlined text-xs align-middle mr-1 text-[#00FFB2]">push_pin</span>}{n.title}
+                  {n.pinned && <span className="material-symbols-outlined text-xs align-middle mr-1 text-[#00C896]">push_pin</span>}{n.title}
                 </div>
                 <div className="text-[11px] text-muted truncate mb-1.5">
                   {n.content?.slice(0,50) || "Empty note"}
@@ -293,8 +293,8 @@ export function NotesPage() {
               <span className="material-symbols-outlined text-5xl">edit_note</span>
               <div className="text-sm">Select a note or create a new one</div>
               <button onClick={() => setModal(true)}
-                className="bg-[#00FFB2]/10 border border-[#00FFB2]/20 rounded-xl px-6 py-3
-                  text-[#00FFB2] text-sm font-semibold hover:bg-[#00FFB2]/15 transition-all duration-200">
+                className="bg-[#00C896]/10 border border-[#00C896]/20 rounded-xl px-6 py-3
+                  text-[#00C896] text-sm font-semibold hover:bg-[#00C896]/15 transition-all duration-200">
                 <span className="material-symbols-outlined text-base align-middle mr-1">add</span>Create Note
               </button>
             </div>
@@ -315,13 +315,13 @@ export function NotesPage() {
                 <div className="flex gap-2 flex-shrink-0 ml-4">
                   {editing ? (
                     <>
-                      <Btn color="#00FFB2" size="sm" onClick={save}>Save</Btn>
+                      <Btn color="#00C896" size="sm" onClick={save}>Save</Btn>
                       <Btn variant="ghost" size="sm" onClick={() => setEditing(false)}>Cancel</Btn>
                     </>
                   ) : (
                     <Btn color="#60a5fa" size="sm" variant="outline" onClick={() => setEditing(true)}>Edit</Btn>
                   )}
-                  <Btn color="#00FFB2" size="sm" variant="outline" onClick={() => exportPDF(active._id)}>PDF</Btn>
+                  <Btn color="#00C896" size="sm" variant="outline" onClick={() => exportPDF(active._id)}>PDF</Btn>
                   <Btn color="#f87171" size="sm" variant="outline" onClick={() => del(active._id)}>Delete</Btn>
                 </div>
               </div>
@@ -358,7 +358,7 @@ export function NotesPage() {
             <textarea value={form.content} onChange={e => setForm({...form, content:e.target.value})} rows={5}
               className="input-field resize-none"/>
           </div>
-          <Btn full color="#00FFB2" onClick={add}>Create Note</Btn>
+          <Btn full color="#00C896" onClick={add}>Create Note</Btn>
         </Modal>
       )}
     </div>
@@ -410,7 +410,7 @@ export function ChecklistPage() {
             className="input-field flex-1"/>
           <input value={sub} onChange={e => setSub(e.target.value)} placeholder="Subject"
             className="input-field w-[120px]"/>
-          <Btn color="#00FFB2" onClick={add}>
+          <Btn color="#00C896" onClick={add}>
             <span className="material-symbols-outlined text-base">add</span> Add
           </Btn>
         </div>
@@ -422,9 +422,9 @@ export function ChecklistPage() {
             <div className="mb-5">
               <div className="flex justify-between mb-2 px-1">
                 <span className="text-xs text-muted">{done.length} / {items.length} completed</span>
-                <span className="text-xs text-[#00FFB2] font-bold">{Math.round((done.length / items.length) * 100)}%</span>
+                <span className="text-xs text-[#00C896] font-bold">{Math.round((done.length / items.length) * 100)}%</span>
               </div>
-              <ProgressBar value={done.length} max={items.length} color="#00FFB2" glow />
+              <ProgressBar value={done.length} max={items.length} color="#00C896" glow />
             </div>
           )}
 
@@ -433,8 +433,8 @@ export function ChecklistPage() {
               <div key={it._id} className="fade-up glass-card flex items-center gap-3 p-5
                 hover:bg-white/[.08] transition-all duration-200">
                 <div onClick={() => toggle(it)}
-                  className="w-5 h-5 rounded-md border-2 border-[#00FFB2] cursor-pointer flex-shrink-0
-                    hover:bg-[#00FFB2]/15 transition-all duration-200"/>
+                  className="w-5 h-5 rounded-md border-2 border-[#00C896] cursor-pointer flex-shrink-0
+                    hover:bg-[#00C896]/15 transition-all duration-200"/>
                 <span className="flex-1 text-sm text-on-surface">{it.text}</span>
                 {it.subject && <Badge color="#60a5fa">{it.subject}</Badge>}
                 <button onClick={() => del(it._id)}
@@ -452,7 +452,7 @@ export function ChecklistPage() {
                 {done.map(it => (
                   <div key={it._id} className="flex items-center gap-3 p-3 bg-white/[.03] rounded-xl opacity-50">
                     <div onClick={() => toggle(it)}
-                      className="w-5 h-5 rounded-md bg-[#00FFB2] cursor-pointer flex-shrink-0
+                      className="w-5 h-5 rounded-md bg-[#00C896] cursor-pointer flex-shrink-0
                         flex items-center justify-center">
                       <span className="material-symbols-outlined text-black text-xs">check</span>
                     </div>
@@ -475,7 +475,7 @@ export function ChecklistPage() {
 // ─────────────────────────────────────────────────────────────────────────────
 // SUBJECTS
 // ─────────────────────────────────────────────────────────────────────────────
-const SC = ["#60a5fa","#00FFB2","#fbbf24","#a78bfa","#f87171","#f472b6","#34d399","#fb923c"];
+const SC = ["#60a5fa","#00C896","#fbbf24","#a78bfa","#f87171","#f472b6","#34d399","#fb923c"];
 const SUBJECT_ICONS = ["menu_book","science","architecture","code","biotech","calculate","public","auto_stories","target","electric_bolt"];
 
 export function SubjectsPage() {
@@ -578,10 +578,10 @@ export function SubjectsPage() {
                 <button key={ic} onClick={() => setForm({...form, icon:ic})}
                   className="w-10 h-10 rounded-xl transition-all duration-200 flex items-center justify-center"
                   style={{
-                    background:form.icon===ic?"rgba(0,255,178,.1)":"rgba(255,255,255,.03)",
-                    border:`2px solid ${form.icon===ic?"#00FFB2":"rgba(255,255,255,.05)"}`
+                    background:form.icon===ic?"rgba(0,200,150,.1)":"rgba(255,255,255,.03)",
+                    border:`2px solid ${form.icon===ic?"#00C896":"rgba(255,255,255,.05)"}`
                   }}>
-                  <span className="material-symbols-outlined text-xl" style={{color:form.icon===ic?"#00FFB2":"#4a5568"}}>{ic}</span>
+                  <span className="material-symbols-outlined text-xl" style={{color:form.icon===ic?"#00C896":"#4a5568"}}>{ic}</span>
                 </button>
               ))}
             </div>
@@ -663,7 +663,7 @@ export function TimetablePage() {
                 <div key={day}>
                   <div className={`text-center py-2 rounded-xl mb-2 text-sm font-medium transition-all duration-200
                     ${isToday
-                      ? "bg-[#00FFB2]/10 border border-[#00FFB2]/20 text-[#00FFB2] font-bold"
+                      ? "bg-[#00C896]/10 border border-[#00C896]/20 text-[#00C896] font-bold"
                       : "bg-white/5 border border-white/10 text-muted"}`}>
                     {day}
                   </div>
@@ -701,9 +701,9 @@ export function TimetablePage() {
                 <button key={d} onClick={() => setForm({...form, day:d})}
                   className="px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200"
                   style={{
-                    background:form.day===d?"rgba(0,255,178,.1)":"transparent",
-                    border:`1px solid ${form.day===d?"rgba(0,255,178,.3)":"rgba(255,255,255,.05)"}`,
-                    color:form.day===d?"#00FFB2":"#4a5568"
+                    background:form.day===d?"rgba(0,200,150,.1)":"transparent",
+                    border:`1px solid ${form.day===d?"rgba(0,200,150,.3)":"rgba(255,255,255,.05)"}`,
+                    color:form.day===d?"#00C896":"#4a5568"
                   }}>{d}</button>
               ))}
             </div>
@@ -779,7 +779,7 @@ export function GamificationPage() {
           { l:"Total XP",  v:stats.xp||0,                              i:"bolt", c:"#fbbf24" },
           { l:"Streak",    v:`${stats.streak||0}d`,                    i:"local_fire_department", c:"#f97316" },
           { l:"Pomodoros", v:stats.pomodoros||0,                       i:"timer", c:"#f87171" },
-          { l:"Hours",     v:`${Math.floor((stats.totalMins||0)/60)}h`,i:"schedule", c:"#00FFB2" },
+          { l:"Hours",     v:`${Math.floor((stats.totalMins||0)/60)}h`,i:"schedule", c:"#00C896" },
         ].map((s,i) => (
           <div key={i} className="fade-up glass-card text-center p-6"
             style={{borderTop:`2px solid ${s.c}`,animationDelay:`${i*.08}s`}}>
@@ -793,7 +793,7 @@ export function GamificationPage() {
       {/* Badges */}
       <Card className="mb-6">
         <div className="text-base font-bold text-on-surface mb-4 flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#00FFB2] filled">workspace_premium</span>Badges
+          <span className="material-symbols-outlined text-[#00C896] filled">workspace_premium</span>Badges
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {BADGES.map(b => {
@@ -828,16 +828,16 @@ export function GamificationPage() {
         <div className="space-y-2">
           {board.map((u, i) => (
             <div key={u.name} className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200
-              ${u.you ? "bg-[#00FFB2]/8 border border-[#00FFB2]/20" : "hover:bg-white/5"}`}>
+              ${u.you ? "bg-[#00C896]/8 border border-[#00C896]/20" : "hover:bg-white/5"}`}>
               <span className="material-symbols-outlined text-lg w-7 text-center"
                 style={{color:i===0?"#fbbf24":i===1?"#94a3b8":i===2?"#cd7f32":"#4a5568"}}>
                 {RANK_ICONS[i] || "tag"}
               </span>
               <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
-                style={{background:u.you?"rgba(0,255,178,.15)":"rgba(255,255,255,.05)",color:u.you?"#00FFB2":"#4a5568"}}>
+                style={{background:u.you?"rgba(0,200,150,.15)":"rgba(255,255,255,.05)",color:u.you?"#00C896":"#4a5568"}}>
                 {u.name[0]}
               </div>
-              <span className={`flex-1 text-sm ${u.you ? "text-[#00FFB2] font-bold" : "text-on-surface"}`}>
+              <span className={`flex-1 text-sm ${u.you ? "text-[#00C896] font-bold" : "text-on-surface"}`}>
                 {u.name}{u.you ? " (You)" : ""}
               </span>
               <span className="text-sm text-warning font-bold">{u.xp} XP</span>

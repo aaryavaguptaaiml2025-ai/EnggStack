@@ -121,68 +121,97 @@ export function MusicProvider({ children }) {
     }}>
       {children}
 
-      {/* Persistent mini player — always visible when music is playing */}
-      {(playing || ambient !== "off") && (
-        <MiniPlayer/>
-      )}
+      {/* ── Persistent layout-level player ──
+          This component lives at the layout level (inside MusicProvider which
+          wraps Layout in App.jsx). It never unmounts during route navigation,
+          so the YouTube iframe stays alive and music continues playing. */}
+      <PersistentPlayer />
     </MusicCtx.Provider>
   );
 }
 
-function MiniPlayer() {
+/* ── Persistent Player ──────────────────────────────────────────────────────
+   Renders at the layout level. Contains:
+   - The actual YouTube iframe (when a playlist is active)
+   - Mini player controls (visible when playing or ambient is on)
+   This survives all route changes cleanly. */
+function PersistentPlayer() {
   const { activePL, playing, ambient, timerOn, setTimerOn, studyTime, stopAll } = useMusic();
   const fmt = (s) => `${String(Math.floor(s / 3600)).padStart(2,"0")}:${String(Math.floor((s % 3600) / 60)).padStart(2,"0")}:${String(s % 60).padStart(2,"0")}`;
 
+  const showMini = playing || ambient !== "off";
+
   return (
-    <div style={{
-      position: "fixed", bottom: 16, right: 16, zIndex: 500,
-      background: "rgba(11,19,43,0.9)", border: "1px solid rgba(255,255,255,.1)",
-      borderRadius: 14, padding: "10px 16px",
-      display: "flex", alignItems: "center", gap: 12,
-      boxShadow: "0 8px 32px rgba(0,0,0,.5)",
-      backdropFilter: "blur(20px)",
-      animation: "slideIn .3s ease",
-      minWidth: 220,
-    }}>
-      {/* Animated playing indicator */}
+    <>
+      {/* YouTube iframe — always mounted when a playlist is active.
+          Positioned off-screen when user is on MusicPage (MusicPage shows its own UI),
+          and as part of the mini player otherwise. */}
       {playing && activePL && (
-        <div style={{ display:"flex", gap:2, alignItems:"flex-end", height:16, flexShrink:0 }}>
-          {[1,1.5,0.8,1.3,1].map((h,i) => (
-            <div key={i} style={{
-              width:3, background: activePL.color,
-              borderRadius:2, height:"100%",
-              animation:`musicBar .8s ease-in-out infinite ${i*.12}s alternate`,
-              transformOrigin:"bottom",
-            }}/>
-          ))}
+        <div className="fixed bottom-20 right-4 z-[499] rounded-xl overflow-hidden shadow-2xl"
+          style={{ width: 280, height: 58 }}>
+          <iframe
+            src={`https://www.youtube.com/embed/${activePL.ytId}?autoplay=1&loop=1&playlist=${activePL.ytId}&rel=0&modestbranding=1`}
+            width="280" height="58"
+            className="border-none block"
+            allow="autoplay; encrypted-media"
+            title={activePL.name}
+          />
         </div>
       )}
-      {ambient !== "off" && !playing && (
-        <span className="material-symbols-outlined text-[#00FFB2]" style={{fontSize:16}}>volume_up</span>
-      )}
 
-      <div style={{ flex:1, minWidth:0 }}>
-        <div style={{ fontSize:12, fontWeight:600, color:"#e0e6f0", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-          {playing && activePL ? activePL.name : `Ambient: ${ambient}`}
+      {/* Mini player controls */}
+      {showMini && (
+        <div style={{
+          position: "fixed", bottom: 16, right: 16, zIndex: 500,
+          background: "rgba(11,19,43,0.9)", border: "1px solid rgba(255,255,255,.1)",
+          borderRadius: 14, padding: "10px 16px",
+          display: "flex", alignItems: "center", gap: 12,
+          boxShadow: "0 8px 32px rgba(0,0,0,.5)",
+          backdropFilter: "blur(20px)",
+          animation: "slideIn .3s ease",
+          minWidth: 220,
+        }}>
+          {/* Animated playing indicator */}
+          {playing && activePL && (
+            <div style={{ display:"flex", gap:2, alignItems:"flex-end", height:16, flexShrink:0 }}>
+              {[1,1.5,0.8,1.3,1].map((h,i) => (
+                <div key={i} style={{
+                  width:3, background: activePL.color,
+                  borderRadius:2, height:"100%",
+                  animation:`musicBar .8s ease-in-out infinite ${i*.12}s alternate`,
+                  transformOrigin:"bottom",
+                }}/>
+              ))}
+            </div>
+          )}
+          {ambient !== "off" && !playing && (
+            <span className="material-symbols-outlined text-[#00C896]" style={{fontSize:16}}>volume_up</span>
+          )}
+
+          <div style={{ flex:1, minWidth:0 }}>
+            <div style={{ fontSize:12, fontWeight:600, color:"#e0e6f0", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+              {playing && activePL ? activePL.name : `Ambient: ${ambient}`}
+            </div>
+            <div style={{ fontSize:10, color:"#8892a8", fontFamily:"monospace" }}>{fmt(studyTime)}</div>
+          </div>
+
+          <button onClick={() => setTimerOn(t => !t)}
+            className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors duration-200"
+            style={{ background:"none", border:"none", cursor:"pointer" }}
+            title={timerOn?"Pause timer":"Start timer"}>
+            <span className="material-symbols-outlined text-sm" style={{color:"#8892a8"}}>
+              {timerOn ? "pause" : "play_arrow"}
+            </span>
+          </button>
+          <button onClick={stopAll}
+            className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors duration-200"
+            style={{ background:"none", border:"none", cursor:"pointer" }}
+            title="Stop all">
+            <span className="material-symbols-outlined text-sm" style={{color:"#8892a8"}}>close</span>
+          </button>
         </div>
-        <div style={{ fontSize:10, color:"#8892a8", fontFamily:"monospace" }}>{fmt(studyTime)}</div>
-      </div>
-
-      <button onClick={() => setTimerOn(t => !t)}
-        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors duration-200"
-        style={{ background:"none", border:"none", cursor:"pointer" }}
-        title={timerOn?"Pause timer":"Start timer"}>
-        <span className="material-symbols-outlined text-sm" style={{color:"#8892a8"}}>
-          {timerOn ? "pause" : "play_arrow"}
-        </span>
-      </button>
-      <button onClick={stopAll}
-        className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors duration-200"
-        style={{ background:"none", border:"none", cursor:"pointer" }}
-        title="Stop all">
-        <span className="material-symbols-outlined text-sm" style={{color:"#8892a8"}}>close</span>
-      </button>
-    </div>
+      )}
+    </>
   );
 }
 

@@ -4,9 +4,9 @@ import { api } from "../api";
 import { Card, ProgressBar, Heatmap, Tabs } from "../components/ui";
 
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const COLORS = ["#60a5fa","#00FFB2","#fbbf24","#a78bfa","#f87171","#f472b6","#34d399","#fb923c"];
+const COLORS = ["#60a5fa","#00C896","#fbbf24","#a78bfa","#f87171","#f472b6","#34d399","#fb923c"];
 
-function BarChart({ data, labels, color = "#00FFB2", height = 120, unit = "" }) {
+function BarChart({ data, labels, color = "#00C896", height = 120, unit = "" }) {
   const max = Math.max(...data.map(Number), 1);
   return (
     <div className="flex items-end gap-1.5" style={{ height }}>
@@ -98,10 +98,10 @@ export default function AnalyticsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Card>
                 <div className="text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#00FFB2] text-lg">bar_chart</span>
+                  <span className="material-symbols-outlined text-[#00C896] text-lg">bar_chart</span>
                   Daily Study (this week)
                 </div>
-                <BarChart data={wMins} labels={DAYS} color="#00FFB2" unit="m"/>
+                <BarChart data={wMins} labels={DAYS} color="#00C896" unit="m"/>
               </Card>
               <Card>
                 <div className="text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
@@ -110,7 +110,7 @@ export default function AnalyticsPage() {
                 </div>
                 <LineChart data={last4Weeks.map(v=>Math.max(0,v))} labels={["3w ago","2w ago","Last w","This w"]} color="#60a5fa" height={110}/>
                 <div className="flex gap-3 mt-3 flex-wrap">
-                  {last4Weeks.map((v,i)=><div key={i} className="text-[11px] text-muted">{["3w ago","2w ago","Last w","This w"][i]}: <b className="text-[#00FFB2]">{Math.max(0,v)}m</b></div>)}
+                  {last4Weeks.map((v,i)=><div key={i} className="text-[11px] text-muted">{["3w ago","2w ago","Last w","This w"][i]}: <b className="text-[#00C896]">{Math.max(0,v)}m</b></div>)}
                 </div>
               </Card>
             </div>
@@ -126,12 +126,12 @@ export default function AnalyticsPage() {
                   const current=lv===i;
                   return <div key={i} style={{opacity:i>lv+1?.3:1}}>
                     <div className="flex justify-between mb-1">
-                      <span className={`text-xs ${current?"text-[#00FFB2] font-semibold":"text-muted"}`}>
+                      <span className={`text-xs ${current?"text-[#00C896] font-semibold":"text-muted"}`}>
                         {current?"* ":""}{LEVEL_NAMES[i]} (Lv.{i+1})
                       </span>
                       <span className="text-[11px] text-dim">{Math.min(stats.xp||0,hi)}/{hi} XP</span>
                     </div>
-                    <ProgressBar value={done} max={total} color={current?"#00FFB2":"rgba(255,255,255,.1)"} height={5} glow={current}/>
+                    <ProgressBar value={done} max={total} color={current?"#00C896":"rgba(255,255,255,.1)"} height={5} glow={current}/>
                   </div>;
                 })}
               </div>
@@ -143,7 +143,7 @@ export default function AnalyticsPage() {
           <div className="space-y-5">
             <Card>
               <div className="text-sm font-bold text-on-surface mb-1 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#00FFB2] text-lg filled">local_fire_department</span>
+                <span className="material-symbols-outlined text-[#00C896] text-lg filled">local_fire_department</span>
                 Study Activity — Last 12 Months
               </div>
               <div className="text-xs text-muted mb-4">Each square = one day. Darker = more minutes studied.</div>
@@ -156,7 +156,7 @@ export default function AnalyticsPage() {
                 {label:"Study days this month",value:Object.entries(heatmapData).filter(([k])=>k.startsWith(new Date().toISOString().slice(0,7))).filter(([,v])=>Number(v)>0).length},
               ].map((s,i)=>(
                 <div key={i} className="glass-card text-center p-6">
-                  <div className="text-2xl font-extrabold text-[#00FFB2] mb-1">{s.value}</div>
+                  <div className="text-2xl font-extrabold text-[#00C896] mb-1">{s.value}</div>
                   <div className="text-xs text-muted">{s.label}</div>
                 </div>
               ))}

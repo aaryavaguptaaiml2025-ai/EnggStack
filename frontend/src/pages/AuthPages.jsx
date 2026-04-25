@@ -1,10 +1,35 @@
 import { useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { api } from "../api";
 import { Input, Btn, Spinner } from "../components/ui";
 import { sfx } from "../hooks/useSfx";
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ AUTH WRAPPER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ───────────────── PASSWORD INPUT WITH VISIBILITY TOGGLE ───────────────── */
+function PasswordInput({ value, onChange, placeholder, onKeyDown, className = "" }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative group">
+      <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
+        text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">lock</span>
+      <input value={value} onChange={onChange}
+        placeholder={placeholder || "••••••••"}
+        type={show ? "text" : "password"}
+        onKeyDown={onKeyDown}
+        className={`input-field pl-12 pr-12 ${className}`}/>
+      <button type="button" onClick={() => setShow(!show)}
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-dim
+          hover:text-on-surface transition-colors duration-200"
+        tabIndex={-1}>
+        <span className="material-symbols-outlined text-lg">
+          {show ? "visibility_off" : "visibility"}
+        </span>
+      </button>
+    </div>
+  );
+}
+
+/* ───────────────── AUTH WRAPPER ───────────────── */
 function AuthWrap({ children, title, sub }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0B132B] p-4 md:p-12 overflow-hidden">
@@ -36,7 +61,7 @@ function AuthWrap({ children, title, sub }) {
               {[0,1,2].map((i) => (
                 <div key={i} className="w-9 h-9 rounded-full border-2 border-[#0B132B] flex items-center
                   justify-center text-sm text-on-surface"
-                  style={{background:`rgba(0,255,178,${0.08+i*0.06})`}}>
+                  style={{background:`rgba(0,200,150,${0.08+i*0.06})`}}>
                   {String.fromCharCode(65+i)}
                 </div>
               ))}
@@ -68,7 +93,7 @@ function AuthWrap({ children, title, sub }) {
   );
 }
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ GOOGLE LOGIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ───────────────── GOOGLE LOGIN ───────────────── */
 function getGoogleClientId() {
   const e = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const w = typeof window !== "undefined" && window.__GOOGLE_CLIENT_ID__;
@@ -139,7 +164,7 @@ function GoogleBtn({ onSuccess, label="Continue with Google" }) {
   );
 }
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ OTP STEP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ───────────────── OTP STEP ───────────────── */
 function OTPStep({ email, onVerified, onBack }) {
   const { verifyOtp, resendOtp } = useAuth();
   const [otp, setOtp] = useState("");
@@ -222,7 +247,135 @@ function OTPStep({ email, onVerified, onBack }) {
   );
 }
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ LOGIN PAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ───────────────── FORGOT PASSWORD FLOW ───────────────── */
+function ForgotPasswordFlow({ onBack }) {
+  const [step, setStep] = useState(1); // 1=email, 2=otp, 3=newPass
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [err, setErr] = useState("");
+  const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const sendResetOtp = async () => {
+    if (!email) return setErr("Enter your email address");
+    setErr(""); setLoading(true);
+    try {
+      const res = await api.forgotPassword({ email });
+      setMsg(res.message || "Reset code sent!");
+      sfx.notify();
+      setStep(2);
+    } catch (e) { setErr(e.message); sfx.error(); }
+    setLoading(false);
+  };
+
+  const resetPassword = async () => {
+    if (otp.length !== 6) return setErr("Enter the 6-digit code");
+    if (newPass.length < 6) return setErr("Password must be at least 6 characters");
+    setErr(""); setLoading(true);
+    try {
+      const res = await api.resetPassword({ email, otp, newPassword: newPass });
+      setMsg(res.message || "Password reset successfully!");
+      sfx.success();
+      setStep(3);
+    } catch (e) { setErr(e.message); sfx.error(); }
+    setLoading(false);
+  };
+
+  if (step === 3) {
+    return (
+      <AuthWrap title="Password Reset" sub="Your password has been updated">
+        <div className="text-center py-4">
+          <span className="material-symbols-outlined text-[#00C896] text-5xl mb-3 block">check_circle</span>
+          <div className="text-on-surface font-semibold mb-1">Success!</div>
+          <div className="text-muted text-sm mb-6">{msg}</div>
+          <button onClick={onBack}
+            className="btn-primary w-full py-3.5 text-base flex items-center justify-center gap-2">
+            Back to Sign In
+            <span className="material-symbols-outlined text-lg">arrow_forward</span>
+          </button>
+        </div>
+      </AuthWrap>
+    );
+  }
+
+  return (
+    <AuthWrap title="Reset Password" sub={step === 1 ? "Enter your email to receive a reset code" : "Enter the code and your new password"}>
+      {step === 1 && (
+        <>
+          <div className="text-center mb-5">
+            <span className="material-symbols-outlined text-[#00C896] text-4xl mb-2 block">lock_reset</span>
+          </div>
+
+          <div className="space-y-1.5 mb-4">
+            <label className="label-text ml-1">Email Address</label>
+            <div className="relative group">
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
+                text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">alternate_email</span>
+              <input value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="you@cognit.app" type="email"
+                onKeyDown={e => e.key === "Enter" && sendResetOtp()}
+                className="input-field pl-12"/>
+            </div>
+          </div>
+        </>
+      )}
+
+      {step === 2 && (
+        <>
+          <div className="text-center mb-5">
+            <span className="material-symbols-outlined text-[#00C896] text-4xl mb-2 block">mark_email_read</span>
+            <div className="text-sm text-muted">
+              Code sent to <span className="text-[#00C896] font-semibold">{email}</span>
+            </div>
+          </div>
+
+          <Input
+            value={otp}
+            onChange={e => setOtp(e.target.value.replace(/\D/g,"").slice(0,6))}
+            placeholder="Enter 6-digit code"
+            style={{textAlign:"center",fontSize:22,letterSpacing:8,fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}
+          />
+
+          <div className="space-y-1.5 mb-4">
+            <label className="label-text ml-1">New Password</label>
+            <PasswordInput value={newPass} onChange={e => setNewPass(e.target.value)}
+              placeholder="Min 6 characters"
+              onKeyDown={e => e.key === "Enter" && resetPassword()} />
+          </div>
+        </>
+      )}
+
+      {err && (
+        <div className="text-danger text-xs mb-3 p-3 bg-danger/5 border border-danger/20 rounded-xl
+          flex items-center gap-2">
+          <span className="material-symbols-outlined text-sm">error</span>{err}
+        </div>
+      )}
+      {msg && step !== 3 && (
+        <div className="text-[#00C896] text-xs mb-3 p-3 bg-[#00C896]/5 border border-[#00C896]/20 rounded-xl
+          flex items-center gap-2">
+          <span className="material-symbols-outlined text-sm">check_circle</span>{msg}
+        </div>
+      )}
+
+      <button onClick={step === 1 ? sendResetOtp : resetPassword} disabled={loading}
+        className="btn-primary w-full mt-2 py-3.5 text-base flex items-center justify-center gap-2">
+        {loading ? <><Spinner size={14}/> {step === 1 ? "Sending..." : "Resetting..."}</> :
+          step === 1 ? <>Send Reset Code <span className="material-symbols-outlined text-lg">send</span></> :
+          <>Reset Password <span className="material-symbols-outlined text-lg">lock_reset</span></>}
+      </button>
+
+      <div className="mt-4 text-center">
+        <button onClick={onBack} className="text-dim text-xs hover:text-on-surface transition-colors duration-200">
+          ← Back to Sign In
+        </button>
+      </div>
+    </AuthWrap>
+  );
+}
+
+/* ───────────────── LOGIN PAGE ───────────────── */
 export function LoginPage() {
   const { login, googleLogin, user } = useAuth();
   const navigate = useNavigate();
@@ -231,8 +384,13 @@ export function LoginPage() {
   const [pass,setPass]=useState("");
   const [err,setErr]=useState("");
   const [loading,setLoading]=useState(false);
+  const [showForgot, setShowForgot] = useState(false);
 
   if (user) { navigate("/dashboard", { replace: true }); return null; }
+
+  if (showForgot) {
+    return <ForgotPasswordFlow onBack={() => setShowForgot(false)} />;
+  }
 
   const go = async () => {
     if (!email || !pass) return setErr("Email and password required");
@@ -260,7 +418,7 @@ export function LoginPage() {
     <AuthWrap title="Welcome back" sub="Access your developer dashboard and modules.">
       {hasGoogle && <GoogleBtn onSuccess={handleGoogle} />}
 
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <label className="label-text ml-1">Email Address</label>
         <div className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
@@ -271,23 +429,18 @@ export function LoginPage() {
         </div>
       </div>
 
-      <div className="space-y-1 mt-4">
+      <div className="space-y-1.5 mt-4">
         <div className="flex justify-between items-center px-1">
           <label className="label-text">Password</label>
-          <a className="text-[10px] font-bold text-[#00C896] hover:underline" href="#">Forgot?</a>
+          <button onClick={() => setShowForgot(true)}
+            className="text-[10px] font-bold text-[#00C896] hover:underline">Forgot?</button>
         </div>
-        <div className="relative group">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
-            text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">lock</span>
-          <input value={pass} onChange={e=>setPass(e.target.value)}
-            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" type="password"
-            onKeyDown={e => e.key === "Enter" && go()}
-            className="input-field pl-12"/>
-        </div>
+        <PasswordInput value={pass} onChange={e=>setPass(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && go()} />
       </div>
 
       {err && (
-        <div className="text-danger text-xs mt-3 p-3 bg-danger/5 border border-danger/20 rounded-xl
+        <div className="text-danger text-xs mt-4 p-3 bg-danger/5 border border-danger/20 rounded-xl
           flex items-center gap-2">
           <span className="material-symbols-outlined text-sm">error</span>{err}
         </div>
@@ -309,7 +462,7 @@ export function LoginPage() {
   );
 }
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ REGISTER PAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ───────────────── REGISTER PAGE ───────────────── */
 export function RegisterPage() {
   const { sendOtp, googleLogin, user } = useAuth();
   const navigate = useNavigate();
@@ -365,7 +518,7 @@ export function RegisterPage() {
     <AuthWrap title="Create account" sub="Sign up to start studying smarter">
       {hasGoogle && <GoogleBtn onSuccess={handleGoogle} />}
 
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <label className="label-text ml-1">Full Name</label>
         <div className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
@@ -375,7 +528,7 @@ export function RegisterPage() {
         </div>
       </div>
 
-      <div className="space-y-1 mt-3">
+      <div className="space-y-1.5 mt-4">
         <label className="label-text ml-1">Email</label>
         <div className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
@@ -385,7 +538,7 @@ export function RegisterPage() {
         </div>
       </div>
 
-      <div className="space-y-1 mt-3">
+      <div className="space-y-1.5 mt-4">
         <label className="label-text ml-1">Username (optional)</label>
         <div className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
@@ -395,20 +548,15 @@ export function RegisterPage() {
         </div>
       </div>
 
-      <div className="space-y-1 mt-3">
+      <div className="space-y-1.5 mt-4">
         <label className="label-text ml-1">Password</label>
-        <div className="relative group">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
-            text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">lock</span>
-          <input value={pass} onChange={e=>setPass(e.target.value)}
-            placeholder="Min 6 characters" type="password"
-            onKeyDown={e => e.key === "Enter" && handleSendOTP()}
-            className="input-field pl-12"/>
-        </div>
+        <PasswordInput value={pass} onChange={e=>setPass(e.target.value)}
+          placeholder="Min 6 characters"
+          onKeyDown={e => e.key === "Enter" && handleSendOTP()} />
       </div>
 
       {err && (
-        <div className="text-danger text-xs mt-3 p-3 bg-danger/5 border border-danger/20 rounded-xl
+        <div className="text-danger text-xs mt-4 p-3 bg-danger/5 border border-danger/20 rounded-xl
           flex items-center gap-2">
           <span className="material-symbols-outlined text-sm">error</span>{err}
         </div>

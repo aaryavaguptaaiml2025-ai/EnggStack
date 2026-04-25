@@ -51,7 +51,7 @@ export default function CalendarPage() {
     try {
       await api.addReminder(form);
       sfx.success();
-      setToast({ msg:"Reminder set!", color:"#00FFB2" });
+      setToast({ msg:"Reminder set!", color:"#00C896" });
       setModal(false);
       setForm({ title:"", body:"", fireAt:"", repeat:"none" });
       api.getReminders().then(setReminders).catch(()=>{});
@@ -73,12 +73,12 @@ export default function CalendarPage() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="section-title flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#00FFB2] text-2xl">calendar_month</span>
+            <span className="material-symbols-outlined text-[#00C896] text-2xl">calendar_month</span>
             Calendar
           </h1>
           <p className="text-xs text-muted mt-1">View deadlines, classes, and reminders</p>
         </div>
-        <Btn color="#00FFB2" onClick={()=>setModal(true)}>
+        <Btn color="#00C896" onClick={()=>setModal(true)}>
           <span className="material-symbols-outlined text-base">add</span> Add Reminder
         </Btn>
       </div>
@@ -97,8 +97,8 @@ export default function CalendarPage() {
           <span className="material-symbols-outlined text-lg">chevron_right</span>
         </button>
         <button onClick={()=>{ sfx.click(); setYear(today.getFullYear()); setMonth(today.getMonth()); }}
-          className="bg-[#00FFB2]/10 border border-[#00FFB2]/25 rounded-xl px-3 py-1.5
-            text-[#00FFB2] text-xs font-semibold hover:bg-[#00FFB2]/15 transition-all duration-200">
+          className="bg-[#00C896]/10 border border-[#00C896]/25 rounded-xl px-3 py-1.5
+            text-[#00C896] text-xs font-semibold hover:bg-[#00C896]/15 transition-all duration-200">
           Today
         </button>
       </div>
@@ -121,11 +121,11 @@ export default function CalendarPage() {
                   <div key={i} onClick={()=>{ if(day){sfx.click();setSelected(day===selected?null:day);} }}
                     className={`min-h-[72px] p-1.5 border-r border-b border-white/5 transition-colors duration-150
                       ${day ? "cursor-pointer hover:bg-white/[.03]" : ""}
-                      ${isSel ? "bg-[#00FFB2]/8" : isToday ? "bg-[#00FFB2]/5" : ""}`}>
+                      ${isSel ? "bg-[#00C896]/8" : isToday ? "bg-[#00C896]/5" : ""}`}>
                     {day && (
                       <>
                         <div className={`text-sm w-6 h-6 flex items-center justify-center rounded-full mb-1
-                          ${isToday ? "bg-[#00FFB2]/20 text-[#00FFB2] font-bold" : isSel ? "text-[#00FFB2]" : "text-on-surface"}`}>
+                          ${isToday ? "bg-[#00C896]/20 text-[#00C896] font-bold" : isSel ? "text-[#00C896]" : "text-on-surface"}`}>
                           {day}
                         </div>
                         <div className="flex flex-col gap-0.5">
@@ -151,7 +151,7 @@ export default function CalendarPage() {
           {selected ? (
             <Card>
               <div className="text-sm font-bold text-on-surface mb-3 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#00FFB2] text-lg">event</span>
+                <span className="material-symbols-outlined text-[#00C896] text-lg">event</span>
                 {MONTHS[month]} {selected}, {year}
               </div>
               {selectedEvents.length===0
@@ -197,8 +197,8 @@ export default function CalendarPage() {
               ))
             }
             <button onClick={()=>setModal(true)}
-              className="mt-3 w-full bg-[#00FFB2]/10 border border-[#00FFB2]/20 rounded-xl py-2
-                text-[#00FFB2] text-xs font-semibold hover:bg-[#00FFB2]/15 transition-all duration-200">
+              className="mt-3 w-full bg-[#00C896]/10 border border-[#00C896]/20 rounded-xl py-2
+                text-[#00C896] text-xs font-semibold hover:bg-[#00C896]/15 transition-all duration-200">
               + Add Reminder
             </button>
           </Card>
@@ -231,14 +231,14 @@ export default function CalendarPage() {
                 <button key={r} onClick={()=>setForm({...form,repeat:r})}
                   className="flex-1 py-2 rounded-xl text-xs font-medium capitalize transition-all duration-200"
                   style={{
-                    border:`1px solid ${form.repeat===r?"rgba(0,255,178,.3)":"rgba(255,255,255,.05)"}`,
-                    background:form.repeat===r?"rgba(0,255,178,.08)":"transparent",
-                    color:form.repeat===r?"#00FFB2":"#4a5568"
+                    border:`1px solid ${form.repeat===r?"rgba(0,200,150,.3)":"rgba(255,255,255,.05)"}`,
+                    background:form.repeat===r?"rgba(0,200,150,.08)":"transparent",
+                    color:form.repeat===r?"#00C896":"#4a5568"
                   }}>{r}</button>
               ))}
             </div>
           </div>
-          <Btn full color="#00FFB2" onClick={addReminder}>Set Reminder</Btn>
+          <Btn full color="#00C896" onClick={addReminder}>Set Reminder</Btn>
         </Modal>
       )}
     </div>

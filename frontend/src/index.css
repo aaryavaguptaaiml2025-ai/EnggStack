@@ -42,8 +42,8 @@ input[type=range]::-webkit-slider-thumb {
   box-shadow: 0 0 8px rgba(0,200,150,.4);
 }
 
-/* â”€â”€ CSS Variables â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-:root {
+/* ── CSS Variables ────────────────────────────────────────────── */
+:root, [data-theme="dark"] {
   --bg: #0B132B;
   --bg2: #0f1a36;
   --card: rgba(255,255,255,0.05);
@@ -56,6 +56,30 @@ input[type=range]::-webkit-slider-thumb {
   --ac: #00C896;
   --ac-dim: rgba(0,200,150,0.12);
   --ac2: #00C896;
+}
+
+[data-theme="midnight"] {
+  --bg: #060818;
+  --bg2: #0a0d26;
+  --surface: #060818;
+}
+
+[data-theme="forest"] {
+  --bg: #080d08;
+  --bg2: #0d170d;
+  --surface: #080d08;
+}
+
+[data-theme="ocean"] {
+  --bg: #050d14;
+  --bg2: #081621;
+  --surface: #050d14;
+}
+
+[data-theme="candy"] {
+  --bg: #0f0a1a;
+  --bg2: #1a112c;
+  --surface: #0f0a1a;
 }
 
 /* â”€â”€ Glassmorphism Utility Classes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */

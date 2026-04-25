@@ -4,7 +4,7 @@ import { Toast } from "../components/ui";
 import { sfx } from "../hooks/useSfx";
 
 const DUR = { focus:25*60, short:5*60, long:15*60 };
-const CLR = { focus:"#60a5fa", short:"#00FFB2", long:"#a78bfa" };
+const CLR = { focus:"#60a5fa", short:"#00C896", long:"#a78bfa" };
 const LBL = { focus:"Focus Session", short:"Short Break", long:"Long Break" };
 
 export default function PomodoroPage() {
@@ -74,7 +74,7 @@ export default function PomodoroPage() {
       <div className="flex items-center gap-5">
         <button onClick={()=>{sfx.click();clearInterval(ref.current);setRun(false);setTl(DUR[mode]);}}
           className="w-12 h-12 rounded-full glass-card flex items-center justify-center
-            text-dim hover:text-[#00FFB2] hover:border-[#00FFB2]/30 transition-all duration-200">
+            text-dim hover:text-[#00C896] hover:border-[#00C896]/30 transition-all duration-200">
           <span className="material-symbols-outlined text-xl">restart_alt</span>
         </button>
         <button onClick={()=>{sfx.click();setRun(r=>!r);}}
@@ -95,7 +95,7 @@ export default function PomodoroPage() {
         <div className="text-xs text-muted mb-1">Sessions today</div>
         <div className="text-4xl font-extrabold text-on-surface font-mono">{sess}</div>
         <div className="text-sm text-muted mt-1">{sess*25} minutes of deep work</div>
-        {sess>0&&<div className="text-xs text-[#00FFB2] mt-2">+{sess*30} XP earned</div>}
+        {sess>0&&<div className="text-xs text-[#00C896] mt-2">+{sess*30} XP earned</div>}
         <div className="text-[10px] text-dim mt-2">Skip does NOT award XP — only completing counts</div>
       </div>
     </div>

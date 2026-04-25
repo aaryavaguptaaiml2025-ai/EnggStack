@@ -1,7 +1,8 @@
-﻿import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { StatsProvider } from "./context/StatsContext";
 import { MusicProvider } from "./context/MusicContext";
+import { ToastProvider } from "./context/ToastContext";
 import Layout from "./components/Layout";
 import { LoginPage, RegisterPage } from "./pages/AuthPages";
 import DashboardPage    from "./pages/DashboardPage";
@@ -11,6 +12,7 @@ import AnalyticsPage    from "./pages/AnalyticsPage";
 import SettingsPage     from "./pages/SettingsPage";
 import MusicPage        from "./pages/MusicPage";
 import CalendarPage     from "./pages/CalendarPage";
+import CalculatorPage   from "./pages/CalculatorPage";
 import { DeadlinesPage, NotesPage, ChecklistPage, SubjectsPage, TimetablePage, GamificationPage } from "./pages/OtherPages";
 
 function AppLayout() {
@@ -23,14 +25,12 @@ function AppLayout() {
         <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%]
           bg-[#00C896]/5 blur-[140px] rounded-full"/>
       </div>
-      <div className="text-center z-10">
-        <img src="/cognit-logo.png" alt="Cognit" className="w-16 h-16 object-contain mb-5" />
-        <div className="text-muted text-sm mb-3">Loading Cognit...</div>
-        <div className="flex gap-1.5 justify-center">
-          {[0,1,2].map(i => (
-            <div key={i} className="w-2 h-2 rounded-full bg-[#00C896] animate-bounce-dot"
-              style={{animationDelay:`${i*0.2}s`}}/>
-          ))}
+      <div className="text-center z-10 loading-fade-in">
+        <img src="/cognit-logo.png" alt="Cognit" className="w-16 h-16 object-contain mx-auto mb-5" />
+        <div className="text-on-surface text-lg font-bold mb-1">Cognit</div>
+        <div className="text-muted text-sm mb-5">Preparing your workspace...</div>
+        <div className="w-40 h-1 rounded-full bg-white/5 mx-auto overflow-hidden">
+          <div className="h-full bg-[#00C896] rounded-full loading-bar" />
         </div>
       </div>
     </div>
@@ -55,6 +55,7 @@ function AppLayout() {
           <Route path="/settings"     element={<SettingsPage/>}/>
           <Route path="/music"        element={<MusicPage/>}/>
           <Route path="/calendar"     element={<CalendarPage/>}/>
+          <Route path="/calculator"   element={<CalculatorPage/>}/>
           <Route path="*"             element={<Navigate to="/dashboard" replace/>}/>
         </Routes>
       </Layout>
@@ -65,15 +66,17 @@ function AppLayout() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <StatsProvider>
-          <Routes>
-            <Route path="/login"    element={<LoginPage/>}/>
-            <Route path="/register" element={<RegisterPage/>}/>
-            <Route path="/*"        element={<AppLayout/>}/>
-          </Routes>
-        </StatsProvider>
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <StatsProvider>
+            <Routes>
+              <Route path="/login"    element={<LoginPage/>}/>
+              <Route path="/register" element={<RegisterPage/>}/>
+              <Route path="/*"        element={<AppLayout/>}/>
+            </Routes>
+          </StatsProvider>
+        </AuthProvider>
+      </ToastProvider>
     </BrowserRouter>
   );
 }

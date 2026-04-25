@@ -16,7 +16,7 @@ export function BarChart({ data, color, label = "mins", height = 120 }) {
         {data.map((d, i) => {
           const isToday = i === todayIdx;
           const h = animated ? `${Math.round((d.value / max) * 100)}%` : "0%";
-          const c = color || (isToday ? "#00FFB2" : "rgba(255,255,255,.08)");
+          const c = color || (isToday ? "#00C896" : "rgba(255,255,255,.08)");
           return (
             <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:3, height:"100%" }}>
               <div style={{ flex:1, width:"100%", display:"flex", alignItems:"flex-end", position:"relative" }}>
@@ -30,14 +30,14 @@ export function BarChart({ data, color, label = "mins", height = 120 }) {
                 <div style={{
                   width:"100%", height:h, minHeight:3,
                   background: isToday && !color
-                    ? `linear-gradient(180deg, #00FFB2, #00FFB288)`
+                    ? `linear-gradient(180deg, #00C896, #00C89688)`
                     : c,
                   borderRadius:"5px 5px 0 0",
                   transition:"height 1s cubic-bezier(.34,1.56,.64,1)",
-                  boxShadow: isToday ? `0 0 10px #00FFB244` : "none",
+                  boxShadow: isToday ? `0 0 10px #00C89644` : "none",
                 }}/>
               </div>
-              <span style={{ fontSize:9, color: isToday ? "#00FFB2" : "var(--dim)", fontWeight: isToday ? 700 : 400 }}>
+              <span style={{ fontSize:9, color: isToday ? "#00C896" : "var(--dim)", fontWeight: isToday ? 700 : 400 }}>
                 {d.label}
               </span>
             </div>
@@ -63,7 +63,7 @@ export function Sparkline({ data, color, width = 200, height = 50 }) {
     return acc + (i===0 ? `M${x},${height} L${x},${y}` : ` L${x},${y}`);
   }, "") + ` L${width},${height} Z`;
 
-  const c = color || "#00FFB2";
+  const c = color || "#00C896";
   return (
     <svg width={width} height={height} style={{ overflow:"visible" }}>
       <defs>
@@ -104,10 +104,10 @@ export function StudyHeatmap({ heatmap = {} }) {
 
   const getColor = (mins) => {
     if (!mins)  return "rgba(255,255,255,.04)";
-    if (mins < 20)  return "rgba(0,255,178,.2)";
-    if (mins < 60)  return "rgba(0,255,178,.45)";
-    if (mins < 120) return "rgba(0,255,178,.7)";
-    return "#00FFB2";
+    if (mins < 20)  return "rgba(0,200,150,.2)";
+    if (mins < 60)  return "rgba(0,200,150,.45)";
+    if (mins < 120) return "rgba(0,200,150,.7)";
+    return "#00C896";
   };
 
   const weeks = [];
@@ -169,7 +169,7 @@ export function StudyHeatmap({ heatmap = {} }) {
           zIndex:9999, pointerEvents:"none", whiteSpace:"nowrap",
           boxShadow:"0 4px 16px rgba(0,0,0,.5)", backdropFilter:"blur(12px)",
         }}>
-          <div style={{ fontWeight:600, color:"#00FFB2" }}>
+          <div style={{ fontWeight:600, color:"#00C896" }}>
             {tooltip.day.mins > 0 ? `${tooltip.day.mins} mins studied` : "No study"}
           </div>
           <div style={{ color:"var(--muted)", fontSize:10, marginTop:2 }}>
@@ -181,7 +181,7 @@ export function StudyHeatmap({ heatmap = {} }) {
       {/* Legend */}
       <div style={{ display:"flex", alignItems:"center", gap:5, marginTop:8, justifyContent:"flex-end" }}>
         <span style={{ fontSize:9, color:"var(--dim)" }}>Less</span>
-        {["rgba(255,255,255,.04)","rgba(0,255,178,.2)","rgba(0,255,178,.45)","rgba(0,255,178,.7)","#00FFB2"].map(c=>(
+        {["rgba(255,255,255,.04)","rgba(0,200,150,.2)","rgba(0,200,150,.45)","rgba(0,200,150,.7)","#00C896"].map(c=>(
           <div key={c} style={{ width:11,height:11,borderRadius:2,background:c }}/>
         ))}
         <span style={{ fontSize:9, color:"var(--dim)" }}>More</span>

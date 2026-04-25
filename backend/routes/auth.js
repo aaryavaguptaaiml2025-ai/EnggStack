@@ -152,4 +152,52 @@ router.get("/me", auth, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── Forgot Password — Send OTP ───────────────────────────────────────────────
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const email = req.body.email?.toLowerCase().trim();
+    if (!email) return res.status(400).json({ error: "Email is required" });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ error: "No account found with that email." });
+
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+      return res.status(500).json({ error: "Email not configured. Contact support." });
+    }
+
+    const otp = generateOTP();
+    otpStore.set(`reset:${email}`, otp, { email });
+    await sendOTPEmail(email, otp, user.name);
+    res.json({ ok: true, message: `Reset code sent to ${email}` });
+  } catch (e) {
+    console.error("forgot-password:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── Reset Password — Verify OTP and set new password ─────────────────────────
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword)
+      return res.status(400).json({ error: "Email, code, and new password are required" });
+    if (newPassword.length < 6)
+      return res.status(400).json({ error: "Password must be at least 6 characters" });
+
+    const emailLower = email.toLowerCase().trim();
+    const result = otpStore.verify(`reset:${emailLower}`, otp.toString().trim());
+    if (!result.ok) return res.status(400).json({ error: result.reason });
+
+    const user = await User.findOne({ email: emailLower });
+    if (!user) return res.status(400).json({ error: "User not found" });
+
+    user.password = newPassword;
+    await user.save();
+    res.json({ ok: true, message: "Password reset successfully. You can now sign in." });
+  } catch (e) {
+    console.error("reset-password:", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;

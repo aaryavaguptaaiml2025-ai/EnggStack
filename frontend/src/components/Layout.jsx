@@ -1,8 +1,9 @@
-﻿import { useState } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Sidebar from "./Sidebar";
 
-/* â”€â”€ Ambient Background â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Ambient Background ─────────────────────────────────── */
 function AmbientBackground() {
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -16,9 +17,10 @@ function AmbientBackground() {
   );
 }
 
-/* â”€â”€ Top Navbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Top Navbar ─────────────────────────────────────────── */
 function Navbar({ onMenuToggle }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const avatar   = user?.avatar || user?.googleAvatar;
   const initials = user?.name?.split(" ").map(w => w[0]).join("").toUpperCase().slice(0,2) || "?";
 
@@ -39,15 +41,18 @@ function Navbar({ onMenuToggle }) {
 
       {/* Right: actions + avatar */}
       <div className="flex items-center gap-3">
-        <button className="p-2 text-dim hover:text-[#00C896] hover:bg-white/5
-          rounded-xl transition-all duration-200" title="Quick Actions">
+        <button onClick={() => navigate("/dashboard")}
+          className="p-2 text-dim hover:text-[#00C896] hover:bg-white/5
+          rounded-xl transition-all duration-200" title="Dashboard">
           <span className="material-symbols-outlined text-xl">bolt</span>
         </button>
-        <button className="p-2 text-dim hover:text-[#00C896] hover:bg-white/5
+        <button onClick={() => navigate("/gamification")}
+          className="p-2 text-dim hover:text-[#00C896] hover:bg-white/5
           rounded-xl transition-all duration-200" title="Achievements">
           <span className="material-symbols-outlined text-xl">workspace_premium</span>
         </button>
-        <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/10
+        <div onClick={() => navigate("/settings")}
+          className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/10
           hover:border-[#00C896]/40 transition-colors duration-200 cursor-pointer">
           {avatar
             ? <img src={avatar} alt="" className="w-full h-full object-cover"/>
@@ -60,7 +65,7 @@ function Navbar({ onMenuToggle }) {
   );
 }
 
-/* â”€â”€ Layout Shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Layout Shell ─────────────────────────────────────── */
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 

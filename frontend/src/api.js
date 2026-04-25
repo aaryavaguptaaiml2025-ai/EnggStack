@@ -71,6 +71,8 @@ export const api = {
   googleAuth:  (b) => req("POST",  "/auth/google",      b),
   pinLogin:    (b) => req("POST",  "/auth/pin-login",   b),
   me:          ()  => req("GET",   "/auth/me"),
+  forgotPassword: (b) => req("POST", "/auth/forgot-password", b),
+  resetPassword:  (b) => req("POST", "/auth/reset-password",  b),
 
   // user / settings
   updateProfile:  (b)    => req("PATCH",  "/user/profile",  b),

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 
-export function ProgressBar({ value, max, color = "#00FFB2", height = 7, glow = false }) {
+export function ProgressBar({ value, max, color = "#00C896", height = 7, glow = false }) {
   const [w, setW] = useState(0);
   const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
   useEffect(() => { const t = setTimeout(() => setW(pct), 100); return () => clearTimeout(t); }, [pct]);
@@ -25,7 +25,7 @@ export function Card({ children, style, accent, onClick, className="" }) {
   );
 }
 
-export function Badge({ children, color = "#00FFB2", dot }) {
+export function Badge({ children, color = "#00C896", dot }) {
   return (
     <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold
       px-2.5 py-1 rounded-full whitespace-nowrap"
@@ -36,7 +36,7 @@ export function Badge({ children, color = "#00FFB2", dot }) {
   );
 }
 
-export function Toast({ msg, color = "#00FFB2", onClose }) {
+export function Toast({ msg, color = "#00C896", onClose }) {
   useEffect(() => { const t = setTimeout(onClose, 4000); return () => clearTimeout(t); }, [onClose]);
   return (
     <div className="slide-in fixed top-5 right-5 z-[9999] bg-white/5 backdrop-blur-xl
@@ -85,7 +85,7 @@ export function Input({ label, error, style, className="", ...props }) {
 }
 
 export function Btn({ children, color, onClick, disabled, full, variant="fill", style, size="md" }) {
-  const c = color || "#00FFB2";
+  const c = color || "#00C896";
   const sizeClasses = {
     sm: "text-xs px-3.5 py-2",
     md: "text-sm px-5 py-2.5",
@@ -120,7 +120,7 @@ export function Btn({ children, color, onClick, disabled, full, variant="fill", 
   );
 }
 
-export function Spinner({ color="#00FFB2", size=20 }) {
+export function Spinner({ color="#00C896", size=20 }) {
   return <div className="inline-block flex-shrink-0 rounded-full animate-spin"
     style={{width:size,height:size,border:"2px solid rgba(255,255,255,.08)",borderTopColor:color}}/>;
 }
@@ -185,7 +185,7 @@ export function Heatmap({ data = {} }) {
                   <div key={cell.key} title={`${cell.key}: ${cell.mins}m`}
                     className="w-3 h-3 rounded-sm cursor-default transition-transform duration-100
                       hover:scale-150"
-                    style={{background:cell.mins?`rgba(0,255,178,${opacity(cell.mins)})`:"rgba(255,255,255,.04)"}}/>
+                    style={{background:cell.mins?`rgba(0,200,150,${opacity(cell.mins)})`:"rgba(255,255,255,.04)"}}/>
                 ))}
               </div>
             ))}
@@ -195,7 +195,7 @@ export function Heatmap({ data = {} }) {
       <div className="flex items-center gap-1.5 mt-2 justify-end">
         <span className="text-[10px] text-dim">Less</span>
         {[0,.25,.5,.75,1].map(v=><div key={v} className="w-2.5 h-2.5 rounded-sm"
-          style={{background:v?`rgba(0,255,178,${v})`:"rgba(255,255,255,.04)"}}/>)}
+          style={{background:v?`rgba(0,200,150,${v})`:"rgba(255,255,255,.04)"}}/>)}
         <span className="text-[10px] text-dim">More</span>
       </div>
     </div>

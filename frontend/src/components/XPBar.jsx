@@ -1,4 +1,4 @@
-﻿import { getLevel, LEVEL_NAMES, LEVEL_ICONS, XP_THRESHOLDS } from "../context/StatsContext";
+import { getLevel, LEVEL_NAMES, LEVEL_ICONS, XP_THRESHOLDS } from "../context/StatsContext";
 import { ProgressBar } from "./ui";
 
 export default function XPBar({ xp, compact }) {
