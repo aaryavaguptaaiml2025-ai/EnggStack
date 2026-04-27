@@ -351,7 +351,7 @@ export function NotesPage() {
 
       {modal && (
         <Modal title="New Note" onClose={() => setModal(false)}>
-          <Input label="Title" placeholder="e.g. Binary Search Trees" value={form.title} onChange={e => setForm({...form, title:e.target.value})} />
+          <Input label="Topic" placeholder="e.g. Binary Search Trees" value={form.title} onChange={e => setForm({...form, title:e.target.value})} />
           <Input label="Subject (optional)" placeholder="e.g. Data Structures" value={form.subject} onChange={e => setForm({...form, subject:e.target.value})} />
           <div className="mb-4">
             <div className="text-xs text-muted mb-1.5 font-medium ml-1">Content</div>

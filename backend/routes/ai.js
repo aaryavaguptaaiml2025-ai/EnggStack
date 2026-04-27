@@ -23,7 +23,7 @@ router.post("/chat", auth, async (req, res) => {
     const key = process.env.OPENAI_API_KEY;
     if (!key || key.includes("YOUR_"))
       return res.status(500).json({
-        error: "OpenAI API key not configured. Add OPENAI_API_KEY to backend/.env — get it from platform.openai.com"
+        error: "Cognit AI is taking some rest right now, try again later"//OpenAI API key not configured. Add OPENAI_API_KEY to backend/.env — get it from platform.openai.com
       });
 
     const openai = new OpenAI({ apiKey: key });
