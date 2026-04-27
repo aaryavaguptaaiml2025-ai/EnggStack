@@ -1,11 +1,11 @@
 import { useState, useMemo } from "react";
 
-/* â”€â”€ Build a smart daily task list from real user data â”€â”€ */
+/* ── Build a smart daily task list from real user data ── */
 function buildPlan(subjects, deadlines, stats, user) {
   const tasks = [];
   const goal = user?.dailyGoalMins || 120;
 
-  // 1. Urgent deadlines (â‰¤3 days)
+  // 1. Urgent deadlines (≤3 days)
   deadlines
     .filter(d => !d.done)
     .forEach(d => {
@@ -17,7 +17,7 @@ function buildPlan(subjects, deadlines, stats, user) {
           sub: diff <= 0 ? "Due today!" : `Exam in ${diff}d`,
           mins: 30,
           icon: "event_upcoming",
-          color: diff <= 1 ? "#f87171" : "#fbbf24",
+          color: diff <= 1 ? "#f87171" : "#f97316",
           urgent: diff <= 1,
         });
       }
@@ -34,7 +34,7 @@ function buildPlan(subjects, deadlines, stats, user) {
         sub: `${Math.round((s.doneTopics / s.totalTopics) * 100)}% complete`,
         mins: 30,
         icon: "menu_book",
-        color: s.color || "#00C896",
+        color: s.color || "#3b82f6",
       });
     });
 
@@ -50,11 +50,11 @@ function buildPlan(subjects, deadlines, stats, user) {
     });
   }
 
-  // 4. If nothing â€” positive fallback
+  // 4. If nothing — positive fallback
   if (!tasks.length) {
     tasks.push({
       id: "on-track",
-      label: "You're on track â€” keep going!",
+      label: "You're on track — keep going!",
       sub: `${stats.minsToday || 0} / ${goal} mins done`,
       mins: 0,
       icon: "check_circle",
@@ -65,7 +65,7 @@ function buildPlan(subjects, deadlines, stats, user) {
   return tasks.slice(0, 5);
 }
 
-/* â”€â”€ Checkable task row â”€â”€ */
+/* ── Checkable task row ── */
 function PlanRow({ task, checked, onToggle, delay }) {
   const [pop, setPop] = useState(false);
 
@@ -133,7 +133,7 @@ function PlanRow({ task, checked, onToggle, delay }) {
   );
 }
 
-/* â”€â”€ Main Component â”€â”€ */
+/* ── Main Component ── */
 export default function TodaysPlan({ subjects, deadlines, stats, user }) {
   const [checked, setChecked] = useState({});
 
@@ -162,7 +162,7 @@ export default function TodaysPlan({ subjects, deadlines, stats, user }) {
             <div className="text-base font-extrabold text-on-surface">Today's Plan</div>
             <div className="text-[10px] text-muted">
               {done === total && total > 0
-                ? "All done â€” great work!"
+                ? "All done — great work!"
                 : `${done}/${total} completed`}
             </div>
           </div>

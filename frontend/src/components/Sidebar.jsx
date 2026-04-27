@@ -18,6 +18,8 @@ const NAV = [
   { to:"/gamification", icon:"emoji_events",     label:"Achievements" },
   { to:"/music",        icon:"music_note",       label:"Music"        },
   { to:"/calculator",   icon:"calculate",        label:"Calculator"   },
+  { to:"/ai-chat",      icon:"psychology",       label:"AI Chat"      },
+  { to:"/friends",      icon:"group",            label:"Friends"      },
   { to:"/settings",     icon:"settings",         label:"Settings"     },
 ];
 
@@ -38,13 +40,14 @@ export default function Sidebar({ onClose }) {
     <aside className="glass-sidebar w-[250px] flex flex-col h-screen overflow-y-auto">
       {/* Logo + close */}
       <div className="p-5 pb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <img src="/cognit-logo.png" alt="Cognit" className="w-8 h-8 object-contain flex-shrink-0" />
+        <div className="flex items-center gap-3">
+          <img src="/cognit-logo.png" alt="Cognit" className="w-7 h-7 object-contain flex-shrink-0" />
           <span className="text-[15px] font-extrabold text-on-surface tracking-tight">Cognit</span>
         </div>
         {onClose && (
           <button onClick={onClose}
-            className="text-dim hover:text-on-surface p-1 transition-colors duration-200">
+            className="text-dim hover:text-on-surface hover:bg-white/5
+              p-1.5 rounded-lg transition-all duration-200">
             <span className="material-symbols-outlined text-lg">close</span>
           </button>
         )}
@@ -69,11 +72,11 @@ export default function Sidebar({ onClose }) {
 
       {/* Streak */}
       {(stats.streak || 0) > 0 && (
-        <div className="mx-3 mb-2 bg-white/5 border border-white/10 rounded-xl
+        <div className="mx-3 mb-2 bg-[#f97316]/5 border border-[#f97316]/15 rounded-xl
           px-3 py-2 flex items-center gap-2 backdrop-blur-sm">
-          <span className="material-symbols-outlined text-orange-400 text-lg filled">local_fire_department</span>
+          <span className="material-symbols-outlined text-[#f97316] text-lg filled">local_fire_department</span>
           <div>
-            <div className="text-xs font-bold text-orange-400">{stats.streak}d streak</div>
+            <div className="text-xs font-bold text-[#f97316]">{stats.streak}d streak</div>
             <div className="text-[10px] text-dim">Keep it up</div>
           </div>
         </div>
@@ -81,7 +84,9 @@ export default function Sidebar({ onClose }) {
 
       {/* User + sign out */}
       <div className="p-4 pt-2 border-t border-white/10">
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-3 mb-3 cursor-pointer hover:bg-white/5
+          rounded-xl p-1.5 -mx-1.5 transition-all duration-200"
+          onClick={() => { sfx.click(); navigate("/profile"); if (onClose) onClose(); }}>
           <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden border-2 border-white/10">
             {avatar
               ? <img src={avatar} alt="" className="w-full h-full object-cover"/>

@@ -2,7 +2,7 @@ const router  = require("express").Router();
 const auth    = require("../middleware/auth");
 const OpenAI  = require("openai");
 
-const SYSTEM = `You are EnggStack AI — an expert engineering study assistant.
+const SYSTEM = `You are Cognit AI — an expert engineering study assistant.
 Help students with: Data Structures & Algorithms, Computer Networks, Operating Systems,
 DBMS, Mathematics (Calculus, Linear Algebra, Probability, Discrete Maths),
 Physics (Mechanics, Electromagnetism, Thermodynamics), and all CS/Engineering topics.

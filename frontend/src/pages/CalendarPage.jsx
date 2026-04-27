@@ -1,10 +1,23 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { api } from "../api";
 import { Card, Modal, Input, Btn, Badge, Toast } from "../components/ui";
 import { sfx } from "../hooks/useSfx";
 
 const DAYS_OF_WEEK = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+/* ── Relative time helper ── */
+function relTime(date) {
+  const diff = new Date(date) - Date.now();
+  const mins = Math.round(diff / 60000);
+  const hrs  = Math.round(diff / 3600000);
+  const days = Math.round(diff / 86400000);
+  if (mins < 0) return "Past";
+  if (mins < 60) return `in ${mins}m`;
+  if (hrs < 24) return `in ${hrs}h`;
+  if (days === 1) return "Tomorrow";
+  return `in ${days}d`;
+}
 
 export default function CalendarPage() {
   const today = new Date();
@@ -14,9 +27,9 @@ export default function CalendarPage() {
   const [timetable,  setTimetable]  = useState([]);
   const [reminders,  setReminders]  = useState([]);
   const [selected,   setSelected]   = useState(null);
-  const [modal,      setModal]       = useState(false);
-  const [toast,      setToast]       = useState(null);
-  const [form,       setForm]        = useState({ title:"", body:"", fireAt:"", repeat:"none" });
+  const [modal,      setModal]      = useState(false);
+  const [toast,      setToast]      = useState(null);
+  const [form,       setForm]       = useState({ title:"", body:"", fireAt:"", repeat:"none" });
 
   useEffect(() => {
     api.getDeadlines().then(setDeadlines).catch(()=>{});
@@ -34,17 +47,29 @@ export default function CalendarPage() {
     const events = [];
     deadlines.forEach(d => {
       const ds = new Date(d.dueDate).toISOString().split("T")[0];
-      if (ds===dateStr && !d.done) events.push({ type:"deadline", title:d.title, color:"#f87171", icon:"notifications" });
+      if (ds===dateStr && !d.done) events.push({ type:"deadline", title:d.title, color:"#f87171", icon:"notifications", date:d.dueDate });
     });
     const dayName = DAYS_OF_WEEK[new Date(year,month,day).getDay()];
     const shortDay = dayName.slice(0,3);
-    timetable.filter(e=>e.day===shortDay).forEach(e => events.push({ type:"class", title:`${e.subject} ${e.startTime}`, color:"#60a5fa", icon:"event" }));
+    timetable.filter(e=>e.day===shortDay).forEach(e => events.push({ type:"class", title:`${e.subject} ${e.startTime}`, color:"#3b82f6", icon:"event" }));
     reminders.forEach(r => {
       const rs = new Date(r.fireAt).toISOString().split("T")[0];
-      if (rs===dateStr && !r.done) events.push({ type:"reminder", title:r.title, color:"#a78bfa", icon:"alarm" });
+      if (rs===dateStr && !r.done) events.push({ type:"reminder", title:r.title, color:"#8b5cf6", icon:"alarm", date:r.fireAt });
     });
     return events;
   };
+
+  /* Upcoming events across all days */
+  const upcoming = useMemo(() => {
+    const all = [];
+    deadlines.filter(d => !d.done && new Date(d.dueDate) >= Date.now()).forEach(d => {
+      all.push({ type:"deadline", title:d.title, color:"#f87171", icon:"notifications", date:d.dueDate });
+    });
+    reminders.filter(r => !r.done && new Date(r.fireAt) >= Date.now()).forEach(r => {
+      all.push({ type:"reminder", title:r.title, color:"#8b5cf6", icon:"alarm", date:r.fireAt });
+    });
+    return all.sort((a,b) => new Date(a.date) - new Date(b.date)).slice(0, 5);
+  }, [deadlines, reminders]);
 
   const addReminder = async () => {
     if (!form.title || !form.fireAt) return;
@@ -130,9 +155,10 @@ export default function CalendarPage() {
                         </div>
                         <div className="flex flex-col gap-0.5">
                           {events.slice(0,2).map((ev,ei)=>(
-                            <div key={ei} className="text-[9px] truncate rounded px-1 py-[1px]"
+                            <div key={ei} className="text-[9px] truncate rounded px-1 py-[1px] flex items-center gap-0.5"
                               style={{color:ev.color,background:ev.color+"10"}}>
-                              {ev.title}
+                              <span className="material-symbols-outlined" style={{fontSize:8}}>{ev.icon}</span>
+                              <span className="truncate">{ev.title}</span>
                             </div>
                           ))}
                           {events.length>2 && <div className="text-[9px] text-muted">+{events.length-2} more</div>}
@@ -148,6 +174,7 @@ export default function CalendarPage() {
 
         {/* Side panel */}
         <div className="space-y-4">
+          {/* Selected day events */}
           {selected ? (
             <Card>
               <div className="text-sm font-bold text-on-surface mb-3 flex items-center gap-2">
@@ -157,12 +184,15 @@ export default function CalendarPage() {
               {selectedEvents.length===0
                 ? <div className="text-xs text-muted py-3">Nothing scheduled</div>
                 : selectedEvents.map((ev,i)=>(
-                  <div key={i} className="p-2.5 rounded-xl mb-2"
-                    style={{background:ev.color+"0a",border:`1px solid ${ev.color}20`}}>
+                  <div key={i} className="p-3 rounded-xl mb-2"
+                    style={{background:ev.color+"0a",borderLeft:`3px solid ${ev.color}`}}>
                     <div className="text-sm font-semibold flex items-center gap-1.5" style={{color:ev.color}}>
                       <span className="material-symbols-outlined text-sm">{ev.icon}</span>{ev.title}
                     </div>
-                    <div className="text-[10px] text-muted mt-0.5 capitalize">{ev.type}</div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-[10px] text-muted capitalize">{ev.type}</span>
+                      {ev.date && <span className="text-[10px] font-semibold" style={{color:ev.color}}>{relTime(ev.date)}</span>}
+                    </div>
                   </div>
                 ))
               }
@@ -174,19 +204,48 @@ export default function CalendarPage() {
             </Card>
           )}
 
+          {/* Upcoming section */}
+          {upcoming.length > 0 && (
+            <Card>
+              <div className="text-sm font-bold text-on-surface mb-3 flex items-center gap-2">
+                <span className="material-symbols-outlined text-[#f97316] text-lg">upcoming</span>
+                Upcoming
+              </div>
+              {upcoming.map((ev, i) => (
+                <div key={i} className="flex items-center gap-3 py-2 border-b border-white/5 last:border-0">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{background:ev.color+"12"}}>
+                    <span className="material-symbols-outlined text-sm" style={{color:ev.color}}>{ev.icon}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-semibold text-on-surface truncate">{ev.title}</div>
+                    <div className="text-[10px] text-muted capitalize">{ev.type}</div>
+                  </div>
+                  <span className="text-[10px] font-bold flex-shrink-0" style={{color:ev.color}}>
+                    {relTime(ev.date)}
+                  </span>
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {/* Reminders */}
           <Card>
             <div className="text-sm font-bold text-on-surface mb-3 flex items-center gap-2">
-              <span className="material-symbols-outlined text-purple text-lg">alarm</span>
+              <span className="material-symbols-outlined text-[#8b5cf6] text-lg">alarm</span>
               Reminders
             </div>
             {reminders.length===0
               ? <div className="text-xs text-muted">No reminders set</div>
               : reminders.slice(0,5).map(r=>(
-                <div key={r._id} className="flex justify-between items-start py-2 border-b border-white/5">
-                  <div>
-                    <div className="text-xs font-semibold text-on-surface">{r.title}</div>
-                    <div className="text-[10px] text-muted mt-0.5">
-                      {new Date(r.fireAt).toLocaleDateString("en-IN",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}
+                <div key={r._id} className="flex justify-between items-start py-2.5 border-b border-white/5 last:border-0">
+                  <div className="flex gap-2 items-start">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#8b5cf6] mt-1.5 flex-shrink-0"/>
+                    <div>
+                      <div className="text-xs font-semibold text-on-surface">{r.title}</div>
+                      <div className="text-[10px] text-muted mt-0.5">
+                        {new Date(r.fireAt).toLocaleDateString("en-IN",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}
+                      </div>
                     </div>
                   </div>
                   <button onClick={()=>deleteReminder(r._id)}
@@ -203,11 +262,13 @@ export default function CalendarPage() {
             </button>
           </Card>
 
+          {/* Legend */}
           <Card>
             <div className="text-sm font-semibold text-on-surface mb-3">Legend</div>
-            {[{color:"#f87171",label:"Deadline",icon:"notifications"},{color:"#60a5fa",label:"Class",icon:"event"},{color:"#a78bfa",label:"Reminder",icon:"alarm"}].map(l=>(
+            {[{color:"#f87171",label:"Deadline",icon:"notifications"},{color:"#3b82f6",label:"Class",icon:"event"},{color:"#8b5cf6",label:"Reminder",icon:"alarm"}].map(l=>(
               <div key={l.label} className="flex items-center gap-2 mb-1.5">
                 <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{background:l.color}}/>
+                <span className="material-symbols-outlined text-xs" style={{color:l.color}}>{l.icon}</span>
                 <span className="text-xs text-muted">{l.label}</span>
               </div>
             ))}

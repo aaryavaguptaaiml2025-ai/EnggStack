@@ -13,6 +13,9 @@ import SettingsPage     from "./pages/SettingsPage";
 import MusicPage        from "./pages/MusicPage";
 import CalendarPage     from "./pages/CalendarPage";
 import CalculatorPage   from "./pages/CalculatorPage";
+import AIChatPage       from "./pages/AIChatPage";
+import ProfilePage      from "./pages/ProfilePage";
+import FriendsPage      from "./pages/FriendsPage";
 import { DeadlinesPage, NotesPage, ChecklistPage, SubjectsPage, TimetablePage, GamificationPage } from "./pages/OtherPages";
 
 function AppLayout() {
@@ -56,6 +59,9 @@ function AppLayout() {
           <Route path="/music"        element={<MusicPage/>}/>
           <Route path="/calendar"     element={<CalendarPage/>}/>
           <Route path="/calculator"   element={<CalculatorPage/>}/>
+          <Route path="/ai-chat"      element={<AIChatPage/>}/>
+          <Route path="/profile"      element={<ProfilePage/>}/>
+          <Route path="/friends"      element={<FriendsPage/>}/>
           <Route path="*"             element={<Navigate to="/dashboard" replace/>}/>
         </Routes>
       </Layout>

@@ -122,6 +122,15 @@ export const api = {
   // AI chat
   chat: (messages) => req("POST", "/ai/chat", { messages }),
 
+  // friends
+  searchUsers:       (q)   => req("GET",    `/friends/search?q=${encodeURIComponent(q)}`),
+  sendFriendRequest: (id)  => req("POST",   "/friends/request", { toUserId: id }),
+  getFriendRequests: ()    => req("GET",    "/friends/requests"),
+  respondRequest:    (id, action) => req("PATCH", `/friends/request/${id}`, { action }),
+  getFriends:        ()    => req("GET",    "/friends"),
+  getFriendStats:    (id)  => req("GET",    `/friends/${id}/stats`),
+  removeFriend:      (id)  => req("DELETE", `/friends/${id}`),
+
   // export PDFs — sends token in Authorization header via fetch
   exportNote: async (id) => {
     const r = await fetchWithRetry(`${BASE}/api/export/notes/${id}`, {

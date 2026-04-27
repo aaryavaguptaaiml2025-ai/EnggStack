@@ -2,9 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* â”€â”€ Reset â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Reset ──────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root { height: 100%; font-family: 'Inter', system-ui, sans-serif; }
+body { background: linear-gradient(135deg, #0B132B 0%, #0F1F3D 100%); }
 button { font-family: inherit; cursor: pointer; }
 input, textarea, select { font-family: inherit; }
 a { text-decoration: none; color: inherit; }
@@ -56,6 +57,13 @@ input[type=range]::-webkit-slider-thumb {
   --ac: #00C896;
   --ac-dim: rgba(0,200,150,0.12);
   --ac2: #00C896;
+  /* Color roles */
+  --clr-primary: #00C896;
+  --clr-info: #3b82f6;
+  --clr-streak: #f97316;
+  --clr-level: #8b5cf6;
+  --clr-danger: #f87171;
+  --clr-warning: #fbbf24;
 }
 
 [data-theme="midnight"] {
@@ -82,7 +90,7 @@ input[type=range]::-webkit-slider-thumb {
   --surface: #0f0a1a;
 }
 
-/* â”€â”€ Glassmorphism Utility Classes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Glassmorphism Utility Classes ────────────────────── */
 @layer components {
   .glass-card {
     @apply bg-white/[.04] backdrop-blur-xl border border-white/[.07] rounded-2xl;
@@ -90,16 +98,40 @@ input[type=range]::-webkit-slider-thumb {
     transition: box-shadow 0.3s ease, transform 0.3s ease, background 0.3s ease;
   }
   .glass-card:hover {
-    box-shadow: 0 4px 24px rgba(0,0,0,0.22);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.22), 0 0 20px rgba(255,255,255,0.02);
     transform: translateY(-1px);
+  }
+  /* Color-role card variants */
+  .glass-card-info:hover {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.22), 0 0 30px rgba(59,130,246,0.06);
+  }
+  .glass-card-streak:hover {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.22), 0 0 30px rgba(249,115,22,0.06);
+  }
+  .glass-card-level:hover {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.22), 0 0 30px rgba(139,92,246,0.06);
+  }
+  .glass-card-primary:hover {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.22), 0 0 30px rgba(0,200,150,0.06);
   }
   .hero-card {
     @apply backdrop-blur-xl rounded-2xl;
-    background: linear-gradient(135deg, rgba(0,200,150,0.06) 0%, rgba(255,255,255,0.05) 100%);
-    border: 1px solid rgba(0,200,150,0.10);
+    background: linear-gradient(135deg, rgba(0,200,150,0.07) 0%, rgba(59,130,246,0.04) 50%, rgba(139,92,246,0.03) 100%);
+    border: 1px solid rgba(0,200,150,0.12);
     border-left: 3px solid #00C896;
     box-shadow: 0 4px 32px rgba(0,0,0,0.22), 0 0 48px rgba(0,200,150,0.05);
     transition: box-shadow 0.3s ease, transform 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,200,150,0.3), rgba(59,130,246,0.2), transparent);
   }
   .hero-card:hover {
     box-shadow: 0 6px 40px rgba(0,0,0,0.25), 0 0 56px rgba(0,200,150,0.07);
@@ -163,7 +195,7 @@ input[type=range]::-webkit-slider-thumb {
   }
 }
 
-/* â”€â”€ Keyframes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Keyframes ──────────────────────────────────────────── */
 @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 @keyframes slideIn { from{opacity:0;transform:translateX(28px)} to{opacity:1;transform:translateX(0)} }
@@ -188,6 +220,7 @@ input[type=range]::-webkit-slider-thumb {
 @keyframes barGrow { from{width:0} to{width:var(--bar-w,100%)} }
 @keyframes slideInRight { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }
 @keyframes scaleIn { from{opacity:0;transform:scale(.92)} to{opacity:1;transform:scale(1)} }
+@keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
 /* Utility animations */
 .fade-up      { animation: fadeUp .45s cubic-bezier(.22,1,.36,1) both; }
@@ -208,7 +241,7 @@ input[type=range]::-webkit-slider-thumb {
 .stagger > *:nth-child(5){animation-delay:.25s}
 .stagger > *:nth-child(6){animation-delay:.3s}
 
-/* â”€â”€ Sidebar responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Sidebar responsive ──────────────────────────────── */
 .sidebar-wrap { flex-shrink: 0; position: relative; z-index: 99; }
 .mobile-topbar { display: none; }
 .mobile-overlay { display: none !important; }
@@ -299,7 +332,7 @@ input[type=range]::-webkit-slider-thumb {
   border-radius: 16px;
   min-width: 86px;
   flex-shrink: 0;
-  transition: transform 0.2s cubic-bezier(.22,1,.36,1), background 0.2s;
+  transition: transform 0.2s cubic-bezier(.22,1,.36,1), background 0.2s, box-shadow 0.3s;
   border: 1px solid transparent;
 }
 .quick-action-btn:hover {
@@ -313,4 +346,17 @@ input[type=range]::-webkit-slider-thumb {
 .deadline-urgent {
   animation: urgencyPulse 2.5s ease-in-out infinite;
   border-radius: 12px;
+}
+
+/* ── Loading animation ──────────────────────────────── */
+@keyframes loadingBar {
+  0% { width: 0%; }
+  50% { width: 60%; }
+  100% { width: 100%; }
+}
+.loading-bar {
+  animation: loadingBar 2s ease-in-out infinite;
+}
+.loading-fade-in {
+  animation: fadeIn 0.6s ease both;
 }

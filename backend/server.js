@@ -52,6 +52,7 @@ app.use("/api/timetable", require("./routes/timetable"));
 app.use("/api/subjects",  require("./routes/subjects"));
 app.use("/api/reminders", require("./routes/reminders"));
 app.use("/api/export",    require("./routes/export"));
+app.use("/api/friends",   require("./routes/friends"));
 
 // Health check — also prevents "Cannot GET /" confusion
 app.get("/",         (_, res) => res.json({ status: "Cognit API is running" }));

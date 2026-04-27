@@ -34,8 +34,6 @@ export default function SettingsPage() {
 
   const [curPass, setCurPass] = useState("");
   const [newPass, setNewPass] = useState("");
-  const [pin, setPin] = useState("");
-  const [pinConfirm, setPinConfirm] = useState("");
 
   const toast_ok  = (msg) => { sfx.success(); setToast({ msg, color:"#00C896" }); };
   const toast_err = (msg) => { sfx.error(); setToast({ msg, color:"#f87171" }); };
@@ -43,7 +41,7 @@ export default function SettingsPage() {
   const saveProfile = async () => {
     setSaving(true);
     try {
-      const updated = await api.updateProfile({ name, username: username || undefined, theme, accentColor: accent });
+      const updated = await api.updateProfile({ name, username: username || undefined });
       applyUser(updated);
       await refreshUser();
       toast_ok("Profile saved!");
@@ -83,32 +81,9 @@ export default function SettingsPage() {
     finally { setSaving(false); }
   };
 
-  const setNewPin = async () => {
-    if (pin !== pinConfirm) return toast_err("PINs do not match");
-    if (!/^\d{4}$/.test(pin)) return toast_err("PIN must be exactly 4 digits");
-    setSaving(true);
-    try {
-      await api.setPin({ pin });
-      setPin(""); setPinConfirm("");
-      await refreshUser();
-      toast_ok("PIN set! You can now log in with it.");
-    } catch(e) { toast_err(e.message); }
-    finally { setSaving(false); }
-  };
-
-  const removePin = async () => {
-    setSaving(true);
-    try {
-      await api.removePin();
-      await refreshUser();
-      toast_ok("PIN removed.");
-    } catch(e) { toast_err(e.message); }
-    finally { setSaving(false); }
-  };
-
   const TABS = [
     { id:"profile", label:"Profile", icon:"person" },
-    { id:"theme", label:"Theme", icon:"palette" },
+    { id:"appearance", label:"Appearance", icon:"palette" },
     { id:"goals", label:"Goals", icon:"flag" },
     { id:"security", label:"Security", icon:"lock" },
   ];
@@ -140,7 +115,11 @@ export default function SettingsPage() {
             <div className="flex items-center gap-4 mb-6 p-4 bg-white/[.03] rounded-2xl border border-white/10">
               <div className="w-14 h-14 rounded-full flex-shrink-0 flex items-center justify-center text-lg font-bold
                 border-[3px] border-[#00C896]/30 overflow-hidden bg-white/5 text-on-surface">
-                {user?.avatar ? <img src={user.avatar} alt="" className="w-full h-full object-cover rounded-full"/> : (name?.[0]?.toUpperCase() || "?")}
+                {user?.avatar
+                  ? <img src={user.avatar} alt="" className="w-full h-full object-cover rounded-full"/>
+                  : user?.googleAvatar
+                    ? <img src={user.googleAvatar} alt="" className="w-full h-full object-cover rounded-full"/>
+                    : (name?.[0]?.toUpperCase() || "?")}
               </div>
               <div>
                 <div className="text-sm font-semibold text-on-surface">{name || "Your Name"}</div>
@@ -154,44 +133,59 @@ export default function SettingsPage() {
           </Card>
         )}
 
-        {/* THEME */}
-        {tab === "theme" && (
+        {/* APPEARANCE — simplified theme UI */}
+        {tab === "appearance" && (
           <Card>
             <div className="text-base font-bold text-on-surface mb-6 flex items-center gap-2">
-              <span className="material-symbols-outlined text-lg">palette</span> Theme & Colors
+              <span className="material-symbols-outlined text-lg">palette</span> Appearance
             </div>
 
+            {/* Theme selector — clean compact grid */}
             <div className="mb-6">
               <div className="text-xs text-muted mb-3 font-medium ml-1">Theme</div>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+              <div className="grid grid-cols-5 gap-2">
                 {THEMES.map(t=>(
-                  <button key={t.id} onClick={()=>{setTheme(t.id);document.documentElement.setAttribute("data-theme",t.id);sfx.click();}}
+                  <button key={t.id}
+                    onClick={()=>{setTheme(t.id);document.documentElement.setAttribute("data-theme",t.id);sfx.click();}}
                     className="rounded-xl p-3 text-center transition-all duration-200"
                     style={{
                       background:t.bg,
-                      border:`2px solid ${theme===t.id?t.ac:"rgba(255,255,255,.05)"}`,
-                      boxShadow:theme===t.id?`0 0 14px ${t.ac}25`:""
+                      border:`2px solid ${theme===t.id?t.ac:"rgba(255,255,255,.08)"}`,
+                      boxShadow:theme===t.id?`0 0 12px ${t.ac}20`:""
                     }}>
-                    <div className="w-5 h-5 rounded-full mx-auto mb-2" style={{background:t.ac,boxShadow:`0 0 6px ${t.ac}44`}}/>
-                    <div className="text-xs" style={{color:theme===t.id?t.ac:"#6b7280",fontWeight:theme===t.id?700:400}}>{t.label}</div>
+                    <div className="w-4 h-4 rounded-full mx-auto mb-1.5" style={{background:t.ac}}/>
+                    <div className="text-[10px]" style={{color:theme===t.id?t.ac:"#6b7280",fontWeight:theme===t.id?700:400}}>{t.label}</div>
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* Accent color — simple dot picker */}
             <div className="mb-6">
               <div className="text-xs text-muted mb-3 font-medium ml-1">Accent Color</div>
-              <div className="flex gap-2.5 flex-wrap">
+              <div className="flex gap-2 flex-wrap">
                 {ACCENTS.map(c=>(
-                  <div key={c} onClick={()=>{setAccent(c);document.documentElement.style.setProperty("--ac",c);document.documentElement.style.setProperty("--ac-dim",c+"15");sfx.click();}}
-                    className="w-8 h-8 rounded-full cursor-pointer transition-all duration-200"
+                  <div key={c}
+                    onClick={()=>{setAccent(c);document.documentElement.style.setProperty("--ac",c);document.documentElement.style.setProperty("--ac-dim",c+"15");sfx.click();}}
+                    className="w-7 h-7 rounded-full cursor-pointer transition-all duration-200"
                     style={{
                       background:c,
                       border:`3px solid ${accent===c?"#fff":"transparent"}`,
-                      boxShadow:accent===c?`0 0 10px ${c}`:""
+                      boxShadow:accent===c?`0 0 8px ${c}`:""
                     }}/>
                 ))}
               </div>
+            </div>
+
+            {/* Preview */}
+            <div className="mb-6 p-4 rounded-2xl border border-white/10"
+              style={{background: THEMES.find(t=>t.id===theme)?.bg || "#0B132B"}}>
+              <div className="text-xs font-bold mb-2" style={{color:accent}}>Preview</div>
+              <div className="flex gap-2">
+                <div className="h-2 rounded-full flex-1" style={{background:accent}}/>
+                <div className="h-2 rounded-full w-8" style={{background:accent+"40"}}/>
+              </div>
+              <div className="text-[10px] text-muted mt-2">This is how your theme will look</div>
             </div>
 
             <Btn full color={accent} onClick={saveTheme} disabled={saving}>
@@ -239,7 +233,7 @@ export default function SettingsPage() {
           </Card>
         )}
 
-        {/* SECURITY */}
+        {/* SECURITY — password only, no PIN */}
         {tab === "security" && (
           <div className="space-y-5">
             <Card>
@@ -250,34 +244,9 @@ export default function SettingsPage() {
                 <Input label="Current Password" type="password" value={curPass} onChange={e=>setCurPass(e.target.value)} placeholder="Current password"/>
               )}
               <Input label="New Password" type="password" value={newPass} onChange={e=>setNewPass(e.target.value)} placeholder="Min 6 characters"/>
-              <Btn full color="#60a5fa" onClick={changePassword} disabled={saving}>
+              <Btn full color="#3b82f6" onClick={changePassword} disabled={saving}>
                 {saving ? <><Spinner size={14}/> Saving...</> : user?.hasPassword ? "Change Password" : "Set Password"}
               </Btn>
-            </Card>
-
-            <Card>
-              <div className="text-base font-bold text-on-surface mb-1 flex items-center gap-2">
-                <span className="material-symbols-outlined text-lg">pin</span> Quick PIN Login
-              </div>
-              <div className="text-xs text-muted mb-6">Set a 4-digit PIN for fast login.</div>
-
-              {user?.hasPin ? (
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#00C896]"/>
-                    <span className="text-sm text-on-surface">PIN is active</span>
-                  </div>
-                  <Btn color="#f87171" size="sm" variant="outline" onClick={removePin} disabled={saving}>Remove PIN</Btn>
-                </div>
-              ) : (
-                <>
-                  <Input label="New PIN (4 digits)" type="password" value={pin} onChange={e=>setPin(e.target.value.replace(/\D/g,"").slice(0,4))} placeholder="e.g. 1234"/>
-                  <Input label="Confirm PIN" type="password" value={pinConfirm} onChange={e=>setPinConfirm(e.target.value.replace(/\D/g,"").slice(0,4))} placeholder="Re-enter PIN"/>
-                  <Btn full color="#00C896" onClick={setNewPin} disabled={saving}>
-                    {saving ? <><Spinner size={14}/> Saving...</> : "Set PIN"}
-                  </Btn>
-                </>
-              )}
             </Card>
 
             <Card>
@@ -287,7 +256,8 @@ export default function SettingsPage() {
               <div className="space-y-3">
                 {[
                   {label:"Email",value:user?.email},
-                  {label:"Login Methods",value:[user?.hasPassword&&"Password",user?.hasGoogle&&"Google",user?.hasPin&&"PIN"].filter(Boolean).join(", ")||"None"},
+                  {label:"Login Methods",value:[user?.hasPassword&&"Password",user?.hasGoogle&&"Google"].filter(Boolean).join(", ")||"None"},
+                  {label:"Member Since",value:user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-IN",{year:"numeric",month:"long"}) : "—"},
                 ].map((r,i)=>(
                   <div key={i} className="flex justify-between py-2 border-b border-white/5">
                     <span className="text-xs text-muted">{r.label}</span>

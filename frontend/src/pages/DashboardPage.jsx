@@ -1,32 +1,34 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useStats, BADGES, getLevel, LEVEL_NAMES, XP_THRESHOLDS } from "../context/StatsContext";
+import { useToast } from "../context/ToastContext";
 import { api } from "../api";
 import { Card, ProgressBar, Badge, AnimNum } from "../components/ui";
 import XPBar from "../components/XPBar";
 import TodaysPlan from "../components/TodaysPlan";
 
-/* â”€â”€ Constants â”€â”€ */
+/* ── Constants ── */
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
+/* Color-role stat cards: orange=streak, blue=info, danger=pomodoro, purple=level */
 const STAT_CONFIG = [
-  { icon:"local_fire_department", label:"Streak",    color:"#00C896", filled:true },
-  { icon:"schedule",              label:"Mins Today", color:"#00C896" },
-  { icon:"timer",                 label:"Pomodoros",  color:"#00C896" },
-  { icon:"emoji_events",          label:"Level",      color:"#00C896", filled:true },
+  { icon:"local_fire_department", label:"Streak",    color:"#f97316", filled:true },
+  { icon:"schedule",              label:"Mins Today", color:"#3b82f6" },
+  { icon:"timer",                 label:"Pomodoros",  color:"#f87171" },
+  { icon:"emoji_events",          label:"Level",      color:"#8b5cf6", filled:true },
 ];
 
 const QUICK_ACTIONS = [
   { icon:"timer",          label:"Pomodoro",    to:"/pomodoro",     c:"#00C896" },
-  { icon:"dark_mode",      label:"Focus",       to:"/focus",        c:"#00C896" },
+  { icon:"dark_mode",      label:"Focus",       to:"/focus",        c:"#3b82f6" },
   { icon:"checklist",      label:"Checklist",   to:"/checklist",    c:"#00C896" },
-  { icon:"notifications",  label:"Deadlines",   to:"/deadlines",    c:"#fbbf24" },
-  { icon:"analytics",      label:"Analytics",   to:"/analytics",    c:"#00C896" },
-  { icon:"calculate",      label:"Calculator",  to:"/calculator",   c:"#00C896" },
+  { icon:"notifications",  label:"Deadlines",   to:"/deadlines",    c:"#f97316" },
+  { icon:"analytics",      label:"Analytics",   to:"/analytics",    c:"#8b5cf6" },
+  { icon:"calculate",      label:"Calculator",  to:"/calculator",   c:"#3b82f6" },
 ];
 
-/* â”€â”€ StatCard â”€â”€ */
+/* ── StatCard ── */
 function StatCard({ icon, label, value, color, delay = 0, sub, filled }) {
   const [vis, setVis] = useState(false);
   useEffect(() => {
@@ -70,7 +72,7 @@ function StatCard({ icon, label, value, color, delay = 0, sub, filled }) {
   );
 }
 
-/* â”€â”€ Helpers â”€â”€ */
+/* ── Helpers ── */
 function daysLeft(d) {
   const diff = Math.ceil((new Date(d) - Date.now()) / 86400000);
   return diff <= 0 ? "Today" : diff === 1 ? "1d" : `${diff}d`;
@@ -82,19 +84,19 @@ function buildSuggestions(subjects, deadlines, stats) {
     d => Math.ceil((new Date(d.dueDate) - Date.now()) / 86400000) <= 2
   );
   if (urgent)
-    out.push({ icon: "warning", text: `"${urgent.title}" is due soon â€” revise now`, color: "#f87171" });
+    out.push({ icon: "warning", text: `"${urgent.title}" is due soon — revise now`, color: "#f87171" });
 
   const weak = subjects.find(s => s.totalTopics > 0 && s.doneTopics / s.totalTopics < 0.4);
   if (weak)
-    out.push({ icon: "trending_up", text: `${weak.name} needs more focus (${Math.round((weak.doneTopics/weak.totalTopics)*100)}%)`, color: "#fbbf24" });
+    out.push({ icon: "trending_up", text: `${weak.name} needs more focus (${Math.round((weak.doneTopics/weak.totalTopics)*100)}%)`, color: "#f97316" });
 
   if ((stats.minsToday || 0) === 0)
-    out.push({ icon: "play_circle", text: "You haven't studied yet today", color: "#00C896" });
+    out.push({ icon: "play_circle", text: "You haven't studied yet today", color: "#3b82f6" });
   else if ((stats.minsToday || 0) < 30)
-    out.push({ icon: "target", text: "Keep going â€” you're just getting started", color: "#00C896" });
+    out.push({ icon: "target", text: "Keep going — you're just getting started", color: "#00C896" });
 
   if ((stats.streak || 0) >= 3)
-    out.push({ icon: "local_fire_department", text: `${stats.streak}-day streak â€” don't break it!`, color: "#f97316" });
+    out.push({ icon: "local_fire_department", text: `${stats.streak}-day streak — don't break it!`, color: "#f97316" });
 
   if (!out.length)
     out.push({ icon: "check_circle", text: "Great job! Keep the momentum going.", color: "#00C896" });
@@ -102,11 +104,13 @@ function buildSuggestions(subjects, deadlines, stats) {
   return out;
 }
 
-/* â”€â”€ Dashboard â”€â”€ */
+/* ── Dashboard ── */
 export default function DashboardPage() {
   const { user } = useAuth();
   const { stats } = useStats();
   const navigate = useNavigate();
+  const toast = useToast();
+  const notified = useRef(false);
 
   const [subjects,  setSubjects]  = useState([]);
   const [deadlines, setDeadlines] = useState([]);
@@ -118,15 +122,28 @@ export default function DashboardPage() {
         "Consistency beats motivation.",
         "Small steps every day.",
         "Focus on progress, not perfection.",
-        "Push yourself â€” no one else will.",
+        "Push yourself — no one else will.",
       ];
   const [quote] = useState(quotes[Math.floor(Math.random() * quotes.length)]);
 
   useEffect(() => {
     api.getSubjects().then(setSubjects).catch(() => {});
-    api.getDeadlines().then(d => setDeadlines(d.filter(x => !x.done))).catch(() => {});
+    api.getDeadlines().then(d => {
+      const active = d.filter(x => !x.done);
+      setDeadlines(active);
+      if (!notified.current) {
+        const urgent = active.filter(x => {
+          const diff = Math.ceil((new Date(x.dueDate) - Date.now()) / 86400000);
+          return diff >= 0 && diff <= 1;
+        });
+        if (urgent.length > 0) {
+          setTimeout(() => toast.warning(`You have ${urgent.length} urgent deadline${urgent.length > 1 ? 's' : ''} due soon!`), 1000);
+        }
+        notified.current = true;
+      }
+    }).catch(() => {});
     api.getNotes().then(n => setNotes(n.slice(0, 3))).catch(() => {});
-  }, []);
+  }, [toast]);
 
   /* Derived data */
   const hour = new Date().getHours();
@@ -153,7 +170,7 @@ export default function DashboardPage() {
 
   return (
     <div className="page-container">
-      {/* â”€â”€ Header â”€â”€ */}
+      {/* ── Header ── */}
       <div className="mb-4">
         <div className="text-xs text-dim font-mono mb-1">
           {new Date().toLocaleDateString("en-IN", {
@@ -176,7 +193,7 @@ export default function DashboardPage() {
         <p className="text-sm text-[#00C896]/60 italic">"{quote}"</p>
       </div>
 
-      {/* â”€â”€ Today's Plan (MOST PROMINENT) â”€â”€ */}
+      {/* ── Today's Plan (MOST PROMINENT) ── */}
       <TodaysPlan
         subjects={subjects}
         deadlines={deadlines}
@@ -184,7 +201,7 @@ export default function DashboardPage() {
         user={user}
       />
 
-      {/* â”€â”€ Daily Goal â”€â”€ */}
+      {/* ── Daily Goal ── */}
       <div className="glass-card p-5 mb-6 flex items-center gap-4">
         <div className="w-10 h-10 rounded-xl bg-[#00C896]/10 flex items-center justify-center flex-shrink-0">
           <span className="material-symbols-outlined text-[#00C896]">flag</span>
@@ -192,7 +209,7 @@ export default function DashboardPage() {
         <div className="flex-1">
           <div className="flex justify-between mb-1.5">
             <span className="text-xs font-semibold text-on-surface">
-              Daily Goal â€” {stats.minsToday || 0}/{goal} mins
+              Daily Goal — {stats.minsToday || 0}/{goal} mins
             </span>
             <span className="text-xs text-[#00C896] font-bold">{goalPct}%</span>
           </div>
@@ -205,7 +222,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* â”€â”€ Stat Cards â”€â”€ */}
+      {/* ── Stat Cards (color-coded roles) ── */}
       <div className="stagger grid-4 grid grid-cols-4 gap-4 mb-6">
         <StatCard
           icon={STAT_CONFIG[0].icon} label={STAT_CONFIG[0].label}
@@ -229,15 +246,15 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* â”€â”€ XP Bar â”€â”€ */}
+      {/* ── XP Bar ── */}
       <div className="mb-6"><XPBar xp={stats.xp || 0} /></div>
 
-      {/* â”€â”€ Row 1: Suggestions | Subjects | Weekly â”€â”€ */}
+      {/* ── Row 1: Suggestions | Subjects | Weekly ── */}
       <div className="grid-3 grid grid-cols-3 gap-5 mb-5">
-        {/* Smart Suggestions */}
+        {/* Smart Suggestions — orange accent */}
         <Card accent="#f97316">
           <div className="flex items-center gap-2 mb-4">
-            <span className="material-symbols-outlined text-orange-400 text-lg">
+            <span className="material-symbols-outlined text-[#f97316] text-lg">
               auto_awesome
             </span>
             <span className="text-sm font-bold text-on-surface">Smart Suggestions</span>
@@ -262,16 +279,16 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        {/* Subjects with progress */}
-        <Card accent="#00C896">
+        {/* Subjects with progress — blue accent for info */}
+        <Card accent="#3b82f6">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#00C896] text-lg">menu_book</span>
+              <span className="material-symbols-outlined text-[#3b82f6] text-lg">menu_book</span>
               <span className="text-sm font-bold text-on-surface">Subjects</span>
             </div>
             <button
               onClick={() => navigate("/subjects")}
-              className="text-[11px] text-[#00C896] hover:underline font-semibold"
+              className="text-[11px] text-[#3b82f6] hover:underline font-semibold"
             >
               Manage
             </button>
@@ -284,8 +301,8 @@ export default function DashboardPage() {
               <div className="text-xs text-muted mb-3">No subjects yet</div>
               <button
                 onClick={() => navigate("/subjects")}
-                className="bg-[#00C896]/10 border border-[#00C896]/20 rounded-xl px-4 py-2
-                  text-[#00C896] text-xs font-semibold hover:bg-[#00C896]/15 transition-all duration-200"
+                className="bg-[#3b82f6]/10 border border-[#3b82f6]/20 rounded-xl px-4 py-2
+                  text-[#3b82f6] text-xs font-semibold hover:bg-[#3b82f6]/15 transition-all duration-200"
               >
                 Add Subjects
               </button>
@@ -295,7 +312,7 @@ export default function DashboardPage() {
               const pct = s.totalTopics > 0
                 ? Math.round((s.doneTopics / s.totalTopics) * 100)
                 : 0;
-              const clr = s.color || "#00C896";
+              const clr = s.color || "#3b82f6";
               return (
                 <div
                   key={i}
@@ -313,7 +330,7 @@ export default function DashboardPage() {
                         className="text-[9px] text-muted hover:text-[#00C896] transition-colors
                           opacity-0 group-hover:opacity-100"
                       >
-                        Continue â†’
+                        Continue →
                       </button>
                     </div>
                   </div>
@@ -324,7 +341,7 @@ export default function DashboardPage() {
           )}
         </Card>
 
-        {/* Weekly Chart */}
+        {/* Weekly Chart — green for primary data */}
         <Card accent="#00C896">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -372,9 +389,9 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* â”€â”€ Row 2: Notes | Deadlines | Badges â”€â”€ */}
+      {/* ── Row 2: Notes | Deadlines | Badges ── */}
       <div className="grid-3 grid grid-cols-[1.3fr_1fr_1fr] gap-5 mb-5">
-        {/* Notes */}
+        {/* Notes — green accent */}
         <Card>
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
@@ -415,7 +432,7 @@ export default function DashboardPage() {
                   <span className="text-xs font-semibold text-on-surface truncate max-w-[70%]">
                     {n.title}
                   </span>
-                  <Badge color="#00C896">{n.subject || "--"}</Badge>
+                  <Badge color="#3b82f6">{n.subject || "--"}</Badge>
                 </div>
                 <div className="text-[11px] text-muted truncate">
                   {n.content?.slice(0, 50) || "Empty"}
@@ -425,18 +442,18 @@ export default function DashboardPage() {
           )}
         </Card>
 
-        {/* Deadlines (enhanced urgency) */}
+        {/* Deadlines — warning accent */}
         <Card>
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-warning text-lg">
+              <span className="material-symbols-outlined text-[#f97316] text-lg">
                 notifications_active
               </span>
               <span className="text-sm font-bold text-on-surface">Deadlines</span>
             </div>
             <button
               onClick={() => navigate("/deadlines")}
-              className="text-[11px] text-[#00C896] hover:underline font-semibold"
+              className="text-[11px] text-[#f97316] hover:underline font-semibold"
             >
               View all
             </button>
@@ -479,18 +496,18 @@ export default function DashboardPage() {
           )}
         </Card>
 
-        {/* Badges */}
+        {/* Badges — purple accent for level/achievements */}
         <Card>
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-[#00C896] text-lg filled">
+              <span className="material-symbols-outlined text-[#8b5cf6] text-lg filled">
                 workspace_premium
               </span>
               <span className="text-sm font-bold text-on-surface">Badges</span>
             </div>
             <button
               onClick={() => navigate("/gamification")}
-              className="text-[11px] text-[#00C896] hover:underline font-semibold"
+              className="text-[11px] text-[#8b5cf6] hover:underline font-semibold"
             >
               All
             </button>
@@ -528,7 +545,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* â”€â”€ Quick Actions â”€â”€ */}
+      {/* ── Quick Actions ── */}
       <Card>
         <div className="flex items-center gap-2 mb-4">
           <span className="material-symbols-outlined text-[#00C896] text-lg">bolt</span>
