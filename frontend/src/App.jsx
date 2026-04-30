@@ -1,8 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { StatsProvider } from "./context/StatsContext";
 import { MusicProvider } from "./context/MusicContext";
 import { ToastProvider } from "./context/ToastContext";
+import { AnimatePresence, motion } from "framer-motion";
 import Layout from "./components/Layout";
 import { LoginPage, RegisterPage } from "./pages/AuthPages";
 import DashboardPage    from "./pages/DashboardPage";
@@ -17,6 +18,63 @@ import AIChatPage       from "./pages/AIChatPage";
 import ProfilePage      from "./pages/ProfilePage";
 import FriendsPage      from "./pages/FriendsPage";
 import { DeadlinesPage, NotesPage, ChecklistPage, SubjectsPage, TimetablePage, GamificationPage } from "./pages/OtherPages";
+
+/* ── Page transition wrapper ── */
+const pageVariants = {
+  initial:  { opacity: 0, y: 16 },
+  animate:  { opacity: 1, y: 0, transition: { duration: 0.2, ease: "easeOut" } },
+  exit:     { opacity: 0, y: -16, transition: { duration: 0.15, ease: "easeIn" } },
+};
+
+function PageWrap({ children }) {
+  /* Respect prefers-reduced-motion */
+  const reduced = typeof window !== "undefined"
+    && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (reduced) return <>{children}</>;
+
+  return (
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      style={{ width: "100%", minHeight: "100%" }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/* ── Animated Routes inside Layout ── */
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/dashboard"    element={<PageWrap><DashboardPage/></PageWrap>}/>
+        <Route path="/pomodoro"     element={<PageWrap><PomodoroPage/></PageWrap>}/>
+        <Route path="/focus"        element={<PageWrap><FocusModePage/></PageWrap>}/>
+        <Route path="/deadlines"    element={<PageWrap><DeadlinesPage/></PageWrap>}/>
+        <Route path="/notes"        element={<PageWrap><NotesPage/></PageWrap>}/>
+        <Route path="/checklist"    element={<PageWrap><ChecklistPage/></PageWrap>}/>
+        <Route path="/subjects"     element={<PageWrap><SubjectsPage/></PageWrap>}/>
+        <Route path="/timetable"    element={<PageWrap><TimetablePage/></PageWrap>}/>
+        <Route path="/gamification" element={<PageWrap><GamificationPage/></PageWrap>}/>
+        <Route path="/analytics"    element={<PageWrap><AnalyticsPage/></PageWrap>}/>
+        <Route path="/settings"     element={<PageWrap><SettingsPage/></PageWrap>}/>
+        <Route path="/music"        element={<PageWrap><MusicPage/></PageWrap>}/>
+        <Route path="/calendar"     element={<PageWrap><CalendarPage/></PageWrap>}/>
+        <Route path="/calculator"   element={<PageWrap><CalculatorPage/></PageWrap>}/>
+        <Route path="/ai-chat"      element={<PageWrap><AIChatPage/></PageWrap>}/>
+        <Route path="/profile"      element={<PageWrap><ProfilePage/></PageWrap>}/>
+        <Route path="/friends"      element={<PageWrap><FriendsPage/></PageWrap>}/>
+        <Route path="*"             element={<Navigate to="/dashboard" replace/>}/>
+      </Routes>
+    </AnimatePresence>
+  );
+}
 
 function AppLayout() {
   const { user, loading } = useAuth();
@@ -44,26 +102,7 @@ function AppLayout() {
   return (
     <MusicProvider>
       <Layout>
-        <Routes>
-          <Route path="/dashboard"    element={<DashboardPage/>}/>
-          <Route path="/pomodoro"     element={<PomodoroPage/>}/>
-          <Route path="/focus"        element={<FocusModePage/>}/>
-          <Route path="/deadlines"    element={<DeadlinesPage/>}/>
-          <Route path="/notes"        element={<NotesPage/>}/>
-          <Route path="/checklist"    element={<ChecklistPage/>}/>
-          <Route path="/subjects"     element={<SubjectsPage/>}/>
-          <Route path="/timetable"    element={<TimetablePage/>}/>
-          <Route path="/gamification" element={<GamificationPage/>}/>
-          <Route path="/analytics"    element={<AnalyticsPage/>}/>
-          <Route path="/settings"     element={<SettingsPage/>}/>
-          <Route path="/music"        element={<MusicPage/>}/>
-          <Route path="/calendar"     element={<CalendarPage/>}/>
-          <Route path="/calculator"   element={<CalculatorPage/>}/>
-          <Route path="/ai-chat"      element={<AIChatPage/>}/>
-          <Route path="/profile"      element={<ProfilePage/>}/>
-          <Route path="/friends"      element={<FriendsPage/>}/>
-          <Route path="*"             element={<Navigate to="/dashboard" replace/>}/>
-        </Routes>
+        <AnimatedRoutes />
       </Layout>
     </MusicProvider>
   );
@@ -76,8 +115,8 @@ export default function App() {
         <AuthProvider>
           <StatsProvider>
             <Routes>
-              <Route path="/login"    element={<LoginPage/>}/>
-              <Route path="/register" element={<RegisterPage/>}/>
+              <Route path="/login"    element={<PageWrap><LoginPage/></PageWrap>}/>
+              <Route path="/register" element={<PageWrap><RegisterPage/></PageWrap>}/>
               <Route path="/*"        element={<AppLayout/>}/>
             </Routes>
           </StatsProvider>

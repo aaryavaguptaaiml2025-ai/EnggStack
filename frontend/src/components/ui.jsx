@@ -165,14 +165,32 @@ export function Heatmap({ data = {} }) {
     weeks.push(week);
   }
   const maxMins = Math.max(...Object.values(data).map(Number),1);
-  const opacity = (m) => m?Math.max(0.15,Math.min(1,m/Math.min(maxMins,120))):0;
+  const opacityFn = (m) => m?Math.max(0.15,Math.min(1,m/Math.min(maxMins,120))):0;
   const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const DAYS=["S","M","T","W","T","F","S"];
+  const DAY_LABELS=["S","M","T","W","T","F","S"];
+
+  /* Respect reduced motion */
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const h = (e) => setReduced(e.matches);
+    mq.addEventListener("change", h);
+    return () => mq.removeEventListener("change", h);
+  }, []);
+
   return (
     <div className="overflow-x-auto">
+      {/* Inject wave animation keyframe */}
+      {!reduced && <style>{`
+        @keyframes heatCell {
+          from { transform: scale(0); opacity: 0; }
+          to   { transform: scale(1); opacity: 1; }
+        }
+      `}</style>}
       <div className="flex gap-[3px] items-start" style={{minWidth:"max-content"}}>
         <div className="flex flex-col gap-[3px] mt-[22px]">
-          {DAYS.map((day,i)=><div key={i} className="h-3 text-[9px] text-dim w-3 text-center leading-3">{day}</div>)}
+          {DAY_LABELS.map((day,i)=><div key={i} className="h-3 text-[9px] text-dim w-3 text-center leading-3">{day}</div>)}
         </div>
         <div>
           <div className="flex gap-[3px] mb-1">
@@ -181,12 +199,20 @@ export function Heatmap({ data = {} }) {
           <div className="flex gap-[3px]">
             {weeks.map((week,wi)=>(
               <div key={wi} className="flex flex-col gap-[3px]">
-                {week.map(cell=>(
-                  <div key={cell.key} title={`${cell.key}: ${cell.mins}m`}
-                    className="w-3 h-3 rounded-sm cursor-default transition-transform duration-100
-                      hover:scale-150"
-                    style={{background:cell.mins?`rgba(0,200,150,${opacity(cell.mins)})`:"rgba(255,255,255,.04)"}}/>
-                ))}
+                {week.map((cell, di)=>{
+                  const cellIdx = wi * 7 + di;
+                  const delay = reduced ? 0 : Math.min(cellIdx * 3, 1800);
+                  return (
+                    <div key={cell.key} title={`${cell.key}: ${cell.mins}m`}
+                      className="w-3 h-3 rounded-sm cursor-default hover:scale-150 transition-transform duration-100"
+                      style={{
+                        background: cell.mins ? `rgba(0,200,150,${opacityFn(cell.mins)})` : "rgba(255,255,255,.04)",
+                        ...(reduced ? {} : {
+                          animation: `heatCell 0.3s ease-out ${delay}ms both`,
+                        }),
+                      }}/>
+                  );
+                })}
               </div>
             ))}
           </div>

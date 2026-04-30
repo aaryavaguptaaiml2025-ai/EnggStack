@@ -1,197 +1,181 @@
 import { useState, useEffect } from "react";
 import { useStats, getLevel, LEVEL_NAMES, XP_THRESHOLDS } from "../context/StatsContext";
 import { api } from "../api";
-import { Card, ProgressBar, Heatmap, Tabs } from "../components/ui";
+import { Card, ProgressBar, Heatmap } from "../components/ui";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend
+} from "recharts";
 
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-const COLORS = ["#60a5fa","#00C896","#fbbf24","#a78bfa","#f87171","#f472b6","#34d399","#fb923c"];
-
-function BarChart({ data, labels, color = "#00C896", height = 120, unit = "" }) {
-  const max = Math.max(...data.map(Number), 1);
-  return (
-    <div className="flex items-end gap-1.5" style={{ height }}>
-      {data.map((v,i) => (
-        <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full">
-          {v>0 && <div className="text-[9px] text-muted mb-0.5">{v}{unit}</div>}
-          <div className="flex-1 w-full flex items-end">
-            <div title={`${labels[i]}: ${v}${unit}`}
-              className="w-full rounded-t relative overflow-hidden transition-all duration-1000"
-              style={{minHeight:4, height:`${Math.round((Number(v)/max)*100)}%`,
-                background:color, boxShadow:`0 0 6px ${color}33`}}>
-              <div className="absolute inset-0 bg-gradient-to-t from-transparent to-white/10"/>
-            </div>
-          </div>
-          <span className="text-[9px] text-dim whitespace-nowrap">{labels[i]}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function LineChart({ data, labels, color = "#60a5fa", height = 100 }) {
-  const max = Math.max(...data.map(Number), 1);
-  const pts = data.map((v,i) => ({
-    x: (i / (data.length-1)) * 100,
-    y: 100 - Math.round((Number(v)/max)*100),
-  }));
-  const path = pts.map((p,i) => `${i===0?"M":"L"} ${p.x} ${p.y}`).join(" ");
-  const area = `M ${pts[0].x} 100 ` + pts.map(p=>`L ${p.x} ${p.y}`).join(" ") + ` L ${pts[pts.length-1].x} 100 Z`;
-  return (
-    <div className="relative" style={{ height }}>
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full overflow-visible">
-        <defs>
-          <linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.25"/>
-            <stop offset="100%" stopColor={color} stopOpacity="0"/>
-          </linearGradient>
-        </defs>
-        <path d={area} fill="url(#lg)"/>
-        <path d={path} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke"/>
-        {pts.map((p,i)=><circle key={i} cx={p.x} cy={p.y} r="2" fill={color} vectorEffect="non-scaling-stroke"><title>{labels[i]}: {data[i]}</title></circle>)}
-      </svg>
-    </div>
-  );
-}
+const COLORS = ["#00C896","#3b82f6","#fbbf24","#8b5cf6","#f87171","#f472b6","#34d399","#fb923c"];
 
 export default function AnalyticsPage() {
   const { stats } = useStats();
   const [subjects, setSubjects] = useState([]);
-  const [tab, setTab] = useState("overview");
-  useEffect(()=>{ api.getSubjects().then(setSubjects).catch(()=>{}); },[]);
 
-  const lv = getLevel(stats.xp||0);
-  const wMins = stats.weeklyMins||[0,0,0,0,0,0,0];
-  const heatmapData = stats.heatmap||{};
-  const last4Weeks = [wMins.reduce((a,b)=>a+b,0)-20, wMins.reduce((a,b)=>a+b,0)-50, wMins.reduce((a,b)=>a+b,0)+15, wMins.reduce((a,b)=>a+b,0)];
+  useEffect(()=>{ 
+    api.getSubjects().then(setSubjects).catch(()=>{}); 
+  },[]);
+
+  // Weekly data mapping
+  const wMins = stats.weeklyMins || [0,0,0,0,0,0,0];
+  const weeklyData = DAYS.map((day, i) => ({
+    name: day,
+    minutes: wMins[i]
+  }));
+
+  // Study Distribution data
+  const distributionData = subjects.length > 0 
+    ? subjects.map(s => ({
+        name: s.name,
+        value: s.doneTopics || 1 // fallback for visualization if 0
+      }))
+    : [{ name: "No Data", value: 1 }];
+
+  // Heatmap Data
+  const heatmapData = typeof stats.heatmap === "object" ? stats.heatmap : {};
+
+  // Custom Tooltip for Recharts
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="p-3 rounded-xl border border-white/10" style={{ background: "#1a2235", boxShadow: "0 4px 20px rgba(0,0,0,0.5)" }}>
+          <p className="text-[11px] text-muted mb-1">{label}</p>
+          <p className="text-sm font-bold text-white">{`${payload[0].value} mins`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
-    <div className="page-container max-w-5xl">
-      <div className="mb-8">
-        <h1 className="section-title">Analytics</h1>
-        <p className="text-xs text-muted mt-1">Deep dive into your study patterns</p>
+    <div className="page-container">
+      {/* Page Header */}
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <span className="material-symbols-outlined text-3xl grad-text">analytics</span>
+            <h1 className="text-3xl font-extrabold grad-text tracking-tight">Analytics</h1>
+          </div>
+          <p className="text-muted text-sm">Your study insights</p>
+        </div>
       </div>
 
-      <Tabs tabs={[
-        {id:"overview",label:"Overview",icon:"bar_chart"},
-        {id:"heatmap",label:"Study Heatmap",icon:"local_fire_department"},
-        {id:"subjects",label:"Subjects",icon:"menu_book"}
-      ]} active={tab} onChange={setTab}/>
-
-      <div className="mt-6">
-        {tab==="overview" && (
-          <div className="space-y-5">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                {label:"Total Study Time",value:`${Math.floor((stats.totalMins||0)/60)}h ${(stats.totalMins||0)%60}m`,icon:"schedule",color:"#60a5fa"},
-                {label:"Total XP",value:(stats.xp||0).toLocaleString(),icon:"bolt",color:"#fbbf24"},
-                {label:"Current Streak",value:`${stats.streak||0} days`,icon:"local_fire_department",color:"#f97316"},
-                {label:"Pomodoros Done",value:stats.pomodoros||0,icon:"timer",color:"#f87171"},
-              ].map((s,i)=>(
-                <div key={i} className="glass-card p-6" style={{borderLeft:`3px solid ${s.color}`}}>
-                  <span className="material-symbols-outlined text-2xl mb-2 block" style={{color:s.color}}>{s.icon}</span>
-                  <div className="text-xl font-extrabold" style={{color:s.color}}>{s.value}</div>
-                  <div className="text-[11px] text-muted mt-1">{s.label}</div>
-                </div>
-              ))}
+      {/* Top Row: Stat Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mb-8 stagger">
+        {[
+          { label: "Total Study Time", value: `${Math.floor((stats.totalMins||0)/60)}h ${(stats.totalMins||0)%60}m`, icon: "schedule", color: "#3b82f6" },
+          { label: "Sessions Completed", value: stats.pomodoros || 0, icon: "task_alt", color: "#8b5cf6" },
+          { label: "Current Streak", value: `${stats.streak || 0} days`, icon: "local_fire_department", color: "#f97316" },
+          { label: "Best Streak", value: `${stats.streak || 0} days`, icon: "emoji_events", color: "#fbbf24" },
+        ].map((s, i) => (
+          <div key={i} className="glass-card p-5 relative overflow-hidden transition-transform hover:-translate-y-1 duration-300">
+            <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full opacity-10" style={{ background: s.color }} />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: `${s.color}15` }}>
+              <span className="material-symbols-outlined text-xl" style={{ color: s.color }}>{s.icon}</span>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <Card>
-                <div className="text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#00C896] text-lg">bar_chart</span>
-                  Daily Study (this week)
-                </div>
-                <BarChart data={wMins} labels={DAYS} color="#00C896" unit="m"/>
-              </Card>
-              <Card>
-                <div className="text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-info text-lg">show_chart</span>
-                  Weekly Trend (last 4 weeks)
-                </div>
-                <LineChart data={last4Weeks.map(v=>Math.max(0,v))} labels={["3w ago","2w ago","Last w","This w"]} color="#60a5fa" height={110}/>
-                <div className="flex gap-3 mt-3 flex-wrap">
-                  {last4Weeks.map((v,i)=><div key={i} className="text-[11px] text-muted">{["3w ago","2w ago","Last w","This w"][i]}: <b className="text-[#00C896]">{Math.max(0,v)}m</b></div>)}
-                </div>
-              </Card>
-            </div>
-
-            <Card>
-              <div className="text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-purple text-lg">trending_up</span>
-                XP Progress Across Levels
-              </div>
-              <div className="space-y-3">
-                {XP_THRESHOLDS.slice(0,-1).map((lo,i)=>{
-                  const hi=XP_THRESHOLDS[i+1]; const done=Math.min(stats.xp||0,hi)-lo; const total=hi-lo;
-                  const current=lv===i;
-                  return <div key={i} style={{opacity:i>lv+1?.3:1}}>
-                    <div className="flex justify-between mb-1">
-                      <span className={`text-xs ${current?"text-[#00C896] font-semibold":"text-muted"}`}>
-                        {current?"* ":""}{LEVEL_NAMES[i]} (Lv.{i+1})
-                      </span>
-                      <span className="text-[11px] text-dim">{Math.min(stats.xp||0,hi)}/{hi} XP</span>
-                    </div>
-                    <ProgressBar value={done} max={total} color={current?"#00C896":"rgba(255,255,255,.1)"} height={5} glow={current}/>
-                  </div>;
-                })}
-              </div>
-            </Card>
+            <div className="text-2xl font-bold text-[var(--text)] mb-0.5">{s.value}</div>
+            <div className="label-text text-muted">{s.label}</div>
           </div>
-        )}
+        ))}
+      </div>
 
-        {tab==="heatmap" && (
-          <div className="space-y-5">
-            <Card>
-              <div className="text-sm font-bold text-on-surface mb-1 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#00C896] text-lg filled">local_fire_department</span>
-                Study Activity — Last 12 Months
-              </div>
-              <div className="text-xs text-muted mb-4">Each square = one day. Darker = more minutes studied.</div>
-              <Heatmap data={typeof heatmapData==="object"?heatmapData:{}}/>
-            </Card>
-            <div className="grid grid-cols-3 gap-4">
-              {[
-                {label:"Total days studied",value:Object.values(heatmapData).filter(v=>Number(v)>0).length},
-                {label:"Best day (mins)",value:Math.max(...Object.values(heatmapData).map(Number),0)},
-                {label:"Study days this month",value:Object.entries(heatmapData).filter(([k])=>k.startsWith(new Date().toISOString().slice(0,7))).filter(([,v])=>Number(v)>0).length},
-              ].map((s,i)=>(
-                <div key={i} className="glass-card text-center p-6">
-                  <div className="text-2xl font-extrabold text-[#00C896] mb-1">{s.value}</div>
-                  <div className="text-xs text-muted">{s.label}</div>
-                </div>
-              ))}
-            </div>
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        <div className="glass-card p-6 md:col-span-2">
+          <div className="text-sm font-bold text-[var(--text)] mb-6 flex items-center gap-2">
+            <span className="material-symbols-outlined text-[var(--ac)] text-lg">bar_chart</span>
+            Weekly Activity
           </div>
-        )}
+          <div className="h-[250px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weeklyData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                <XAxis dataKey="name" stroke="transparent" tick={{ fill: "#6b7280", fontSize: 11 }} dy={10} />
+                <YAxis stroke="transparent" tick={{ fill: "#6b7280", fontSize: 11 }} />
+                <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
+                <Bar dataKey="minutes" fill="#00C896" opacity={0.8} radius={[4, 4, 0, 0]} maxBarSize={40} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
-        {tab==="subjects" && (
-          <div className="space-y-5">
-            {subjects.length===0?<Card className="text-center py-10"><div className="text-muted">No subjects yet. Add them in the Subjects page.</div></Card>:(
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {subjects.map((s,i)=>{
-                    const pct=s.totalTopics>0?Math.round((s.doneTopics/s.totalTopics)*100):0;
-                    const c=COLORS[i%COLORS.length];
-                    return <Card key={s._id} style={{borderLeft:`3px solid ${c}`}}>
-                      <div className="text-sm font-bold text-on-surface mb-0.5">{s.name}</div>
-                      <div className="text-xs text-muted mb-3">{s.doneTopics}/{s.totalTopics} topics</div>
-                      <div className="flex justify-between mb-1.5">
-                        <span className="text-xs text-muted">Progress</span>
-                        <span className="text-xs font-bold" style={{color:c}}>{pct}%</span>
-                      </div>
-                      <ProgressBar value={pct} max={100} color={c} glow/>
-                    </Card>;
-                  })}
-                </div>
-                <Card>
-                  <div className="text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-purple text-lg">analytics</span>
-                    Subject-wise Progress
+        <div className="glass-card p-6 md:col-span-1">
+          <div className="text-sm font-bold text-[var(--text)] mb-6 flex items-center gap-2">
+            <span className="material-symbols-outlined text-[var(--clr-info)] text-lg">donut_large</span>
+            Study Distribution
+          </div>
+          <div className="h-[250px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={distributionData}
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {distributionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <RechartsTooltip 
+                  contentStyle={{ background: "#1a2235", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" }}
+                  itemStyle={{ color: "#fff", fontSize: "12px", fontWeight: "bold" }}
+                />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: "11px", color: "#9ca3af" }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Heatmap Section */}
+      <div className="glass-card p-6 mb-8">
+        <div className="text-sm font-bold text-[var(--text)] mb-2 flex items-center gap-2">
+          <span className="material-symbols-outlined text-[var(--clr-streak)] text-lg filled">local_fire_department</span>
+          Activity Heatmap
+        </div>
+        <div className="text-xs text-muted mb-6">Your daily study consistency over the last year.</div>
+        <Heatmap data={heatmapData} />
+      </div>
+
+      {/* Subject Breakdown */}
+      <div className="glass-card p-6">
+        <div className="text-sm font-bold text-[var(--text)] mb-6 flex items-center gap-2">
+          <span className="material-symbols-outlined text-[var(--clr-level)] text-lg">menu_book</span>
+          Subject Breakdown
+        </div>
+        
+        {subjects.length === 0 ? (
+          <div className="text-center py-10">
+            <span className="material-symbols-outlined text-dim text-4xl mb-3">auto_awesome_motion</span>
+            <div className="text-muted text-sm">No subjects added yet</div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {subjects.map((s, i) => {
+              const pct = s.totalTopics > 0 ? Math.round((s.doneTopics / s.totalTopics) * 100) : 0;
+              const color = COLORS[i % COLORS.length];
+              return (
+                <div key={s._id} className="flex items-center gap-4">
+                  <div className="w-1/4 min-w-[100px] text-sm font-medium text-[var(--text)] truncate">
+                    {s.name}
                   </div>
-                  <BarChart data={subjects.map(s=>s.totalTopics>0?Math.round((s.doneTopics/s.totalTopics)*100):0)} labels={subjects.map(s=>s.name.slice(0,6))} color="#a78bfa" unit="%"/>
-                </Card>
-              </>
-            )}
+                  <div className="flex-1">
+                    <ProgressBar value={pct} max={100} color={color} height={6} glow />
+                  </div>
+                  <div className="w-12 text-right text-xs font-bold" style={{ color }}>
+                    {pct}%
+                  </div>
+                  <div className="w-16 text-right text-xs text-muted">
+                    {s.doneTopics}/{s.totalTopics}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

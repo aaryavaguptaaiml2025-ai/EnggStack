@@ -6,6 +6,7 @@ export default {
       colors: {
         bg:        "#0B1220",
         "bg-2":    "#111827",
+        text:      "#f3f4f6",
         card:      "rgba(255,255,255,0.03)",
         "card-2":  "rgba(255,255,255,0.05)",
         border:    "rgba(255,255,255,0.08)",

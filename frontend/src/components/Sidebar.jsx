@@ -1,4 +1,5 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { useStats } from "../context/StatsContext";
 import XPBar from "./XPBar";
@@ -27,6 +28,8 @@ export default function Sidebar({ onClose }) {
   const { user, logout } = useAuth();
   const { stats }        = useStats();
   const navigate         = useNavigate();
+  const location         = useLocation();
+  const reduced          = useReducedMotion();
 
   const avatar   = user?.avatar || user?.googleAvatar;
   const initials = user?.name?.split(" ").map(w => w[0]).join("").toUpperCase().slice(0,2) || "?";
@@ -35,6 +38,8 @@ export default function Sidebar({ onClose }) {
     sfx.click();
     if (onClose) onClose();
   };
+
+  const isActive = (to) => location.pathname === to || location.pathname.startsWith(to + "/");
 
   return (
     <aside className="glass-sidebar w-[250px] flex flex-col h-screen overflow-y-auto">
@@ -55,14 +60,48 @@ export default function Sidebar({ onClose }) {
 
       {/* Nav links */}
       <nav className="flex-1 px-3 py-2 overflow-y-auto space-y-0.5">
-        {NAV.map(n => (
-          <NavLink key={n.to} to={n.to} onClick={handleNav}
-            className={({ isActive }) => isActive ? "nav-link-active" : "nav-link"}
-          >
-            <span className="material-symbols-outlined text-[20px]">{n.icon}</span>
-            <span className="text-[13px] font-medium truncate">{n.label}</span>
-          </NavLink>
-        ))}
+        {NAV.map(n => {
+          const active = isActive(n.to);
+          return (
+            <NavLink key={n.to} to={n.to} onClick={handleNav}
+              className="relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium
+                transition-all duration-200"
+              style={{ color: active ? "#00C896" : undefined }}
+            >
+              {/* Animated active pill background */}
+              {active && (
+                reduced ? (
+                  <div className="absolute inset-0 rounded-lg bg-[#00C896]/10"
+                    style={{ boxShadow: "0 0 12px rgba(0,200,150,0.15)" }} />
+                ) : (
+                  <motion.div
+                    layoutId="activeNav"
+                    className="absolute inset-0 rounded-lg bg-[#00C896]/10"
+                    style={{ boxShadow: "0 0 12px rgba(0,200,150,0.15)" }}
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                  />
+                )
+              )}
+              {/* Icon with gradient when active */}
+              <span
+                className="material-symbols-outlined text-[20px] relative z-10"
+                style={active ? {
+                  background: "linear-gradient(135deg, #8b5cf6, #06b6d4)",
+                  backgroundClip: "text",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                } : { color: "#6b7280" }}
+              >
+                {n.icon}
+              </span>
+              <span className={`text-[13px] font-medium truncate relative z-10 ${
+                active ? "text-[#00C896]" : "text-muted hover:text-on-surface"
+              }`}>
+                {n.label}
+              </span>
+            </NavLink>
+          );
+        })}
       </nav>
 
       {/* XP bar */}

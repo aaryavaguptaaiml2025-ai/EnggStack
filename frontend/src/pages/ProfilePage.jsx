@@ -4,6 +4,7 @@ import { useStats, getLevel, LEVEL_NAMES, XP_THRESHOLDS, BADGES } from "../conte
 import { api } from "../api";
 import { Card, Btn, Toast, Spinner, ProgressBar } from "../components/ui";
 import { sfx } from "../hooks/useSfx";
+import SparklesWrapper from "../components/ui/SparklesWrapper";
 
 /* ── Avatar Upload Service ────────────────────────────────
  * Currently stores as base64. To switch to cloud storage (S3/Cloudinary),
@@ -127,10 +128,13 @@ export default function ProfilePage() {
                 <div className="text-sm text-muted mb-1">@{user?.username || user?.email?.split("@")[0]}</div>
               </>
             )}
-            <div className="flex items-center gap-2 justify-center sm:justify-start mb-3">
-              <span className="material-symbols-outlined text-[#8b5cf6] text-base filled">workspace_premium</span>
-              <span className="text-xs font-bold text-[#8b5cf6]">Level {lv+1} — {LEVEL_NAMES[lv]}</span>
-            </div>
+            <SparklesWrapper count={7} colors={["#f59e0b", "#8b5cf6"]}>
+              <div className="flex items-center gap-2 justify-center sm:justify-start mb-3
+                px-3 py-1.5 rounded-full bg-[#8b5cf6]/10 border border-[#8b5cf6]/20">
+                <span className="material-symbols-outlined text-[#8b5cf6] text-base filled">workspace_premium</span>
+                <span className="text-xs font-bold text-[#8b5cf6]">Level {lv+1} — {LEVEL_NAMES[lv]}</span>
+              </div>
+            </SparklesWrapper>
             <div className="flex gap-2 justify-center sm:justify-start">
               {editing ? (
                 <>

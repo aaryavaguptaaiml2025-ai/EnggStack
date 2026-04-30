@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { useStats, BADGES, getLevel, LEVEL_NAMES, XP_THRESHOLDS } from "../context/StatsContext";
 import { useToast } from "../context/ToastContext";
 import { api } from "../api";
-import { Card, ProgressBar, Badge, AnimNum } from "../components/ui";
+import { Card, ProgressBar, Badge } from "../components/ui";
 import XPBar from "../components/XPBar";
 import TodaysPlan from "../components/TodaysPlan";
 
@@ -13,10 +14,10 @@ const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
 /* Color-role stat cards: orange=streak, blue=info, danger=pomodoro, purple=level */
 const STAT_CONFIG = [
-  { icon:"local_fire_department", label:"Streak",    color:"#f97316", filled:true },
-  { icon:"schedule",              label:"Mins Today", color:"#3b82f6" },
-  { icon:"timer",                 label:"Pomodoros",  color:"#f87171" },
-  { icon:"emoji_events",          label:"Level",      color:"#8b5cf6", filled:true },
+  { icon:"local_fire_department", label:"Streak",    color:"#f97316", filled:true,  suffix:"d" },
+  { icon:"schedule",              label:"Mins Today", color:"#3b82f6", suffix:"" },
+  { icon:"timer",                 label:"Pomodoros",  color:"#f87171", suffix:"" },
+  { icon:"emoji_events",          label:"Level",      color:"#8b5cf6", filled:true,  suffix:"" },
 ];
 
 const QUICK_ACTIONS = [
@@ -28,24 +29,83 @@ const QUICK_ACTIONS = [
   { icon:"calculate",      label:"Calculator",  to:"/calculator",   c:"#3b82f6" },
 ];
 
-/* ── StatCard ── */
-function StatCard({ icon, label, value, color, delay = 0, sub, filled }) {
-  const [vis, setVis] = useState(false);
+/* ── Counting number animation hook ── */
+function useCountUp(target, duration = 1200) {
+  const [value, setValue] = useState(0);
+  const rafRef = useRef(null);
+  const startRef = useRef(null);
+
   useEffect(() => {
-    const t = setTimeout(() => setVis(true), delay);
-    return () => clearTimeout(t);
-  }, [delay]);
+    const num = typeof target === "number" ? target : parseInt(target, 10) || 0;
+    if (num === 0) { setValue(0); return; }
+    startRef.current = null;
+    const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+    const animate = (ts) => {
+      if (!startRef.current) startRef.current = ts;
+      const elapsed = ts - startRef.current;
+      const progress = Math.min(elapsed / duration, 1);
+      setValue(Math.round(easeOut(progress) * num));
+      if (progress < 1) rafRef.current = requestAnimationFrame(animate);
+    };
+    rafRef.current = requestAnimationFrame(animate);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [target, duration]);
+
+  return value;
+}
+
+/* ── 3D Tilt StatCard ── */
+function StatCard({ icon, label, value, numericValue, color, suffix, sub, filled, index = 0 }) {
+  const cardRef = useRef(null);
+  const reduced = useReducedMotion();
+  const countedVal = useCountUp(numericValue);
+
+  const handleMouseMove = useCallback((e) => {
+    if (reduced) return;
+    const card = cardRef.current;
+    if (!card) return;
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = ((y - centerY) / centerY) * -8;
+    const rotateY = ((x - centerX) / centerX) * 8;
+    card.style.transform = `perspective(600px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-2px)`;
+  }, [reduced]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (cardRef.current) {
+      cardRef.current.style.transform = "perspective(600px) rotateX(0deg) rotateY(0deg) translateY(0)";
+    }
+  }, []);
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 24 },
+    visible: {
+      opacity: 1, y: 0,
+      transition: { duration: 0.45, ease: "easeOut", delay: index * 0.1 },
+    },
+  };
 
   return (
-    <div
-      className="stat-card"
+    <motion.div
+      ref={cardRef}
+      variants={reduced ? {} : cardVariants}
+      initial={reduced ? undefined : "hidden"}
+      animate={reduced ? undefined : "visible"}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="stat-card relative overflow-hidden"
       style={{
-        opacity: vis ? 1 : 0,
-        transform: vis ? "translateY(0)" : "translateY(16px)",
-        transition: "opacity .5s ease, transform .5s ease, background .2s",
         borderLeft: `3px solid ${color}`,
+        transition: "transform 0.15s ease-out, box-shadow 0.2s ease, background 0.2s",
       }}
     >
+      {/* Gradient top border */}
+      <div className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{ background: "linear-gradient(90deg, #8b5cf6, #06b6d4)" }} />
+
       <div className="flex items-center gap-3 relative">
         <div
           className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -60,7 +120,9 @@ function StatCard({ icon, label, value, color, delay = 0, sub, filled }) {
         </div>
         <div>
           <div className="label-text mb-0.5">{label}</div>
-          <div className="text-lg font-bold text-on-surface">{value}</div>
+          <div className="text-lg font-bold text-on-surface">
+            {countedVal}{suffix}
+          </div>
           {sub && (
             <div className="text-[10px] mt-0.5" style={{ color }}>
               {sub}
@@ -68,7 +130,7 @@ function StatCard({ icon, label, value, color, delay = 0, sub, filled }) {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -168,6 +230,14 @@ export default function DashboardPage() {
   /* Weekly totals for comparison text */
   const weekTotal = wMins.reduce((a, b) => a + b, 0);
 
+  /* Stat card numeric values */
+  const statValues = [
+    stats.streak || 0,
+    stats.minsToday || 0,
+    stats.pomodoros || 0,
+    lv + 1,
+  ];
+
   return (
     <div className="page-container">
       {/* ── Header ── */}
@@ -222,28 +292,22 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* ── Stat Cards (color-coded roles) ── */}
-      <div className="stagger grid-4 grid grid-cols-4 gap-4 mb-6">
-        <StatCard
-          icon={STAT_CONFIG[0].icon} label={STAT_CONFIG[0].label}
-          value={`${stats.streak || 0}d`} color={STAT_CONFIG[0].color}
-          delay={0} filled={STAT_CONFIG[0].filled}
-        />
-        <StatCard
-          icon={STAT_CONFIG[1].icon} label={STAT_CONFIG[1].label}
-          value={<AnimNum value={stats.minsToday || 0} />} color={STAT_CONFIG[1].color}
-          delay={80}
-        />
-        <StatCard
-          icon={STAT_CONFIG[2].icon} label={STAT_CONFIG[2].label}
-          value={stats.pomodoros || 0} color={STAT_CONFIG[2].color}
-          delay={160}
-        />
-        <StatCard
-          icon={STAT_CONFIG[3].icon} label={STAT_CONFIG[3].label}
-          value={lv + 1} color={STAT_CONFIG[3].color}
-          delay={240} sub={LEVEL_NAMES[lv]} filled={STAT_CONFIG[3].filled}
-        />
+      {/* ── Stat Cards (animated, 3D tilt, staggered, gradient border) ── */}
+      <div className="grid-4 grid grid-cols-4 gap-4 mb-6">
+        {STAT_CONFIG.map((cfg, i) => (
+          <StatCard
+            key={i}
+            index={i}
+            icon={cfg.icon}
+            label={cfg.label}
+            numericValue={statValues[i]}
+            value={statValues[i]}
+            color={cfg.color}
+            suffix={cfg.suffix}
+            filled={cfg.filled}
+            sub={i === 3 ? LEVEL_NAMES[lv] : undefined}
+          />
+        ))}
       </div>
 
       {/* ── XP Bar ── */}

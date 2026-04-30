@@ -1,9 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../api";
 import { Input, Btn, Spinner } from "../components/ui";
 import { sfx } from "../hooks/useSfx";
+import { motion } from "framer-motion";
 
 /* ───────────────── PASSWORD INPUT WITH VISIBILITY TOGGLE ───────────────── */
 function PasswordInput({ value, onChange, placeholder, onKeyDown, className = "" }) {
@@ -11,15 +12,15 @@ function PasswordInput({ value, onChange, placeholder, onKeyDown, className = ""
   return (
     <div className="relative group">
       <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
-        text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">lock</span>
+        text-dim text-lg group-focus-within:text-[var(--ac)] transition-colors duration-200">lock</span>
       <input value={value} onChange={onChange}
         placeholder={placeholder || "••••••••"}
         type={show ? "text" : "password"}
         onKeyDown={onKeyDown}
-        className={`input-field pl-12 pr-12 ${className}`}/>
+        className={`input-field pl-12 pr-12 w-full ${className}`}/>
       <button type="button" onClick={() => setShow(!show)}
         className="absolute right-4 top-1/2 -translate-y-1/2 text-dim
-          hover:text-on-surface transition-colors duration-200"
+          hover:text-[var(--text)] transition-colors duration-200"
         tabIndex={-1}>
         <span className="material-symbols-outlined text-lg">
           {show ? "visibility_off" : "visibility"}
@@ -29,55 +30,44 @@ function PasswordInput({ value, onChange, placeholder, onKeyDown, className = ""
   );
 }
 
-/* ───────────────── AUTH WRAPPER ───────────────── */
-function AuthWrap({ children, title, sub }) {
+/* ───────────────── BACKGROUND ORBS ───────────────── */
+function BackgroundOrbs() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const h = (e) => setReduced(e.matches);
+    mq.addEventListener("change", h);
+    return () => mq.removeEventListener("change", h);
+  }, []);
+  
+  if (reduced) return null;
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0B1220] p-4 md:p-12 overflow-hidden">
+    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+      <div className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-[#00C896]/8 blur-[120px]" 
+           style={{ animation: 'floatOrb1 15s ease-in-out infinite' }} />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] rounded-full bg-[#8b5cf6]/8 blur-[100px]" 
+           style={{ animation: 'floatOrb2 20s ease-in-out infinite' }} />
+      <div className="absolute top-[30%] left-[30%] w-[200px] h-[200px] rounded-full bg-[#3b82f6]/5 blur-[80px]" 
+           style={{ animation: 'floatOrb3 18s ease-in-out infinite' }} />
+    </div>
+  );
+}
 
-      <div className="relative z-10 w-full max-w-7xl flex flex-col md:flex-row items-center gap-12 lg:gap-20">
-        {/* Left hero */}
-        <div className="w-full md:w-1/2 flex flex-col items-start text-left">
-          <div className="mb-6 flex items-center gap-3">
-            <img src="/cognit-logo.png" alt="Cognit" className="w-10 h-10 object-contain" />
-            <h1 className="text-2xl font-bold text-[#00C896] tracking-tight">Cognit</h1>
+/* ───────────────── AUTH WRAPPER ───────────────── */
+function AuthWrap({ children }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg)] p-4 md:p-8 overflow-hidden relative">
+      <BackgroundOrbs />
+      <div className="relative z-10 w-full max-w-sm">
+        <div className="glass-card p-8 rounded-2xl border border-white/10"
+          style={{ backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" }}>
+          <div className="flex flex-col items-center text-center mb-8">
+            <img src="/cognit-logo.png" alt="Cognit" className="w-10 h-10 object-contain mb-3" />
+            <h1 className="text-2xl font-extrabold grad-text tracking-tight mb-1">Cognit</h1>
+            <p className="text-muted text-sm">Your engineering OS</p>
           </div>
-          <h2 className="text-4xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] mb-5 text-on-surface">
-            Master your <br/>
-            <span className="text-[#00C896] italic">learning</span> <br/>
-            journey.
-          </h2>
-          <p className="text-muted text-base lg:text-lg max-w-md leading-relaxed mb-8">
-            The intelligent study platform built for focused learners. Plan, track, and conquer with precision.
-          </p>
-          <div className="hidden md:flex items-center gap-5 p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
-            <div className="flex -space-x-2">
-              {[0,1,2].map((i) => (
-                <div key={i} className="w-9 h-9 rounded-full border-2 border-[#0B1220] flex items-center
-                  justify-center text-sm text-text"
-                  style={{background:`rgba(0,200,150,${0.08+i*0.06})`}}>
-                  {String.fromCharCode(65+i)}
-                </div>
-              ))}
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-on-surface">Join 2,400+ learners</p>
-              <p className="text-[10px] text-muted uppercase tracking-widest font-bold">Already on board</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Right form */}
-        <div className="w-full md:w-1/2 max-w-md">
-          <div className="glass-card p-8 lg:p-10 relative overflow-hidden">
-            <div className="mb-8">
-              <h3 className="text-xl font-semibold text-text mb-1">{title}</h3>
-              <p className="text-muted text-sm">{sub}</p>
-            </div>
-            {children}
-          </div>
-          <p className="text-center mt-6 text-dim/50 text-[10px] uppercase tracking-[0.2em] font-black">
-            Secure 256-bit AES Encryption
-          </p>
+          {children}
         </div>
       </div>
     </div>
@@ -129,12 +119,12 @@ function GoogleBtn({ onSuccess, label="Continue with Google" }) {
   };
 
   return (
-    <div className="mb-4">
+    <div className="mb-5">
       <button onClick={handleClick} disabled={busy}
-        className="w-full flex items-center justify-center gap-3 py-3.5 px-6
-          bg-white/5 hover:bg-white/[.08] border border-white/10
+        className="w-full flex items-center justify-center gap-3 py-3 px-4
+          bg-white/5 hover:bg-white/10 border border-white/10
           rounded-xl transition-all duration-200 group backdrop-blur-sm">
-        {busy ? <><Spinner size={14}/> <span className="text-sm font-semibold text-on-surface">Loading...</span></> : (
+        {busy ? <><Spinner size={14}/> <span className="text-sm font-medium text-[var(--text)]">Loading...</span></> : (
           <>
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path d="M12 5.04c1.94 0 3.51.68 4.75 1.81l3.51-3.51C18.1 1.34 15.28 0 12 0 7.31 0 3.25 2.67 1.21 6.6L4.9 9.42C5.77 6.9 8.16 5.04 12 5.04z" fill="#EA4335"/>
@@ -142,13 +132,13 @@ function GoogleBtn({ onSuccess, label="Continue with Google" }) {
               <path d="M4.9 14.58c-.23-.68-.36-1.41-.36-2.16s.13-1.48.36-2.16L1.21 7.4c-.79 1.56-1.21 3.32-1.21 5.2s.42 3.64 1.21 5.2l3.69-2.82z" fill="#FBBC05"/>
               <path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.7-2.87c-1.08.73-2.48 1.15-4.23 1.15-3.23 0-5.97-2.18-6.95-5.11l-3.84 2.96C3.12 21.09 7.21 24 12 24z" fill="#34A853"/>
             </svg>
-            <span className="font-semibold text-sm text-on-surface">{label}</span>
+            <span className="font-medium text-sm text-[var(--text)]">{label}</span>
           </>
         )}
       </button>
       <div className="flex items-center gap-4 my-4">
         <div className="h-px flex-1 bg-white/10"/>
-        <span className="text-[10px] font-bold text-dim uppercase tracking-widest">or email</span>
+        <span className="text-[10px] font-bold text-dim uppercase tracking-widest">or</span>
         <div className="h-px flex-1 bg-white/10"/>
       </div>
     </div>
@@ -165,7 +155,7 @@ function OTPStep({ email, onVerified, onBack }) {
   const [resendMsg, setResendMsg] = useState("");
 
   const verify = async () => {
-    if (otp.length !== 6) return setErr("Enter the 6-digit code from your email");
+    if (otp.length !== 6) return setErr("Enter the 6-digit code");
     setErr("");
     setLoading(true);
     try {
@@ -195,45 +185,54 @@ function OTPStep({ email, onVerified, onBack }) {
   };
 
   return (
-    <AuthWrap title="Verify Email" sub="Enter the 6-digit code sent to your email">
+    <AuthWrap>
       <div className="text-center mb-5">
-        <span className="material-symbols-outlined text-[#00C896] text-4xl mb-2 block">mark_email_read</span>
-        <div className="text-sm text-muted">
-          Code sent to <span className="text-[#00C896] font-semibold">{email}</span>
+        <span className="material-symbols-outlined text-[var(--ac)] text-4xl mb-2 block">mark_email_read</span>
+        <div className="text-sm text-[var(--text)] font-semibold mb-1">Verify Email</div>
+        <div className="text-xs text-muted">
+          Code sent to <span className="text-[var(--ac)]">{email}</span>
         </div>
       </div>
 
-      <Input
-        value={otp}
-        onChange={e => setOtp(e.target.value.replace(/\D/g,"").slice(0,6))}
-        placeholder="Enter 6-digit OTP"
-        style={{textAlign:"center",fontSize:22,letterSpacing:8,fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}
-      />
+      <div className={err ? "animate-shake" : ""}>
+        <Input
+          value={otp}
+          onChange={e => setOtp(e.target.value.replace(/\D/g,"").slice(0,6))}
+          placeholder="Enter 6-digit OTP"
+          className="text-center text-lg tracking-[0.5em] font-mono font-bold w-full"
+        />
+      </div>
 
       {err && (
-        <div className="text-danger text-xs mb-3 p-3 bg-danger/5 border border-danger/20 rounded-xl
-          flex items-center gap-2">
+        <div className="text-[var(--clr-danger)] text-xs mt-3 p-3 bg-[var(--clr-danger)]/10 border border-[var(--clr-danger)]/20 rounded-xl flex items-center gap-2">
           <span className="material-symbols-outlined text-sm">error</span>{err}
         </div>
       )}
       {resendMsg && (
-        <div className="text-[#00C896] text-xs mb-3 p-3 bg-[#00C896]/5 border border-[#00C896]/20 rounded-xl
-          flex items-center gap-2">
+        <div className="text-[var(--ac)] text-xs mt-3 p-3 bg-[var(--ac)]/10 border border-[var(--ac)]/20 rounded-xl flex items-center gap-2">
           <span className="material-symbols-outlined text-sm">check_circle</span>{resendMsg}
         </div>
       )}
 
-      <Btn full onClick={verify} disabled={loading} style={{marginBottom:12}}>
-        {loading ? <><Spinner size={14}/> Verifying...</> : "Verify & Create Account"}
-      </Btn>
+      <button onClick={verify} disabled={loading} className="btn-primary w-full mt-5 mb-4">
+        {loading ? <><Spinner size={14}/> <span className="ml-2">Verifying...</span></> : "Verify Account"}
+      </button>
 
-      <div className="flex justify-between items-center">
-        <button onClick={onBack} className="text-dim text-xs hover:text-on-surface transition-colors duration-200">Back</button>
+      <div className="flex justify-between items-center px-1">
+        <button onClick={onBack} className="text-dim text-xs hover:text-[var(--text)] transition-colors">Back</button>
         <button onClick={handleResend} disabled={resending}
-          className="text-[#00C896] text-xs font-semibold hover:underline">
+          className="text-[var(--ac)] text-xs font-semibold hover:underline">
           {resending ? "Sending..." : "Resend Code"}
         </button>
       </div>
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-6px); }
+          75% { transform: translateX(6px); }
+        }
+        .animate-shake { animation: shake 0.2s ease-in-out 3; }
+      `}</style>
     </AuthWrap>
   );
 }
@@ -249,7 +248,7 @@ function ForgotPasswordFlow({ onBack }) {
   const [loading, setLoading] = useState(false);
 
   const sendResetOtp = async () => {
-    if (!email) return setErr("Enter your email address");
+    if (!email) return setErr("Enter your email");
     setErr(""); setLoading(true);
     try {
       const res = await api.forgotPassword({ email });
@@ -261,7 +260,7 @@ function ForgotPasswordFlow({ onBack }) {
   };
 
   const resetPassword = async () => {
-    if (otp.length !== 6) return setErr("Enter the 6-digit code");
+    if (otp.length !== 6) return setErr("Enter 6-digit code");
     if (newPass.length < 6) return setErr("Password must be at least 6 characters");
     setErr(""); setLoading(true);
     try {
@@ -275,15 +274,13 @@ function ForgotPasswordFlow({ onBack }) {
 
   if (step === 3) {
     return (
-      <AuthWrap title="Password Reset" sub="Your password has been updated">
+      <AuthWrap>
         <div className="text-center py-4">
-          <span className="material-symbols-outlined text-[#00C896] text-5xl mb-3 block">check_circle</span>
-          <div className="text-on-surface font-semibold mb-1">Success!</div>
+          <span className="material-symbols-outlined text-[var(--ac)] text-5xl mb-3 block">check_circle</span>
+          <div className="text-[var(--text)] font-semibold mb-1">Success!</div>
           <div className="text-muted text-sm mb-6">{msg}</div>
-          <button onClick={onBack}
-            className="btn-primary w-full py-3.5 text-base flex items-center justify-center gap-2">
+          <button onClick={onBack} className="btn-primary w-full">
             Back to Sign In
-            <span className="material-symbols-outlined text-lg">arrow_forward</span>
           </button>
         </div>
       </AuthWrap>
@@ -291,77 +288,63 @@ function ForgotPasswordFlow({ onBack }) {
   }
 
   return (
-    <AuthWrap title="Reset Password" sub={step === 1 ? "Enter your email to receive a reset code" : "Enter the code and your new password"}>
+    <AuthWrap>
       {step === 1 && (
-        <>
+        <div className={err ? "animate-shake" : ""}>
           <div className="text-center mb-5">
-            <span className="material-symbols-outlined text-[#00C896] text-4xl mb-2 block">lock_reset</span>
+            <span className="material-symbols-outlined text-[var(--ac)] text-4xl mb-2 block">lock_reset</span>
+            <div className="text-[var(--text)] font-semibold text-sm mb-1">Reset Password</div>
           </div>
-
-          <div className="space-y-1.5 mb-4">
-            <label className="label-text ml-1">Email Address</label>
+          <div className="space-y-4">
             <div className="relative group">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
-                text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">alternate_email</span>
-              <input value={email} onChange={e => setEmail(e.target.value)}
-                placeholder="you@cognit.app" type="email"
-                onKeyDown={e => e.key === "Enter" && sendResetOtp()}
-                className="input-field pl-12"/>
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-dim text-lg group-focus-within:text-[var(--ac)] transition-colors">alternate_email</span>
+              <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email Address" type="email" onKeyDown={e => e.key === "Enter" && sendResetOtp()} className="input-field pl-12 w-full"/>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       {step === 2 && (
-        <>
+        <div className={err ? "animate-shake" : ""}>
           <div className="text-center mb-5">
-            <span className="material-symbols-outlined text-[#00C896] text-4xl mb-2 block">mark_email_read</span>
-            <div className="text-sm text-muted">
-              Code sent to <span className="text-[#00C896] font-semibold">{email}</span>
-            </div>
+            <span className="material-symbols-outlined text-[var(--ac)] text-4xl mb-2 block">mark_email_read</span>
+            <div className="text-[var(--text)] font-semibold text-sm mb-1">Reset Code</div>
           </div>
-
-          <Input
-            value={otp}
-            onChange={e => setOtp(e.target.value.replace(/\D/g,"").slice(0,6))}
-            placeholder="Enter 6-digit code"
-            style={{textAlign:"center",fontSize:22,letterSpacing:8,fontFamily:"'JetBrains Mono',monospace",fontWeight:700}}
-          />
-
-          <div className="space-y-1.5 mb-4">
-            <label className="label-text ml-1">New Password</label>
-            <PasswordInput value={newPass} onChange={e => setNewPass(e.target.value)}
-              placeholder="Min 6 characters"
-              onKeyDown={e => e.key === "Enter" && resetPassword()} />
+          <div className="space-y-4">
+            <Input value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g,"").slice(0,6))} placeholder="6-digit code" className="text-center tracking-widest font-mono font-bold w-full"/>
+            <PasswordInput value={newPass} onChange={e => setNewPass(e.target.value)} placeholder="New Password" onKeyDown={e => e.key === "Enter" && resetPassword()} />
           </div>
-        </>
+        </div>
       )}
 
       {err && (
-        <div className="text-danger text-xs mb-3 p-3 bg-danger/5 border border-danger/20 rounded-xl
-          flex items-center gap-2">
+        <div className="text-[var(--clr-danger)] text-xs mt-4 p-3 bg-[var(--clr-danger)]/10 border border-[var(--clr-danger)]/20 rounded-xl flex items-center gap-2">
           <span className="material-symbols-outlined text-sm">error</span>{err}
         </div>
       )}
       {msg && step !== 3 && (
-        <div className="text-[#00C896] text-xs mb-3 p-3 bg-[#00C896]/5 border border-[#00C896]/20 rounded-xl
-          flex items-center gap-2">
+        <div className="text-[var(--ac)] text-xs mt-4 p-3 bg-[var(--ac)]/10 border border-[var(--ac)]/20 rounded-xl flex items-center gap-2">
           <span className="material-symbols-outlined text-sm">check_circle</span>{msg}
         </div>
       )}
 
-      <button onClick={step === 1 ? sendResetOtp : resetPassword} disabled={loading}
-        className="btn-primary w-full mt-2 py-3.5 text-base flex items-center justify-center gap-2">
-        {loading ? <><Spinner size={14}/> {step === 1 ? "Sending..." : "Resetting..."}</> :
-          step === 1 ? <>Send Reset Code <span className="material-symbols-outlined text-lg">send</span></> :
-          <>Reset Password <span className="material-symbols-outlined text-lg">lock_reset</span></>}
+      <button onClick={step === 1 ? sendResetOtp : resetPassword} disabled={loading} className="btn-primary w-full mt-5">
+        {loading ? <><Spinner size={14}/> <span className="ml-2">{step === 1 ? "Sending..." : "Resetting..."}</span></> : step === 1 ? "Send Reset Code" : "Reset Password"}
       </button>
 
-      <div className="mt-4 text-center">
-        <button onClick={onBack} className="text-dim text-xs hover:text-on-surface transition-colors duration-200">
+      <div className="mt-5 text-center">
+        <button onClick={onBack} className="text-dim text-xs hover:text-[var(--text)] transition-colors">
           ← Back to Sign In
         </button>
       </div>
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-6px); }
+          75% { transform: translateX(6px); }
+        }
+        .animate-shake { animation: shake 0.2s ease-in-out 3; }
+      `}</style>
     </AuthWrap>
   );
 }
@@ -378,10 +361,7 @@ export function LoginPage() {
   const [showForgot, setShowForgot] = useState(false);
 
   if (user) { navigate("/dashboard", { replace: true }); return null; }
-
-  if (showForgot) {
-    return <ForgotPasswordFlow onBack={() => setShowForgot(false)} />;
-  }
+  if (showForgot) { return <ForgotPasswordFlow onBack={() => setShowForgot(false)} />; }
 
   const go = async () => {
     if (!email || !pass) return setErr("Email and password required");
@@ -406,49 +386,47 @@ export function LoginPage() {
   const hasGoogle = !!getGoogleClientId();
 
   return (
-    <AuthWrap title="Welcome back" sub="Access your developer dashboard and modules.">
+    <AuthWrap>
       {hasGoogle && <GoogleBtn onSuccess={handleGoogle} />}
 
-      <div className="space-y-1.5">
-        <label className="label-text ml-1">Email Address</label>
+      <div className={`space-y-4 ${err ? "animate-shake" : ""}`}>
         <div className="relative group">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
-            text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">alternate_email</span>
-          <input value={email} onChange={e=>setEmail(e.target.value)}
-            placeholder="you@cognit.app" type="email"
-            className="input-field pl-12"/>
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-dim text-lg group-focus-within:text-[var(--ac)] transition-colors duration-200">alternate_email</span>
+          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email Address" type="email" className="input-field pl-12 w-full"/>
         </div>
+        <PasswordInput value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e => e.key === "Enter" && go()} placeholder="Password" />
       </div>
 
-      <div className="space-y-1.5 mt-4">
-        <div className="flex justify-between items-center px-1">
-          <label className="label-text">Password</label>
-          <button onClick={() => setShowForgot(true)}
-            className="text-[10px] font-bold text-[#00C896] hover:underline">Forgot?</button>
-        </div>
-        <PasswordInput value={pass} onChange={e=>setPass(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && go()} />
+      <div className="flex justify-between items-center mt-3 px-1">
+        <button onClick={() => navigate("/login")} className="text-[11px] font-semibold text-dim hover:text-[var(--text)] transition-colors">Use PIN to sign in</button>
+        <button onClick={() => setShowForgot(true)} className="text-[11px] font-semibold text-[var(--ac)] hover:underline">Forgot password?</button>
       </div>
 
       {err && (
-        <div className="text-danger text-xs mt-4 p-3 bg-danger/5 border border-danger/20 rounded-xl
-          flex items-center gap-2">
+        <div className="text-[var(--clr-danger)] text-xs mt-4 p-3 bg-[var(--clr-danger)]/10 border border-[var(--clr-danger)]/20 rounded-xl flex items-center gap-2">
           <span className="material-symbols-outlined text-sm">error</span>{err}
         </div>
       )}
 
-      <button onClick={go} disabled={loading}
-        className="btn-primary w-full mt-5 py-3.5 text-base flex items-center justify-center gap-2">
-        {loading ? <><Spinner size={14}/> Signing in...</> : <>Sign In
-          <span className="material-symbols-outlined text-lg">arrow_forward</span></>}
+      <button onClick={go} disabled={loading} className="btn-primary w-full mt-6">
+        {loading ? <><Spinner size={14}/> <span className="ml-2">Signing in...</span></> : "Sign in"}
       </button>
 
-      <div className="mt-8 pt-6 border-t border-white/10 text-center">
+      <div className="mt-6 text-center">
         <p className="text-muted text-sm">
           Don't have an account?{" "}
-          <Link to="/register" className="text-[#00C896] font-bold hover:underline underline-offset-4">Sign up</Link>
+          <Link to="/register" className="text-[var(--ac)] font-bold hover:underline underline-offset-4 transition-all">Sign up</Link>
         </p>
       </div>
+
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-6px); }
+          75% { transform: translateX(6px); }
+        }
+        .animate-shake { animation: shake 0.2s ease-in-out 3; }
+      `}</style>
     </AuthWrap>
   );
 }
@@ -461,7 +439,7 @@ export function RegisterPage() {
   const [name,setName]=useState("");
   const [email,setEmail]=useState("");
   const [pass,setPass]=useState("");
-  const [username,setUsername]=useState("");
+  const [confirmPass,setConfirmPass]=useState("");
   const [step,setStep]=useState(1);
   const [err,setErr]=useState("");
   const [loading,setLoading]=useState(false);
@@ -469,12 +447,13 @@ export function RegisterPage() {
   if (user) { navigate("/dashboard", { replace: true }); return null; }
 
   const handleSendOTP = async () => {
-    if (!name || !email || !pass) return setErr("Name, email and password are required");
+    if (!name || !email || !pass || !confirmPass) return setErr("All fields are required");
+    if (pass !== confirmPass) return setErr("Passwords do not match");
     if (pass.length < 6) return setErr("Password must be at least 6 characters");
     setErr("");
     setLoading(true);
     try {
-      const result = await sendOtp(name, email, pass, username);
+      const result = await sendOtp(name, email, pass, "");
       if (result.skipOTP) {
         sfx.success();
         navigate("/dashboard");
@@ -505,66 +484,65 @@ export function RegisterPage() {
 
   const hasGoogle = !!getGoogleClientId();
 
+  // Password strength calculation
+  let score = 0;
+  if (pass.length > 5) score += 1;
+  if (pass.length > 8) score += 1;
+  if (/[A-Z]/.test(pass) && /[a-z]/.test(pass)) score += 1;
+  if (/[0-9!@#$%^&*]/.test(pass)) score += 1;
+  const strengthColors = ["bg-white/10", "bg-[var(--clr-danger)]", "bg-[var(--clr-streak)]", "bg-[var(--clr-warning)]", "bg-[var(--ac)]"];
+
   return (
-    <AuthWrap title="Create account" sub="Sign up to start studying smarter">
-      {hasGoogle && <GoogleBtn onSuccess={handleGoogle} />}
+    <AuthWrap>
+      {hasGoogle && <GoogleBtn onSuccess={handleGoogle} label="Sign up with Google" />}
 
-      <div className="space-y-1.5">
-        <label className="label-text ml-1">Full Name</label>
+      <div className={`space-y-4 ${err ? "animate-shake" : ""}`}>
         <div className="relative group">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
-            text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">person</span>
-          <input value={name} onChange={e=>setName(e.target.value)}
-            placeholder="e.g. Rahul Sharma" className="input-field pl-12"/>
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-dim text-lg group-focus-within:text-[var(--ac)] transition-colors duration-200">person</span>
+          <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full Name" className="input-field pl-12 w-full"/>
         </div>
-      </div>
-
-      <div className="space-y-1.5 mt-4">
-        <label className="label-text ml-1">Email</label>
         <div className="relative group">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
-            text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">alternate_email</span>
-          <input value={email} onChange={e=>setEmail(e.target.value)}
-            placeholder="you@example.com" className="input-field pl-12"/>
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-dim text-lg group-focus-within:text-[var(--ac)] transition-colors duration-200">alternate_email</span>
+          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email Address" type="email" className="input-field pl-12 w-full"/>
         </div>
-      </div>
-
-      <div className="space-y-1.5 mt-4">
-        <label className="label-text ml-1">Username (optional)</label>
-        <div className="relative group">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2
-            text-dim text-lg group-focus-within:text-[#00C896] transition-colors duration-200">alternate_email</span>
-          <input value={username} onChange={e=>setUsername(e.target.value)}
-            placeholder="@username" className="input-field pl-12"/>
+        <div>
+          <PasswordInput value={pass} onChange={e=>setPass(e.target.value)} placeholder="Password" />
+          {pass && (
+            <div className="flex gap-1 mt-2 px-1">
+              {[1, 2, 3, 4].map((level) => (
+                <div key={level} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${score >= level ? strengthColors[score] : strengthColors[0]}`} />
+              ))}
+            </div>
+          )}
         </div>
-      </div>
-
-      <div className="space-y-1.5 mt-4">
-        <label className="label-text ml-1">Password</label>
-        <PasswordInput value={pass} onChange={e=>setPass(e.target.value)}
-          placeholder="Min 6 characters"
-          onKeyDown={e => e.key === "Enter" && handleSendOTP()} />
+        <PasswordInput value={confirmPass} onChange={e=>setConfirmPass(e.target.value)} placeholder="Confirm Password" onKeyDown={e => e.key === "Enter" && handleSendOTP()} />
       </div>
 
       {err && (
-        <div className="text-danger text-xs mt-4 p-3 bg-danger/5 border border-danger/20 rounded-xl
-          flex items-center gap-2">
+        <div className="text-[var(--clr-danger)] text-xs mt-4 p-3 bg-[var(--clr-danger)]/10 border border-[var(--clr-danger)]/20 rounded-xl flex items-center gap-2">
           <span className="material-symbols-outlined text-sm">error</span>{err}
         </div>
       )}
 
-      <button onClick={handleSendOTP} disabled={loading}
-        className="btn-primary w-full mt-5 py-3.5 text-base flex items-center justify-center gap-2">
-        {loading ? <><Spinner size={14}/> Sending OTP...</> : <>Create Account
-          <span className="material-symbols-outlined text-lg">arrow_forward</span></>}
+      <button onClick={handleSendOTP} disabled={loading} className="btn-primary w-full mt-6">
+        {loading ? <><Spinner size={14}/> <span className="ml-2">Creating account...</span></> : "Create account"}
       </button>
 
-      <div className="mt-8 pt-6 border-t border-white/10 text-center">
+      <div className="mt-6 text-center">
         <p className="text-muted text-sm">
           Already have an account?{" "}
-          <Link to="/login" className="text-[#00C896] font-bold hover:underline underline-offset-4">Sign in</Link>
+          <Link to="/login" className="text-[var(--ac)] font-bold hover:underline underline-offset-4 transition-all">Sign in</Link>
         </p>
       </div>
+
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-6px); }
+          75% { transform: translateX(6px); }
+        }
+        .animate-shake { animation: shake 0.2s ease-in-out 3; }
+      `}</style>
     </AuthWrap>
   );
 }
