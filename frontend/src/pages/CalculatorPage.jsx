@@ -16,8 +16,6 @@ export default function CalculatorPage() {
   const evaluate = useCallback((expression) => {
     try {
       let e = expression
-        .replace(/×/g, "*")
-        .replace(/÷/g, "/")
         .replace(/π/g, `${Math.PI}`)
         .replace(/e(?![xp])/g, `${Math.E}`);
 
@@ -152,9 +150,7 @@ export default function CalculatorPage() {
     const handler = (e) => {
       const k = e.key;
       if ("0123456789.".includes(k)) input(k);
-      else if ("+-".includes(k)) input(k);
-      else if (k === "*") input("×");
-      else if (k === "/") { e.preventDefault(); input("÷"); }
+      else if ("+-*/".includes(k)) input(k);
       else if (k === "Enter" || k === "=") input("=");
       else if (k === "Backspace") input("⌫");
       else if (k === "Escape") input("C");
@@ -192,49 +188,53 @@ export default function CalculatorPage() {
         <div className="grid grid-cols-4 gap-2 sm:gap-3">
           {sciMode && (
             <>
-              <Btn label="sin" onClick={() => input("sin")} cls="bg-white/5" />
-              <Btn label="cos" onClick={() => input("cos")} cls="bg-white/5" />
-              <Btn label="tan" onClick={() => input("tan")} cls="bg-white/5" />
-              <Btn label="log" onClick={() => input("log")} cls="bg-white/5" />
-              <Btn label="ln" onClick={() => input("ln")} cls="bg-white/5" />
-              <Btn label="√" onClick={() => input("√")} cls="bg-white/5" />
-              <Btn label="x²" onClick={() => input("x²")} cls="bg-white/5" />
-              <Btn label="xʸ" onClick={() => input("xʸ")} cls="bg-white/5" />
-              <Btn label="π" onClick={() => input("π")} cls="bg-white/5" />
-              <Btn label="e" onClick={() => input("e")} cls="bg-white/5" />
-              <Btn label="1/x" onClick={() => input("1/x")} cls="bg-white/5" />
-              <Btn label="x!" onClick={() => input("x!")} cls="bg-white/5" />
+              <Btn label="sin" onClick={() => input("sin")} cls="bg-white/5 text-[15px]" />
+              <Btn label="cos" onClick={() => input("cos")} cls="bg-white/5 text-[15px]" />
+              <Btn label="tan" onClick={() => input("tan")} cls="bg-white/5 text-[15px]" />
+              <Btn label="log" onClick={() => input("log")} cls="bg-white/5 text-[15px]" />
+              <Btn label="ln" onClick={() => input("ln")} cls="bg-white/5 text-[15px]" />
+              <Btn label="√" onClick={() => input("√")} cls="bg-white/5 text-[15px]" />
+              <Btn label="x²" onClick={() => input("x²")} cls="bg-white/5 text-[15px]" />
+              <Btn label="xʸ" onClick={() => input("xʸ")} cls="bg-white/5 text-[15px]" />
+              <Btn label="π" onClick={() => input("π")} cls="bg-white/5 text-[15px]" />
+              <Btn label="e" onClick={() => input("e")} cls="bg-white/5 text-[15px]" />
+              <Btn label="1/x" onClick={() => input("1/x")} cls="bg-white/5 text-[15px]" />
+              <Btn label="x!" onClick={() => input("x!")} cls="bg-white/5 text-[15px]" />
+              
+              <Btn label="(" onClick={() => input("(")} cls="bg-white/5" />
+              <Btn label=")" onClick={() => input(")")} cls="bg-white/5" />
+              <div className="col-span-2"></div>
             </>
           )}
 
-          <Btn label="C" onClick={() => input("C")} cls="bg-[#f97316]/20 text-[#f97316]" />
-          <Btn label="()" onClick={() => {
-            const open = (expr.match(/\(/g) || []).length;
-            const close = (expr.match(/\)/g) || []).length;
-            input(open > close ? ")" : "(");
-          }} cls="bg-white/5" />
-          <Btn label="%" onClick={() => input("%")} cls="bg-white/5" />
-          <Btn label="÷" onClick={() => input("÷")} cls="bg-[var(--ac)]/20 text-[var(--ac)]" />
+          {/* Row 1 */}
+          <Btn label="C" onClick={() => input("C")} cls="bg-[var(--clr-danger)]/20 text-[var(--clr-danger)]" />
+          <Btn label="±" onClick={() => input("±")} cls="bg-white/10" />
+          <Btn label="%" onClick={() => input("%")} cls="bg-white/10" />
+          <Btn label="/" onClick={() => input("/")} cls="bg-[var(--ac)]/20 text-[var(--ac)] text-xl" />
 
+          {/* Row 2 */}
           <Btn label="7" onClick={() => input("7")} cls="bg-white/5 hover:bg-white/10" />
           <Btn label="8" onClick={() => input("8")} cls="bg-white/5 hover:bg-white/10" />
           <Btn label="9" onClick={() => input("9")} cls="bg-white/5 hover:bg-white/10" />
-          <Btn label="×" onClick={() => input("×")} cls="bg-[var(--ac)]/20 text-[var(--ac)]" />
+          <Btn label="*" onClick={() => input("*")} cls="bg-[var(--ac)]/20 text-[var(--ac)] text-xl" />
 
+          {/* Row 3 */}
           <Btn label="4" onClick={() => input("4")} cls="bg-white/5 hover:bg-white/10" />
           <Btn label="5" onClick={() => input("5")} cls="bg-white/5 hover:bg-white/10" />
           <Btn label="6" onClick={() => input("6")} cls="bg-white/5 hover:bg-white/10" />
-          <Btn label="-" onClick={() => input("-")} cls="bg-[var(--ac)]/20 text-[var(--ac)]" />
+          <Btn label="-" onClick={() => input("-")} cls="bg-[var(--ac)]/20 text-[var(--ac)] text-xl" />
 
+          {/* Row 4 */}
           <Btn label="1" onClick={() => input("1")} cls="bg-white/5 hover:bg-white/10" />
           <Btn label="2" onClick={() => input("2")} cls="bg-white/5 hover:bg-white/10" />
           <Btn label="3" onClick={() => input("3")} cls="bg-white/5 hover:bg-white/10" />
-          <Btn label="+" onClick={() => input("+")} cls="bg-[var(--ac)]/20 text-[var(--ac)]" />
+          <Btn label="+" onClick={() => input("+")} cls="bg-[var(--ac)]/20 text-[var(--ac)] text-xl" />
 
-          <Btn label="±" onClick={() => input("±")} cls="bg-white/5" />
-          <Btn label="0" onClick={() => input("0")} cls="bg-white/5 hover:bg-white/10" />
-          <Btn label="." onClick={() => input(".")} cls="bg-white/5 hover:bg-white/10" />
-          <Btn label="=" onClick={() => input("=")} cls="bg-[var(--ac)] text-[#0B1220] font-extrabold" />
+          {/* Row 5 */}
+          <Btn label="0" onClick={() => input("0")} cls="col-span-2 bg-white/5 hover:bg-white/10" />
+          <Btn label="." onClick={() => input(".")} cls="bg-white/5 hover:bg-white/10 text-xl" />
+          <Btn label="=" onClick={() => input("=")} cls="bg-[var(--ac)] text-[#0B1220] font-extrabold text-xl" />
         </div>
       </Card>
     </div>
