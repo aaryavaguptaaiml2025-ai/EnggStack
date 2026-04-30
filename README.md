@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/EnggStack-v3-6366f1?style=for-the-badge&labelColor=0f0f0f" alt="EnggStack v3"/>
+<img src="https://img.shields.io/badge/EnggStack-v3-6366f1?style=for-the-badge&labelColor=0f0f0f" alt="Cognit v3"/>
 
-# ⚡ EnggStack
+# ⚡ Cognit
 
 ### The all-in-one productivity OS for engineering students.
 
@@ -413,7 +413,7 @@ This project is open source. Feel free to fork, build upon, and learn from it.
 
 <div align="center">
 
-Built with ❤️ by [Aaryav Gupta](https://github.com/aaryavaguptaaiml2025-ai)
+Built with ❤️ by [Aaryava Gupta](https://github.com/aaryavaguptaaiml2025-ai)
 
 **[⭐ Star this repo](https://github.com/aaryavaguptaaiml2025-ai/EnggStack) if EnggStack helped you study better!**
 
