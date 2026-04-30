@@ -176,7 +176,78 @@ export default function CalculatorPage() {
         }`}>
           {result || expr}
         </div>
+
+        {/* Scientific Mode Toggle */}
+        <div className="flex justify-between items-center mt-4 mb-4 pb-4 border-b border-white/5">
+          <div className="flex gap-2">
+            <button onClick={() => setIsRad(false)} className={`text-xs px-2 py-1 rounded ${!isRad ? 'bg-white/10 text-[var(--text)]' : 'text-dim'}`}>DEG</button>
+            <button onClick={() => setIsRad(true)} className={`text-xs px-2 py-1 rounded ${isRad ? 'bg-white/10 text-[var(--text)]' : 'text-dim'}`}>RAD</button>
+          </div>
+          <button onClick={() => setSciMode(!sciMode)} className="text-xs text-[var(--ac)] hover:underline">
+            {sciMode ? "Basic" : "Scientific"}
+          </button>
+        </div>
+
+        {/* Keypad */}
+        <div className="grid grid-cols-4 gap-2 sm:gap-3">
+          {sciMode && (
+            <>
+              <Btn label="sin" onClick={() => input("sin")} cls="bg-white/5" />
+              <Btn label="cos" onClick={() => input("cos")} cls="bg-white/5" />
+              <Btn label="tan" onClick={() => input("tan")} cls="bg-white/5" />
+              <Btn label="log" onClick={() => input("log")} cls="bg-white/5" />
+              <Btn label="ln" onClick={() => input("ln")} cls="bg-white/5" />
+              <Btn label="√" onClick={() => input("√")} cls="bg-white/5" />
+              <Btn label="x²" onClick={() => input("x²")} cls="bg-white/5" />
+              <Btn label="xʸ" onClick={() => input("xʸ")} cls="bg-white/5" />
+              <Btn label="π" onClick={() => input("π")} cls="bg-white/5" />
+              <Btn label="e" onClick={() => input("e")} cls="bg-white/5" />
+              <Btn label="1/x" onClick={() => input("1/x")} cls="bg-white/5" />
+              <Btn label="x!" onClick={() => input("x!")} cls="bg-white/5" />
+            </>
+          )}
+
+          <Btn label="C" onClick={() => input("C")} cls="bg-[#f97316]/20 text-[#f97316]" />
+          <Btn label="()" onClick={() => {
+            const open = (expr.match(/\(/g) || []).length;
+            const close = (expr.match(/\)/g) || []).length;
+            input(open > close ? ")" : "(");
+          }} cls="bg-white/5" />
+          <Btn label="%" onClick={() => input("%")} cls="bg-white/5" />
+          <Btn label="÷" onClick={() => input("÷")} cls="bg-[var(--ac)]/20 text-[var(--ac)]" />
+
+          <Btn label="7" onClick={() => input("7")} cls="bg-white/5 hover:bg-white/10" />
+          <Btn label="8" onClick={() => input("8")} cls="bg-white/5 hover:bg-white/10" />
+          <Btn label="9" onClick={() => input("9")} cls="bg-white/5 hover:bg-white/10" />
+          <Btn label="×" onClick={() => input("×")} cls="bg-[var(--ac)]/20 text-[var(--ac)]" />
+
+          <Btn label="4" onClick={() => input("4")} cls="bg-white/5 hover:bg-white/10" />
+          <Btn label="5" onClick={() => input("5")} cls="bg-white/5 hover:bg-white/10" />
+          <Btn label="6" onClick={() => input("6")} cls="bg-white/5 hover:bg-white/10" />
+          <Btn label="-" onClick={() => input("-")} cls="bg-[var(--ac)]/20 text-[var(--ac)]" />
+
+          <Btn label="1" onClick={() => input("1")} cls="bg-white/5 hover:bg-white/10" />
+          <Btn label="2" onClick={() => input("2")} cls="bg-white/5 hover:bg-white/10" />
+          <Btn label="3" onClick={() => input("3")} cls="bg-white/5 hover:bg-white/10" />
+          <Btn label="+" onClick={() => input("+")} cls="bg-[var(--ac)]/20 text-[var(--ac)]" />
+
+          <Btn label="±" onClick={() => input("±")} cls="bg-white/5" />
+          <Btn label="0" onClick={() => input("0")} cls="bg-white/5 hover:bg-white/10" />
+          <Btn label="." onClick={() => input(".")} cls="bg-white/5 hover:bg-white/10" />
+          <Btn label="=" onClick={() => input("=")} cls="bg-[var(--ac)] text-[#0B1220] font-extrabold" />
+        </div>
       </Card>
     </div>
+  );
+}
+
+function Btn({ label, onClick, cls }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`h-12 sm:h-14 rounded-xl flex items-center justify-center text-lg font-medium transition-all active:scale-95 ${cls}`}
+    >
+      {label}
+    </button>
   );
 }

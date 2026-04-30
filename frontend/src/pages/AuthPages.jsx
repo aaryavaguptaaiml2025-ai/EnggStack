@@ -57,18 +57,57 @@ function BackgroundOrbs() {
 /* ───────────────── AUTH WRAPPER ───────────────── */
 function AuthWrap({ children }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--bg)] p-4 md:p-8 overflow-hidden relative">
+    <div className="min-h-screen flex items-center justify-center bg-[#0B1220] p-4 md:p-8 overflow-hidden relative">
       <BackgroundOrbs />
-      <div className="relative z-10 w-full max-w-sm">
-        <div className="glass-card p-8 rounded-2xl border border-white/10"
-          style={{ backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" }}>
-          <div className="flex flex-col items-center text-center mb-8">
-            <img src="/cognit-logo.png" alt="Cognit" className="w-10 h-10 object-contain mb-3" />
-            <h1 className="text-2xl font-extrabold grad-text tracking-tight mb-1">Cognit</h1>
-            <p className="text-muted text-sm">Your engineering OS</p>
+      
+      {/* Subtle Grid Background */}
+      <div className="absolute inset-0 z-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiLz48L3N2Zz4=')] bg-[length:40px_40px] opacity-50" />
+      
+      <div className="relative z-10 w-full max-w-sm perspective-1000">
+        <motion.div 
+          initial={{ opacity: 0, y: 30, rotateX: 10, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="glass-card p-8 rounded-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+          style={{ backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" }}
+        >
+          <div className="flex flex-col items-center text-center mb-8 relative">
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.2 }}
+              className="relative w-16 h-16 mb-4 flex items-center justify-center"
+            >
+              <div className="absolute inset-0 bg-[#00C896]/20 blur-xl rounded-full" />
+              <img src="/cognit-logo.png" alt="Cognit Logo" className="w-full h-full object-contain relative z-10 drop-shadow-lg" />
+            </motion.div>
+            
+            <motion.h1 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="text-3xl font-extrabold grad-text tracking-tight mb-1"
+            >
+              Cognit
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="text-muted text-sm"
+            >
+              Your engineering OS
+            </motion.p>
           </div>
-          {children}
-        </div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+          >
+            {children}
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );
@@ -389,35 +428,57 @@ export function LoginPage() {
     <AuthWrap>
       {hasGoogle && <GoogleBtn onSuccess={handleGoogle} />}
 
-      <div className={`space-y-4 ${err ? "animate-shake" : ""}`}>
-        <div className="relative group">
+      <motion.div 
+        className={`space-y-4 ${err ? "animate-shake" : ""}`}
+        initial="hidden" animate="visible"
+        variants={{
+          visible: { transition: { staggerChildren: 0.1 } }
+        }}
+      >
+        <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }} className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-dim text-lg group-focus-within:text-[var(--ac)] transition-colors duration-200">alternate_email</span>
-          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email Address" type="email" className="input-field pl-12 w-full"/>
-        </div>
-        <PasswordInput value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e => e.key === "Enter" && go()} placeholder="Password" />
-      </div>
+          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email Address" type="email" className="input-field pl-12 w-full transition-all focus:shadow-[0_0_15px_rgba(0,200,150,0.2)]"/>
+        </motion.div>
+        <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}>
+          <PasswordInput value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e => e.key === "Enter" && go()} placeholder="Password" />
+        </motion.div>
+      </motion.div>
 
-      <div className="flex justify-between items-center mt-3 px-1">
+      <motion.div 
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
+        className="flex justify-between items-center mt-3 px-1"
+      >
         <button onClick={() => navigate("/login")} className="text-[11px] font-semibold text-dim hover:text-[var(--text)] transition-colors">Use PIN to sign in</button>
         <button onClick={() => setShowForgot(true)} className="text-[11px] font-semibold text-[var(--ac)] hover:underline">Forgot password?</button>
-      </div>
+      </motion.div>
 
       {err && (
-        <div className="text-[var(--clr-danger)] text-xs mt-4 p-3 bg-[var(--clr-danger)]/10 border border-[var(--clr-danger)]/20 rounded-xl flex items-center gap-2">
+        <motion.div 
+          initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+          className="text-[var(--clr-danger)] text-xs mt-4 p-3 bg-[var(--clr-danger)]/10 border border-[var(--clr-danger)]/20 rounded-xl flex items-center gap-2"
+        >
           <span className="material-symbols-outlined text-sm">error</span>{err}
-        </div>
+        </motion.div>
       )}
 
-      <button onClick={go} disabled={loading} className="btn-primary w-full mt-6">
+      <motion.button 
+        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
+        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+        onClick={go} disabled={loading} 
+        className="btn-primary w-full mt-6 shadow-[0_0_20px_rgba(0,200,150,0.3)] hover:shadow-[0_0_25px_rgba(0,200,150,0.5)] transition-all"
+      >
         {loading ? <><Spinner size={14}/> <span className="ml-2">Signing in...</span></> : "Sign in"}
-      </button>
+      </motion.button>
 
-      <div className="mt-6 text-center">
+      <motion.div 
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0 }}
+        className="mt-6 text-center"
+      >
         <p className="text-muted text-sm">
           Don't have an account?{" "}
           <Link to="/register" className="text-[var(--ac)] font-bold hover:underline underline-offset-4 transition-all">Sign up</Link>
         </p>
-      </div>
+      </motion.div>
 
       <style>{`
         @keyframes shake {
@@ -496,44 +557,61 @@ export function RegisterPage() {
     <AuthWrap>
       {hasGoogle && <GoogleBtn onSuccess={handleGoogle} label="Sign up with Google" />}
 
-      <div className={`space-y-4 ${err ? "animate-shake" : ""}`}>
-        <div className="relative group">
+      <motion.div 
+        className={`space-y-4 ${err ? "animate-shake" : ""}`}
+        initial="hidden" animate="visible"
+        variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+      >
+        <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }} className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-dim text-lg group-focus-within:text-[var(--ac)] transition-colors duration-200">person</span>
-          <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full Name" className="input-field pl-12 w-full"/>
-        </div>
-        <div className="relative group">
+          <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full Name" className="input-field pl-12 w-full transition-all focus:shadow-[0_0_15px_rgba(0,200,150,0.2)]"/>
+        </motion.div>
+        <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }} className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-dim text-lg group-focus-within:text-[var(--ac)] transition-colors duration-200">alternate_email</span>
-          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email Address" type="email" className="input-field pl-12 w-full"/>
-        </div>
-        <div>
+          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email Address" type="email" className="input-field pl-12 w-full transition-all focus:shadow-[0_0_15px_rgba(0,200,150,0.2)]"/>
+        </motion.div>
+        <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}>
           <PasswordInput value={pass} onChange={e=>setPass(e.target.value)} placeholder="Password" />
           {pass && (
-            <div className="flex gap-1 mt-2 px-1">
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="flex gap-1 mt-2 px-1">
               {[1, 2, 3, 4].map((level) => (
                 <div key={level} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${score >= level ? strengthColors[score] : strengthColors[0]}`} />
               ))}
-            </div>
+            </motion.div>
           )}
-        </div>
-        <PasswordInput value={confirmPass} onChange={e=>setConfirmPass(e.target.value)} placeholder="Confirm Password" onKeyDown={e => e.key === "Enter" && handleSendOTP()} />
-      </div>
+        </motion.div>
+        <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}>
+          <PasswordInput value={confirmPass} onChange={e=>setConfirmPass(e.target.value)} placeholder="Confirm Password" onKeyDown={e => e.key === "Enter" && handleSendOTP()} />
+        </motion.div>
+      </motion.div>
 
       {err && (
-        <div className="text-[var(--clr-danger)] text-xs mt-4 p-3 bg-[var(--clr-danger)]/10 border border-[var(--clr-danger)]/20 rounded-xl flex items-center gap-2">
+        <motion.div 
+          initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+          className="text-[var(--clr-danger)] text-xs mt-4 p-3 bg-[var(--clr-danger)]/10 border border-[var(--clr-danger)]/20 rounded-xl flex items-center gap-2"
+        >
           <span className="material-symbols-outlined text-sm">error</span>{err}
-        </div>
+        </motion.div>
       )}
 
-      <button onClick={handleSendOTP} disabled={loading} className="btn-primary w-full mt-6">
+      <motion.button 
+        initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+        onClick={handleSendOTP} disabled={loading} 
+        className="btn-primary w-full mt-6 shadow-[0_0_20px_rgba(0,200,150,0.3)] hover:shadow-[0_0_25px_rgba(0,200,150,0.5)] transition-all"
+      >
         {loading ? <><Spinner size={14}/> <span className="ml-2">Creating account...</span></> : "Create account"}
-      </button>
+      </motion.button>
 
-      <div className="mt-6 text-center">
+      <motion.div 
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}
+        className="mt-6 text-center"
+      >
         <p className="text-muted text-sm">
           Already have an account?{" "}
           <Link to="/login" className="text-[var(--ac)] font-bold hover:underline underline-offset-4 transition-all">Sign in</Link>
         </p>
-      </div>
+      </motion.div>
 
       <style>{`
         @keyframes shake {

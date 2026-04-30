@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { StatsProvider } from "./context/StatsContext";
 import { MusicProvider } from "./context/MusicContext";
 import { ToastProvider } from "./context/ToastContext";
+import { PomodoroProvider } from "./context/PomodoroContext";
 import { AnimatePresence, motion } from "framer-motion";
 import Layout from "./components/Layout";
 import { LoginPage, RegisterPage } from "./pages/AuthPages";
@@ -101,9 +102,11 @@ function AppLayout() {
 
   return (
     <MusicProvider>
-      <Layout>
-        <AnimatedRoutes />
-      </Layout>
+      <PomodoroProvider>
+        <Layout>
+          <AnimatedRoutes />
+        </Layout>
+      </PomodoroProvider>
     </MusicProvider>
   );
 }
