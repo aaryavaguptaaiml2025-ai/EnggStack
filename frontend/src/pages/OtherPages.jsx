@@ -244,7 +244,7 @@ export function NotesPage() {
 
       <div className="notes-layout flex flex-1 overflow-hidden flex-col">
         {/* Note list */}
-        <div className="notes-list border-b border-white/10 flex flex-col flex-shrink-0 bg-[#0B132B] max-h-[40vh]">
+        <div className="notes-list border-b border-white/10 flex flex-col flex-shrink-0 bg-[#0B1220] max-h-[40vh]">
           <div className="p-4 pb-3 border-b border-white/10">
             <div className="flex justify-between items-center mb-3">
               <span className="font-bold text-base text-on-surface">Notes</span>

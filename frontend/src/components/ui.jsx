@@ -39,8 +39,8 @@ export function Badge({ children, color = "#00C896", dot }) {
 export function Toast({ msg, color = "#00C896", onClose }) {
   useEffect(() => { const t = setTimeout(onClose, 4000); return () => clearTimeout(t); }, [onClose]);
   return (
-    <div className="slide-in fixed top-5 right-5 z-[9999] bg-white/5 backdrop-blur-xl
-      border border-white/10 rounded-2xl shadow-2xl px-5 py-3.5
+    <div className="slide-in fixed top-5 right-5 z-[9999] bg-[#111827]
+      border border-white/10 rounded-xl shadow-lg px-5 py-3.5
       flex items-center gap-3 max-w-[340px]"
       style={{ borderColor:color+"40" }}>
       <span className="flex-1 text-sm" style={{color}}>{msg}</span>
@@ -55,8 +55,8 @@ export function Modal({ title, onClose, children, width = 480 }) {
   return (
     <div className="fade-in fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[2000] p-4"
       onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="slide-up bg-[#0B132B]/95 backdrop-blur-xl border border-white/10
-        rounded-2xl shadow-2xl p-8 w-full max-h-[90vh] overflow-y-auto"
+      <div className="slide-up bg-[#0B1220] border border-white/10
+        rounded-2xl shadow-xl p-8 w-full max-h-[90vh] overflow-y-auto"
         style={{ maxWidth:width }}>
         <div className="flex justify-between items-center mb-6">
           <span className="text-lg font-bold text-on-surface">{title}</span>
@@ -99,8 +99,8 @@ export function Btn({ children, color, onClick, disabled, full, variant="fill", 
 
   if (variant === "fill") return (
     <button onClick={onClick} disabled={disabled}
-      className={`${base} text-black hover:brightness-110`}
-      style={{ background:disabled?"#374151":c, boxShadow:disabled?"none":`0 4px 20px ${c}30`, ...style }}>
+      className={`${base} text-[#0B1220] hover:brightness-110`}
+      style={{ background:disabled?"#374151":c, boxShadow:disabled?"none":`0 2px 4px rgba(0,0,0,0.1)`, ...style }}>
       {children}
     </button>
   );

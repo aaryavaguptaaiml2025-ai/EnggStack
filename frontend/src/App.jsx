@@ -22,7 +22,7 @@ function AppLayout() {
   const { user, loading } = useAuth();
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0B132B] relative">
+    <div className="min-h-screen flex items-center justify-center bg-[#0B1220] relative">
       {/* Ambient orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%]

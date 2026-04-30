@@ -81,7 +81,7 @@ export default function Layout({ children }) {
 
   return (
     <div className="flex h-screen overflow-hidden relative"
-      style={{ background: "linear-gradient(135deg, #0B132B 0%, #0F1F3D 100%)" }}>
+      style={{ background: "#0B1220" }}>
       <AmbientBackground />
 
       {/* Mobile overlay backdrop */}

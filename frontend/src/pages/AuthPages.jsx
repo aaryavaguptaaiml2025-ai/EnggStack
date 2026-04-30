@@ -32,21 +32,14 @@ function PasswordInput({ value, onChange, placeholder, onKeyDown, className = ""
 /* ───────────────── AUTH WRAPPER ───────────────── */
 function AuthWrap({ children, title, sub }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0B132B] p-4 md:p-12 overflow-hidden">
-      {/* Ambient orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%]
-          bg-[#00C896]/5 blur-[140px] rounded-full" style={{animation:"floatOrb1 18s ease-in-out infinite"}}/>
-        <div className="absolute top-[40%] -right-[5%] w-[40%] h-[40%]
-          bg-[#00C896]/3 blur-[120px] rounded-full" style={{animation:"floatOrb2 22s ease-in-out infinite"}}/>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-[#0B1220] p-4 md:p-12 overflow-hidden">
 
       <div className="relative z-10 w-full max-w-7xl flex flex-col md:flex-row items-center gap-12 lg:gap-20">
         {/* Left hero */}
         <div className="w-full md:w-1/2 flex flex-col items-start text-left">
           <div className="mb-6 flex items-center gap-3">
-            <img src="/cognit-logo.png" alt="Cognit" className="w-12 h-12 object-contain" />
-            <h1 className="text-3xl font-black text-[#00C896] tracking-tighter text-glow">Cognit</h1>
+            <img src="/cognit-logo.png" alt="Cognit" className="w-10 h-10 object-contain" />
+            <h1 className="text-2xl font-bold text-[#00C896] tracking-tight">Cognit</h1>
           </div>
           <h2 className="text-4xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] mb-5 text-on-surface">
             Master your <br/>
@@ -59,8 +52,8 @@ function AuthWrap({ children, title, sub }) {
           <div className="hidden md:flex items-center gap-5 p-4 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
             <div className="flex -space-x-2">
               {[0,1,2].map((i) => (
-                <div key={i} className="w-9 h-9 rounded-full border-2 border-[#0B132B] flex items-center
-                  justify-center text-sm text-on-surface"
+                <div key={i} className="w-9 h-9 rounded-full border-2 border-[#0B1220] flex items-center
+                  justify-center text-sm text-text"
                   style={{background:`rgba(0,200,150,${0.08+i*0.06})`}}>
                   {String.fromCharCode(65+i)}
                 </div>
@@ -75,14 +68,12 @@ function AuthWrap({ children, title, sub }) {
 
         {/* Right form */}
         <div className="w-full md:w-1/2 max-w-md">
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl
-            shadow-2xl p-8 lg:p-10 relative overflow-hidden">
+          <div className="glass-card p-8 lg:p-10 relative overflow-hidden">
             <div className="mb-8">
-              <h3 className="text-xl font-bold text-on-surface mb-1">{title}</h3>
+              <h3 className="text-xl font-semibold text-text mb-1">{title}</h3>
               <p className="text-muted text-sm">{sub}</p>
             </div>
             {children}
-            <div className="absolute -bottom-16 -right-16 w-32 h-32 bg-[#00C896]/5 rounded-full blur-3xl"/>
           </div>
           <p className="text-center mt-6 text-dim/50 text-[10px] uppercase tracking-[0.2em] font-black">
             Secure 256-bit AES Encryption

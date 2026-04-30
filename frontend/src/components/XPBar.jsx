@@ -19,7 +19,7 @@ export default function XPBar({ xp, compact }) {
       rounded-2xl p-6 flex gap-5 items-center">
       <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center flex-shrink-0"
         style={{background:`conic-gradient(#00C896 ${pct}%,rgba(255,255,255,.06) 0)`}}>
-        <div className="w-[46px] h-[46px] rounded-full bg-[#0B132B] flex items-center justify-center
+        <div className="w-[46px] h-[46px] rounded-full bg-[#0B1220] flex items-center justify-center
           text-lg font-bold text-[#00C896]">{lv+1}</div>
       </div>
       <div className="flex-1">

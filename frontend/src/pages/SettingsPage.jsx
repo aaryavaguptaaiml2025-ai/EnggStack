@@ -5,7 +5,7 @@ import { Card, Input, Btn, Toast, Spinner, Tabs } from "../components/ui";
 import { sfx } from "../hooks/useSfx";
 
 const THEMES = [
-  { id:"dark", label:"Dark", bg:"#0B132B", ac:"#00C896" },
+  { id:"dark", label:"Dark", bg:"#0B1220", ac:"#00C896" },
   { id:"midnight", label:"Midnight", bg:"#060818", ac:"#60a5fa" },
   { id:"forest", label:"Forest", bg:"#080d08", ac:"#34d399" },
   { id:"ocean", label:"Ocean", bg:"#050d14", ac:"#38bdf8" },
@@ -179,7 +179,7 @@ export default function SettingsPage() {
 
             {/* Preview */}
             <div className="mb-6 p-4 rounded-2xl border border-white/10"
-              style={{background: THEMES.find(t=>t.id===theme)?.bg || "#0B132B"}}>
+              style={{background: THEMES.find(t=>t.id===theme)?.bg || "#0B1220"}}>
               <div className="text-xs font-bold mb-2" style={{color:accent}}>Preview</div>
               <div className="flex gap-2">
                 <div className="h-2 rounded-full flex-1" style={{background:accent}}/>

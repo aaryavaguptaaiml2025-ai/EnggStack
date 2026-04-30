@@ -213,7 +213,7 @@ export default function DashboardPage() {
             </span>
             <span className="text-xs text-[#00C896] font-bold">{goalPct}%</span>
           </div>
-          <ProgressBar value={stats.minsToday || 0} max={goal} color="#00C896" height={7} glow />
+          <ProgressBar value={stats.minsToday || 0} max={goal} color="#00C896" height={7} />
         </div>
         {goalPct >= 100 && (
           <span className="material-symbols-outlined text-[#00C896] text-2xl filled">

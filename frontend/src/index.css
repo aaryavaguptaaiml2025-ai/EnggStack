@@ -5,7 +5,7 @@
 /* ── Reset ──────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body, #root { height: 100%; font-family: 'Inter', system-ui, sans-serif; }
-body { background: linear-gradient(135deg, #0B132B 0%, #0F1F3D 100%); }
+body { background: #0B1220; }
 button { font-family: inherit; cursor: pointer; }
 input, textarea, select { font-family: inherit; }
 a { text-decoration: none; color: inherit; }
@@ -45,15 +45,15 @@ input[type=range]::-webkit-slider-thumb {
 
 /* ── CSS Variables ────────────────────────────────────────────── */
 :root, [data-theme="dark"] {
-  --bg: #0B132B;
-  --bg2: #0f1a36;
-  --card: rgba(255,255,255,0.05);
-  --card2: rgba(255,255,255,0.08);
-  --border: rgba(255,255,255,0.10);
-  --text: #e0e6f0;
-  --muted: #8892a8;
-  --dim: #4a5568;
-  --surface: #0B132B;
+  --bg: #0B1220;
+  --bg2: #111827;
+  --card: rgba(255,255,255,0.03);
+  --card2: rgba(255,255,255,0.05);
+  --border: rgba(255,255,255,0.08);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --dim: #6b7280;
+  --surface: #0B1220;
   --ac: #00C896;
   --ac-dim: rgba(0,200,150,0.12);
   --ac2: #00C896;
@@ -93,105 +93,90 @@ input[type=range]::-webkit-slider-thumb {
 /* ── Glassmorphism Utility Classes ────────────────────── */
 @layer components {
   .glass-card {
-    @apply bg-white/[.04] backdrop-blur-xl border border-white/[.07] rounded-2xl;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.18);
-    transition: box-shadow 0.3s ease, transform 0.3s ease, background 0.3s ease;
+    @apply bg-white/[.02] border border-white/[.05] rounded-2xl;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease;
   }
   .glass-card:hover {
-    box-shadow: 0 4px 24px rgba(0,0,0,0.22), 0 0 20px rgba(255,255,255,0.02);
-    transform: translateY(-1px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
   }
   /* Color-role card variants */
   .glass-card-info:hover {
-    box-shadow: 0 4px 24px rgba(0,0,0,0.22), 0 0 30px rgba(59,130,246,0.06);
+    @apply border-blue-500/30;
   }
   .glass-card-streak:hover {
-    box-shadow: 0 4px 24px rgba(0,0,0,0.22), 0 0 30px rgba(249,115,22,0.06);
+    @apply border-orange-500/30;
   }
   .glass-card-level:hover {
-    box-shadow: 0 4px 24px rgba(0,0,0,0.22), 0 0 30px rgba(139,92,246,0.06);
+    @apply border-purple-500/30;
   }
   .glass-card-primary:hover {
-    box-shadow: 0 4px 24px rgba(0,0,0,0.22), 0 0 30px rgba(0,200,150,0.06);
+    @apply border-[#00C896]/30;
   }
   .hero-card {
-    @apply backdrop-blur-xl rounded-2xl;
-    background: linear-gradient(135deg, rgba(0,200,150,0.07) 0%, rgba(59,130,246,0.04) 50%, rgba(139,92,246,0.03) 100%);
-    border: 1px solid rgba(0,200,150,0.12);
-    border-left: 3px solid #00C896;
-    box-shadow: 0 4px 32px rgba(0,0,0,0.22), 0 0 48px rgba(0,200,150,0.05);
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    @apply bg-white/[.02] border border-white/[.05] rounded-2xl;
+    border-left: 4px solid #00C896;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
     position: relative;
     overflow: hidden;
   }
-  .hero-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(0,200,150,0.3), rgba(59,130,246,0.2), transparent);
-  }
   .hero-card:hover {
-    box-shadow: 0 6px 40px rgba(0,0,0,0.25), 0 0 56px rgba(0,200,150,0.07);
-    transform: translateY(-1px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
   }
   .glass-panel {
-    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+    @apply bg-white/[.02] backdrop-blur-md border border-white/[.05];
   }
   .glass-sidebar {
-    @apply bg-[#0B132B]/90 backdrop-blur-xl border-r border-white/10;
+    @apply bg-[#0B1220] border-r border-white/[.05];
   }
   .btn-primary {
-    @apply bg-[#00C896] text-black font-bold rounded-xl px-6 py-3
-           hover:brightness-110 active:scale-95 transition-all duration-200
-           shadow-[0_4px_20px_rgba(0,200,150,0.25)];
-  }
-  .btn-primary:hover {
-    box-shadow: 0 4px 28px rgba(0,200,150,0.4);
+    @apply bg-[#00C896] text-[#0B1220] font-semibold rounded-lg px-6 py-2.5
+           hover:bg-[#00DDA6] active:scale-95 transition-all duration-200
+           shadow-sm;
   }
   .btn-outline {
-    @apply bg-transparent border border-white/10 text-on-surface font-semibold
-           rounded-xl px-6 py-3 hover:bg-white/5 active:scale-95
+    @apply bg-transparent border border-white/10 text-text font-medium
+           rounded-lg px-6 py-2.5 hover:bg-white/5 active:scale-95
            transition-all duration-200;
   }
   .btn-ghost {
     @apply bg-transparent border border-transparent text-muted font-medium
-           rounded-xl px-4 py-2 hover:text-on-surface hover:bg-white/5
+           rounded-lg px-4 py-2 hover:text-text hover:bg-white/5
            transition-all duration-200;
   }
   .input-field {
-    @apply w-full bg-white/5 border border-white/10 rounded-xl
-           px-4 py-3 text-on-surface text-sm outline-none
-           placeholder:text-dim/60
-           focus:border-[#00C896]/40 focus:ring-2 focus:ring-[#00C896]/15
-           transition-all duration-200 backdrop-blur-sm;
+    @apply w-full bg-[#111827] border border-white/10 rounded-lg
+           px-4 py-3 text-text text-sm outline-none
+           placeholder:text-muted
+           focus:border-[#00C896] focus:ring-1 focus:ring-[#00C896]
+           transition-all duration-200;
   }
   .stat-card {
-    @apply bg-white/[.03] backdrop-blur-xl border border-white/[.05] rounded-2xl
-           p-4 relative overflow-hidden
-           hover:bg-white/[.05] transition-all duration-300;
-    box-shadow: 0 1px 8px rgba(0,0,0,0.12);
+    @apply bg-white/[.02] border border-white/[.05] rounded-xl
+           p-5 relative overflow-hidden
+           hover:bg-white/[.03] transition-all duration-200;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
   .page-container {
-    @apply p-8 md:p-10 max-w-7xl mx-auto;
+    @apply p-6 md:p-8 max-w-7xl mx-auto;
   }
   .section-title {
-    @apply text-xl md:text-2xl font-extrabold text-on-surface tracking-tight;
+    @apply text-lg md:text-xl font-semibold text-text tracking-tight;
   }
   .label-text {
-    @apply text-[10px] font-bold uppercase tracking-[0.15em] text-muted;
+    @apply text-[11px] font-medium uppercase tracking-wider text-muted;
   }
   .nav-link {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-dim
-           hover:text-on-surface hover:bg-white/5
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-muted text-sm font-medium
+           hover:text-text hover:bg-white/5
            transition-all duration-200;
   }
   .nav-link-active {
-    @apply flex items-center gap-3 px-4 py-3 rounded-xl
-           bg-[#00C896]/10 text-[#00C896]
-           border-r-[3px] border-[#00C896];
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium
+           bg-[#00C896]/10 text-[#00C896];
   }
 }
 

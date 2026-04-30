@@ -53,7 +53,7 @@ function ToastItem({ toast, onClose }) {
 
   return (
     <div
-      className="pointer-events-auto slide-in bg-[#0B132B]/95 backdrop-blur-xl
+      className="pointer-events-auto slide-in bg-[#111827] border-white/10
         border rounded-xl shadow-2xl px-4 py-3 flex items-center gap-3"
       style={{ borderColor: style.border }}
     >
