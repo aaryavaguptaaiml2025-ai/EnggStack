@@ -733,8 +733,8 @@ export function TimetablePage() {
 // GAMIFICATION
 // ─────────────────────────────────────────────────────────────────────────────
 const MOCK_BOARD = [
-  { name:"Rahul Sharma", xp:420 },
-  { name:"Priya Singh",  xp:380 },
+  { name:"Vartika Gupta", xp:2609 },
+  { name:"Rahul singh",  xp:380 },
   { name:"Arjun Mehta",  xp:290 },
 ];
 
