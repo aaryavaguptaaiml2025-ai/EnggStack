@@ -59,10 +59,11 @@ router.post("/send-otp", async (req, res) => {
     await sendOTPEmail(emailLower, otp, name.trim());
     res.json({ ok: true, message: `Verification code sent to ${emailLower}` });
   } catch(e) {
-    console.error("send-otp:", e.message);
-    if (e.message.includes("Invalid login") || e.message.includes("authentication"))
+    console.error("[Auth Route] send-otp error:", e);
+    if (e.message.includes("Invalid login") || e.message.includes("authentication")) {
       return res.status(500).json({ error: "Email authentication failed. Check GMAIL_USER and GMAIL_PASS on Render." });
-    res.status(500).json({ error: e.message });
+    }
+    res.status(500).json({ error: "Failed to send email. Please try again later." });
   }
 });
 

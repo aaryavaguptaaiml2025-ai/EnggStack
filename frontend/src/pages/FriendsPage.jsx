@@ -298,32 +298,50 @@ export default function FriendsPage() {
         </div>
       )}
 
-      {/* Friend Stats Modal */}
+      {/* Friend Stats & Comparison Modal */}
       {viewStats && (
         <Modal title={`${viewStats.name}'s Stats`} onClose={() => { setViewStats(null); setStatsData(null); }}>
           {!statsData ? (
             <div className="text-center py-8"><Spinner /></div>
           ) : (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { label: "Total XP", value: statsData.xp, color: "#fbbf24", icon: "bolt" },
-                  { label: "Streak", value: `${statsData.streak}d`, color: "#f97316", icon: "local_fire_department" },
-                  { label: "Pomodoros", value: statsData.pomodoros, color: "#f87171", icon: "timer" },
-                  { label: "Hours", value: `${Math.floor(statsData.totalMins / 60)}h`, color: "#3b82f6", icon: "schedule" },
-                ].map((s, i) => (
-                  <div key={i} className="p-4 rounded-xl text-center"
-                    style={{ background: s.color + "0a", border: `1px solid ${s.color}20` }}>
-                    <span className="material-symbols-outlined text-xl mb-1 block" style={{ color: s.color }}>{s.icon}</span>
-                    <div className="text-lg font-bold" style={{ color: s.color }}>{s.value}</div>
-                    <div className="text-[10px] text-muted">{s.label}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="text-center">
-                <div className="text-sm font-bold text-[#8b5cf6]">
-                  Level {getLevel(statsData.xp) + 1} — {LEVEL_NAMES[getLevel(statsData.xp)]}
+            <div className="space-y-6">
+              <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5">
+                <div className="text-center">
+                  <div className="text-xs text-dim mb-1">You</div>
+                  <div className="text-xl font-bold text-[#00C896]">Lv.{getLevel(stats?.xp || 0) + 1}</div>
+                  <div className="text-[10px] text-muted">{stats?.xp || 0} XP</div>
                 </div>
+                <div className="text-2xl font-bold text-dim">VS</div>
+                <div className="text-center">
+                  <div className="text-xs text-dim mb-1">{viewStats.name.split(' ')[0]}</div>
+                  <div className="text-xl font-bold text-[#8b5cf6]">Lv.{getLevel(statsData.xp) + 1}</div>
+                  <div className="text-[10px] text-muted">{statsData.xp} XP</div>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                {[
+                  { label: "Current Streak", y: stats?.streak || 0, f: statsData.streak, color: "#f97316" },
+                  { label: "Pomodoros Completed", y: stats?.pomodoros || 0, f: statsData.pomodoros, color: "#f87171" },
+                  { label: "Hours Studied", y: Math.floor((stats?.totalMins || 0) / 60), f: Math.floor(statsData.totalMins / 60), color: "#3b82f6" },
+                ].map((s, i) => {
+                  const max = Math.max(s.y, s.f, 1);
+                  const yPct = (s.y / max) * 100;
+                  const fPct = (s.f / max) * 100;
+                  return (
+                    <div key={i} className="mb-4">
+                      <div className="flex justify-between text-[11px] mb-1">
+                        <span className="font-bold">{s.y}</span>
+                        <span className="text-muted">{s.label}</span>
+                        <span className="font-bold">{s.f}</span>
+                      </div>
+                      <div className="flex h-1.5 bg-white/5 rounded-full overflow-hidden relative">
+                        <div className="absolute left-0 top-0 bottom-0 bg-[#00C896] rounded-full opacity-80" style={{ width: `${yPct/2}%` }} />
+                        <div className="absolute right-0 top-0 bottom-0 bg-[#8b5cf6] rounded-full opacity-80" style={{ width: `${fPct/2}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

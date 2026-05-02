@@ -51,11 +51,6 @@ function Navbar({ onMenuToggle }) {
           rounded-xl transition-all duration-200" title="Dashboard">
           <span className="material-symbols-outlined text-xl">bolt</span>
         </button>
-        <button onClick={() => navigate("/ai-chat")}
-          className="p-2 text-dim hover:text-[#3b82f6] hover:bg-white/5
-          rounded-xl transition-all duration-200" title="AI Assistant">
-          <span className="material-symbols-outlined text-xl">psychology</span>
-        </button>
         <button onClick={() => navigate("/gamification")}
           className="p-2 text-dim hover:text-[#8b5cf6] hover:bg-white/5
           rounded-xl transition-all duration-200" title="Achievements">
@@ -78,6 +73,7 @@ function Navbar({ onMenuToggle }) {
 /* ── Layout Shell ─────────────────────────────────────── */
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div className="flex h-screen overflow-hidden relative"
@@ -98,9 +94,24 @@ export default function Layout({ children }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden relative z-[1]">
         <Navbar onMenuToggle={() => setSidebarOpen(o => !o)} />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto relative">
           {children}
         </main>
+
+        {/* Premium AI Chat FAB */}
+        <button
+          onClick={() => navigate("/ai-chat")}
+          className="fixed bottom-6 right-6 z-[60] flex items-center gap-2 px-4 py-3
+            rounded-full bg-gradient-to-r from-[#8b5cf6] to-[#06b6d4] text-white shadow-[0_8px_32px_rgba(139,92,246,0.4)]
+            hover:shadow-[0_8px_40px_rgba(139,92,246,0.6)] hover:scale-105 transition-all duration-300
+            border border-white/20 group"
+        >
+          <span className="material-symbols-outlined text-xl group-hover:rotate-12 transition-transform">auto_awesome</span>
+          <div className="flex flex-col items-start leading-none pr-1">
+            <span className="text-[13px] font-bold">Ask AI</span>
+            <span className="text-[9px] uppercase tracking-wider opacity-80 font-semibold">Premium</span>
+          </div>
+        </button>
       </div>
     </div>
   );

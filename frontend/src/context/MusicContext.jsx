@@ -3,12 +3,12 @@ import { createContext, useContext, useState, useRef, useEffect, useCallback } f
 const MusicCtx = createContext(null);
 
 export const PLAYLISTS = [
-  { id:"lofi",      name:"Lo-Fi Hip Hop",   color:"#60a5fa", desc:"Chill beats to study to",          ytId:"jfKfPfyJRdk" },
-  { id:"classical", name:"Classical Focus", color:"#a78bfa", desc:"Bach & Mozart for deep focus",      ytId:"4Tr0otuiQuU" },
-  { id:"nature",    name:"Nature & Rain",   color:"#34d399", desc:"Rain, forest, ocean sounds",        ytId:"q76bMs-NwRk" },
-  { id:"hiphop",    name:"Study Hip-Hop",   color:"#fbbf24", desc:"Upbeat tracks to stay motivated",   ytId:"36YnV9STBqc" },
-  { id:"ambient",   name:"Ambient Space",   color:"#f472b6", desc:"Atmospheric space soundscapes",     ytId:"F9L4q-0Pi4E" },
-  { id:"jazz",      name:"Study Jazz",      color:"#fb923c", desc:"Smooth jazz for focused work",      ytId:"Dx5qFachd3A" },
+  { id:"lofi",      name:"Lo-Fi Beats",     color:"#60a5fa", desc:"Beats to relax/study to",          spotifyId:"0vvXsWCC9xrXsKd4FyS8kM" },
+  { id:"classical", name:"Classical Focus", color:"#a78bfa", desc:"Bach & Mozart for deep focus",      spotifyId:"37i9dQZF1DWWEJlNEYEYfl" },
+  { id:"nature",    name:"Nature Sounds",   color:"#34d399", desc:"Rain, forest, ocean sounds",        spotifyId:"37i9dQZF1DWXLeA8Omikj7" },
+  { id:"hiphop",    name:"Study Hip-Hop",   color:"#fbbf24", desc:"Upbeat tracks to stay motivated",   spotifyId:"37i9dQZF1DWZeKCadgRdKQ" },
+  { id:"ambient",   name:"Ambient Study",   color:"#f472b6", desc:"Atmospheric space soundscapes",     spotifyId:"37i9dQZF1DX3Ogo9pFvBkY" },
+  { id:"jazz",      name:"Jazz Vibes",      color:"#fb923c", desc:"Smooth jazz for focused work",      spotifyId:"37i9dQZF1DX0b1hHYQtJso" },
 ];
 
 const AMBIENT_SOUNDS = [
@@ -27,6 +27,7 @@ export function MusicProvider({ children }) {
   const [ambient,   setAmbient]   = useState("off");
   const [studyTime, setStudyTime] = useState(0);
   const [timerOn,   setTimerOn]   = useState(false);
+  const [customLink, setCustomLink] = useState(null);
   const timerRef = useRef(null);
 
   // Web Audio ambient
@@ -98,6 +99,7 @@ export function MusicProvider({ children }) {
   };
 
   const handlePlaylist = (pl) => {
+    setCustomLink(null);
     if (activePL?.id === pl.id && playing) {
       setPlaying(false);
       setActivePL(null);
@@ -107,59 +109,72 @@ export function MusicProvider({ children }) {
     }
   };
 
+  const playCustom = (spotifyUrl) => {
+    // Extract ID and type (track/album/playlist) from URL
+    const match = spotifyUrl.match(/spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
+    if (match) {
+      setActivePL(null);
+      setCustomLink({ type: match[1], id: match[2] });
+      setPlaying(true);
+      return true;
+    }
+    return false;
+  };
+
   const stopAll = () => {
     setPlaying(false);
     setActivePL(null);
+    setCustomLink(null);
     handleAmbient("off");
   };
 
   return (
     <MusicCtx.Provider value={{
-      activePL, playing, ambient, studyTime, timerOn,
+      activePL, playing, ambient, studyTime, timerOn, customLink,
       setTimerOn, setStudyTime,
-      handlePlaylist, handleAmbient, stopAll,
+      handlePlaylist, handleAmbient, playCustom, stopAll,
     }}>
       {children}
-
-      {/* ── Persistent layout-level player ──
-          This component lives at the layout level (inside MusicProvider which
-          wraps Layout in App.jsx). It never unmounts during route navigation,
-          so the YouTube iframe stays alive and music continues playing. */}
       <PersistentPlayer />
     </MusicCtx.Provider>
   );
 }
 
-/* ── Persistent Player ──────────────────────────────────────────────────────
-   Renders at the layout level. Contains:
-   - The actual YouTube iframe (when a playlist is active)
-   - Mini player controls (visible when playing or ambient is on)
-   This survives all route changes cleanly. */
 function PersistentPlayer() {
-  const { activePL, playing, ambient, timerOn, setTimerOn, studyTime, stopAll } = useMusic();
+  const { activePL, playing, ambient, timerOn, setTimerOn, studyTime, stopAll, customLink } = useMusic();
   const fmt = (s) => `${String(Math.floor(s / 3600)).padStart(2,"0")}:${String(Math.floor((s % 3600) / 60)).padStart(2,"0")}:${String(s % 60).padStart(2,"0")}`;
 
   const showMini = playing || ambient !== "off";
+  const showIframe = playing && (activePL || customLink);
 
   return (
     <>
-      {/* YouTube iframe — always mounted when a playlist is active.
-          Positioned off-screen when user is on MusicPage (MusicPage shows its own UI),
-          and as part of the mini player otherwise. */}
-      {playing && activePL && (
-        <div className="fixed bottom-20 right-4 z-[499] rounded-xl overflow-hidden shadow-2xl"
-          style={{ width: 280, height: 58 }}>
+      {/* Spotify iframe — always mounted when playing */}
+      <div 
+        className="fixed bottom-20 right-6 z-[499] rounded-[14px] overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.6)] transition-all duration-300"
+        style={{ 
+          width: 320, 
+          height: showIframe ? 80 : 0, 
+          opacity: showIframe ? 1 : 0, 
+          pointerEvents: showIframe ? 'auto' : 'none',
+          transform: showIframe ? 'translateY(0)' : 'translateY(20px)'
+        }}
+      >
+        {showIframe && (
           <iframe
-            src={`https://www.youtube.com/embed/${activePL.ytId}?autoplay=1&loop=1&playlist=${activePL.ytId}&rel=0&modestbranding=1`}
-            width="280" height="58"
-            className="border-none block"
-            allow="autoplay; encrypted-media"
-            title={activePL.name}
+            src={customLink 
+              ? `https://open.spotify.com/embed/${customLink.type}/${customLink.id}?utm_source=generator&theme=0` 
+              : `https://open.spotify.com/embed/playlist/${activePL.spotifyId}?utm_source=generator&theme=0`}
+            width="100%" height="80"
+            className="border-none block bg-transparent"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            title="Spotify Player"
           />
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Mini player controls */}
+      {/* Mini player controls wrapper */}
       {showMini && (
         <div style={{
           position: "fixed", bottom: 16, right: 16, zIndex: 500,
@@ -169,14 +184,14 @@ function PersistentPlayer() {
           boxShadow: "0 8px 32px rgba(0,0,0,.5)",
           backdropFilter: "blur(20px)",
           animation: "slideIn .3s ease",
-          minWidth: 220,
+          minWidth: 260,
         }}>
           {/* Animated playing indicator */}
-          {playing && activePL && (
+          {playing && (activePL || customLink) && (
             <div style={{ display:"flex", gap:2, alignItems:"flex-end", height:16, flexShrink:0 }}>
               {[1,1.5,0.8,1.3,1].map((h,i) => (
                 <div key={i} style={{
-                  width:3, background: activePL.color,
+                  width:3, background: activePL?.color || "#1DB954",
                   borderRadius:2, height:"100%",
                   animation:`musicBar .8s ease-in-out infinite ${i*.12}s alternate`,
                   transformOrigin:"bottom",
@@ -190,7 +205,7 @@ function PersistentPlayer() {
 
           <div style={{ flex:1, minWidth:0 }}>
             <div style={{ fontSize:12, fontWeight:600, color:"#e0e6f0", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-              {playing && activePL ? activePL.name : `Ambient: ${ambient}`}
+              {playing ? (customLink ? "Custom Spotify Link" : activePL.name) : `Ambient: ${ambient}`}
             </div>
             <div style={{ fontSize:10, color:"#8892a8", fontFamily:"monospace" }}>{fmt(studyTime)}</div>
           </div>
@@ -199,7 +214,7 @@ function PersistentPlayer() {
             className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors duration-200"
             style={{ background:"none", border:"none", cursor:"pointer" }}
             title={timerOn?"Pause timer":"Start timer"}>
-            <span className="material-symbols-outlined text-sm" style={{color:"#8892a8"}}>
+            <span className="material-symbols-outlined text-sm" style={{color:timerOn ? "#f87171" : "#8892a8"}}>
               {timerOn ? "pause" : "play_arrow"}
             </span>
           </button>

@@ -9,9 +9,9 @@ import Layout from "./components/Layout";
 import { LoginPage, RegisterPage } from "./pages/AuthPages";
 import DashboardPage    from "./pages/DashboardPage";
 import PomodoroPage     from "./pages/PomodoroPage";
-import FocusModePage    from "./pages/FocusModePage";
 import AnalyticsPage    from "./pages/AnalyticsPage";
 import SettingsPage     from "./pages/SettingsPage";
+import HelpPage         from "./pages/HelpPage";
 import MusicPage        from "./pages/MusicPage";
 import CalendarPage     from "./pages/CalendarPage";
 import CalculatorPage   from "./pages/CalculatorPage";
@@ -56,7 +56,6 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         <Route path="/dashboard"    element={<PageWrap><DashboardPage/></PageWrap>}/>
         <Route path="/pomodoro"     element={<PageWrap><PomodoroPage/></PageWrap>}/>
-        <Route path="/focus"        element={<PageWrap><FocusModePage/></PageWrap>}/>
         <Route path="/deadlines"    element={<PageWrap><DeadlinesPage/></PageWrap>}/>
         <Route path="/notes"        element={<PageWrap><NotesPage/></PageWrap>}/>
         <Route path="/checklist"    element={<PageWrap><ChecklistPage/></PageWrap>}/>
@@ -71,6 +70,7 @@ function AnimatedRoutes() {
         <Route path="/ai-chat"      element={<PageWrap><AIChatPage/></PageWrap>}/>
         <Route path="/profile"      element={<PageWrap><ProfilePage/></PageWrap>}/>
         <Route path="/friends"      element={<PageWrap><FriendsPage/></PageWrap>}/>
+        <Route path="/help"         element={<PageWrap><HelpPage/></PageWrap>}/>
         <Route path="*"             element={<Navigate to="/dashboard" replace/>}/>
       </Routes>
     </AnimatePresence>

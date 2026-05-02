@@ -10,10 +10,12 @@ function getTransporter() {
     throw new Error("GMAIL_USER and GMAIL_PASS not set in environment variables");
   }
 
-  return nodemailer.createTransport({
+  const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: { user, pass },
   });
+  
+  return transporter;
 }
 
 function generateOTP() {
@@ -47,6 +49,7 @@ async function sendOTPEmail(toEmail, otp, name) {
       </div>
     `,
   });
+  console.log(`[Cognit Mailer] Successfully sent OTP to ${toEmail}`);
 }
 
 module.exports = { generateOTP, sendOTPEmail };

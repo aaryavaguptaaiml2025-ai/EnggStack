@@ -10,7 +10,6 @@ const NAV = [
   { to:"/timetable",    icon:"calendar_month",   label:"Timetable"    },
   { to:"/checklist",    icon:"checklist",        label:"Checklist"    },
   { to:"/pomodoro",     icon:"timer",            label:"Pomodoro"     },
-  { to:"/focus",        icon:"dark_mode",        label:"Focus Mode"   },
   { to:"/notes",        icon:"edit_note",        label:"Notes"        },
   { to:"/subjects",     icon:"menu_book",        label:"Subjects"     },
   { to:"/deadlines",    icon:"notifications",    label:"Deadlines"    },
@@ -19,8 +18,8 @@ const NAV = [
   { to:"/gamification", icon:"emoji_events",     label:"Achievements" },
   { to:"/music",        icon:"music_note",       label:"Music"        },
   { to:"/calculator",   icon:"calculate",        label:"Calculator"   },
-  { to:"/ai-chat",      icon:"psychology",       label:"AI Chat"      },
   { to:"/friends",      icon:"group",            label:"Friends"      },
+  { to:"/help",         icon:"help",             label:"Help & Guide" },
   { to:"/settings",     icon:"settings",         label:"Settings"     },
 ];
 

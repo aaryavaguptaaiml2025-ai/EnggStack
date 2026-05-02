@@ -124,56 +124,66 @@ function getGoogleClientId() {
 
 function GoogleBtn({ onSuccess, label="Continue with Google" }) {
   const [busy, setBusy] = useState(false);
-  const initialised = useRef(false);
+  const btnRef = useRef(null);
 
-  const runPrompt = (clientId) => {
-    if (!initialised.current) {
+  useEffect(() => {
+    const id = getGoogleClientId();
+    if (!id) return;
+    
+    const initGsi = () => {
       window.google.accounts.id.initialize({
-        client_id: clientId,
+        client_id: id,
         callback: (r) => {
           setBusy(false);
           if (r.credential) onSuccess(r.credential);
         },
       });
-      initialised.current = true;
-    }
-    window.google.accounts.id.prompt((n) => {
-      if (n.isNotDisplayed() || n.isSkippedMoment()) setBusy(false);
-    });
-  };
+      // Render the actual button instead of using the prompt (One Tap), 
+      // as One Tap fails on Safari/Firefox due to cookie blocking.
+      window.google.accounts.id.renderButton(btnRef.current, {
+        theme: "outline",
+        size: "large",
+        shape: "rectangular",
+        width: 320,
+        text: "continue_with"
+      });
+    };
 
-  const handleClick = () => {
-    const id = getGoogleClientId();
-    if (!id) return;
-    setBusy(true);
     if (!window.google) {
       const s = document.createElement("script");
       s.src = "https://accounts.google.com/gsi/client";
-      s.onload = () => runPrompt(id);
-      s.onerror = () => { setBusy(false); };
+      s.onload = initGsi;
       document.head.appendChild(s);
     } else {
-      runPrompt(id);
+      initGsi();
     }
+  }, [onSuccess]);
+
+  return (
+    <div className="mb-5 flex flex-col items-center">
+      {busy && <Spinner size={20} />}
+      <div ref={btnRef} className={`w-full flex justify-center ${busy ? 'hidden' : 'block'}`} />
+    </div>
+  );
+}
+
+function GithubBtn() {
+  const handleGithub = () => {
+    // In a real app, this would redirect to github authorize URL.
+    // We provide a fallback UI for now as we might not have the client ID yet.
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=${import.meta.env.VITE_GITHUB_CLIENT_ID || 'dummy'}&scope=user:email`;
   };
 
   return (
     <div className="mb-5">
-      <button onClick={handleClick} disabled={busy}
+      <button onClick={handleGithub}
         className="w-full flex items-center justify-center gap-3 py-3 px-4
           bg-white/5 hover:bg-white/10 border border-white/10
           rounded-xl transition-all duration-200 group backdrop-blur-sm">
-        {busy ? <><Spinner size={14}/> <span className="text-sm font-medium text-[var(--text)]">Loading...</span></> : (
-          <>
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path d="M12 5.04c1.94 0 3.51.68 4.75 1.81l3.51-3.51C18.1 1.34 15.28 0 12 0 7.31 0 3.25 2.67 1.21 6.6L4.9 9.42C5.77 6.9 8.16 5.04 12 5.04z" fill="#EA4335"/>
-              <path d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58l3.7 2.87c2.16-1.99 3.42-4.93 3.42-8.69z" fill="#4285F4"/>
-              <path d="M4.9 14.58c-.23-.68-.36-1.41-.36-2.16s.13-1.48.36-2.16L1.21 7.4c-.79 1.56-1.21 3.32-1.21 5.2s.42 3.64 1.21 5.2l3.69-2.82z" fill="#FBBC05"/>
-              <path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.7-2.87c-1.08.73-2.48 1.15-4.23 1.15-3.23 0-5.97-2.18-6.95-5.11l-3.84 2.96C3.12 21.09 7.21 24 12 24z" fill="#34A853"/>
-            </svg>
-            <span className="font-medium text-sm text-[var(--text)]">{label}</span>
-          </>
-        )}
+        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+          <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd"/>
+        </svg>
+        <span className="font-medium text-sm text-[var(--text)]">Continue with GitHub</span>
       </button>
       <div className="flex items-center gap-4 my-4">
         <div className="h-px flex-1 bg-white/10"/>
@@ -426,7 +436,10 @@ export function LoginPage() {
 
   return (
     <AuthWrap>
-      {hasGoogle && <GoogleBtn onSuccess={handleGoogle} />}
+      <div className="flex flex-col gap-2 mb-2">
+        {hasGoogle && <GoogleBtn onSuccess={handleGoogle} />}
+        <GithubBtn />
+      </div>
 
       <motion.div 
         className={`space-y-4 ${err ? "animate-shake" : ""}`}
@@ -555,7 +568,10 @@ export function RegisterPage() {
 
   return (
     <AuthWrap>
-      {hasGoogle && <GoogleBtn onSuccess={handleGoogle} label="Sign up with Google" />}
+      <div className="flex flex-col gap-2 mb-2">
+        {hasGoogle && <GoogleBtn onSuccess={handleGoogle} label="Sign up with Google" />}
+        <GithubBtn />
+      </div>
 
       <motion.div 
         className={`space-y-4 ${err ? "animate-shake" : ""}`}
