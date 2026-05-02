@@ -1,21 +1,8 @@
-const nodemailer = require("nodemailer");
+const sgMail = require("@sendgrid/mail");
 
-// Creates a transporter using Gmail App Password
-// Set GMAIL_USER and GMAIL_PASS in your Render environment variables
-function getTransporter() {
-  const user = process.env.GMAIL_USER;
-  const pass = process.env.GMAIL_PASS;
-
-  if (!user || !pass) {
-    throw new Error("GMAIL_USER and GMAIL_PASS not set in environment variables");
-  }
-
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: { user, pass },
-  });
-  
-  return transporter;
+// Set SENDGRID_API_KEY and SENDGRID_FROM_EMAIL in Render environment variables
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 }
 
 function generateOTP() {
@@ -23,12 +10,15 @@ function generateOTP() {
 }
 
 async function sendOTPEmail(toEmail, otp, name) {
-  const transporter = getTransporter();
-  const from = process.env.GMAIL_USER;
+  const from = process.env.SENDGRID_FROM_EMAIL;
+  
+  if (!process.env.SENDGRID_API_KEY || !from) {
+    throw new Error("SENDGRID_API_KEY and SENDGRID_FROM_EMAIL not set in environment variables");
+  }
 
-  await transporter.sendMail({
-    from: `"Cognit" <${from}>`,
+  const msg = {
     to: toEmail,
+    from: `"Cognit" <${from}>`,
     subject: `${otp} — Your Cognit verification code`,
     html: `
       <div style="font-family:Inter,system-ui,sans-serif;max-width:480px;margin:0 auto;background:#0d0d0d;border-radius:16px;overflow:hidden">
@@ -48,8 +38,18 @@ async function sendOTPEmail(toEmail, otp, name) {
         </div>
       </div>
     `,
-  });
-  console.log(`[Cognit Mailer] Successfully sent OTP to ${toEmail}`);
+  };
+
+  try {
+    await sgMail.send(msg);
+    console.log(`[Cognit Mailer] Successfully sent OTP to ${toEmail}`);
+  } catch (error) {
+    console.error("[Cognit Mailer] Error sending email:", error);
+    if (error.response) {
+      console.error(error.response.body);
+    }
+    throw new Error("Failed to send verification email. Please try again.");
+  }
 }
 
 module.exports = { generateOTP, sendOTPEmail };

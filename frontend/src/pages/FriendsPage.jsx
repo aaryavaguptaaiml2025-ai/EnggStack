@@ -73,9 +73,9 @@ export default function FriendsPage() {
     setViewStats(friend);
     try {
       const data = await api.getFriendStats(friend.id);
-      setStatsData(data.stats);
+      setStatsData(data.stats || {});
     } catch (e) {
-      setStatsData(null);
+      setStatsData({});
       setToast({ msg: "Could not load stats", color: "#f87171" });
     }
   };
@@ -313,17 +313,17 @@ export default function FriendsPage() {
                 </div>
                 <div className="text-2xl font-bold text-dim">VS</div>
                 <div className="text-center">
-                  <div className="text-xs text-dim mb-1">{viewStats.name.split(' ')[0]}</div>
-                  <div className="text-xl font-bold text-[#8b5cf6]">Lv.{getLevel(statsData.xp) + 1}</div>
-                  <div className="text-[10px] text-muted">{statsData.xp} XP</div>
+                  <div className="text-xs text-dim mb-1">{viewStats.name?.split(' ')[0] || "Friend"}</div>
+                  <div className="text-xl font-bold text-[#8b5cf6]">Lv.{getLevel(statsData.xp || 0) + 1}</div>
+                  <div className="text-[10px] text-muted">{statsData.xp || 0} XP</div>
                 </div>
               </div>
               
               <div className="space-y-3">
                 {[
-                  { label: "Current Streak", y: stats?.streak || 0, f: statsData.streak, color: "#f97316" },
-                  { label: "Pomodoros Completed", y: stats?.pomodoros || 0, f: statsData.pomodoros, color: "#f87171" },
-                  { label: "Hours Studied", y: Math.floor((stats?.totalMins || 0) / 60), f: Math.floor(statsData.totalMins / 60), color: "#3b82f6" },
+                  { label: "Current Streak", y: stats?.streak || 0, f: statsData.streak || 0, color: "#f97316" },
+                  { label: "Pomodoros Completed", y: stats?.pomodoros || 0, f: statsData.pomodoros || 0, color: "#f87171" },
+                  { label: "Hours Studied", y: Math.floor((stats?.totalMins || 0) / 60), f: Math.floor((statsData.totalMins || 0) / 60), color: "#3b82f6" },
                 ].map((s, i) => {
                   const max = Math.max(s.y, s.f, 1);
                   const yPct = (s.y / max) * 100;

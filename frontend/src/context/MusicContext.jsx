@@ -110,11 +110,13 @@ export function MusicProvider({ children }) {
   };
 
   const playCustom = (spotifyUrl) => {
-    // Extract ID and type (track/album/playlist) from URL
-    const match = spotifyUrl.match(/spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
+    // Extract ID and type (track/album/playlist/episode/show) from URL or URI
+    const match = spotifyUrl.match(/(?:spotify\.com\/(track|album|playlist|episode|show)\/|spotify:(track|album|playlist|episode|show):)([a-zA-Z0-9]+)/);
     if (match) {
       setActivePL(null);
-      setCustomLink({ type: match[1], id: match[2] });
+      const type = match[1] || match[2];
+      const id = match[3];
+      setCustomLink({ type, id });
       setPlaying(true);
       return true;
     }

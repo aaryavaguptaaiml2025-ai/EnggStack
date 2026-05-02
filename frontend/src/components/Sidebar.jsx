@@ -19,7 +19,6 @@ const NAV = [
   { to:"/music",        icon:"music_note",       label:"Music"        },
   { to:"/calculator",   icon:"calculate",        label:"Calculator"   },
   { to:"/friends",      icon:"group",            label:"Friends"      },
-  { to:"/help",         icon:"help",             label:"Help & Guide" },
   { to:"/settings",     icon:"settings",         label:"Settings"     },
 ];
 

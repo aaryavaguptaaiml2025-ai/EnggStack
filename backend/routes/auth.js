@@ -41,8 +41,8 @@ router.post("/send-otp", async (req, res) => {
       return res.status(400).json({ error: "Username already taken." });
 
     // If email not configured, skip OTP and create account directly
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
-      console.warn("GMAIL not configured — creating account without OTP");
+    if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_FROM_EMAIL) {
+      console.warn("SENDGRID not configured — creating account without OTP");
       const user = await User.create({
         name: name.trim(), email: emailLower, password,
         username: username ? username.trim() : undefined,
@@ -60,10 +60,10 @@ router.post("/send-otp", async (req, res) => {
     res.json({ ok: true, message: `Verification code sent to ${emailLower}` });
   } catch(e) {
     console.error("[Auth Route] send-otp error:", e);
-    if (e.message.includes("Invalid login") || e.message.includes("authentication")) {
-      return res.status(500).json({ error: "Email authentication failed. Check GMAIL_USER and GMAIL_PASS on Render." });
+    if (e.message.includes("authentication") || e.message.includes("SENDGRID")) {
+      return res.status(500).json({ error: "Email authentication failed. Check SENDGRID_API_KEY on Render." });
     }
-    res.status(500).json({ error: "Failed to send email. Please try again later." });
+    res.status(500).json({ error: e.message || "Failed to send email. Please try again later." });
   }
 });
 
@@ -162,7 +162,7 @@ router.post("/forgot-password", async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: "No account found with that email." });
 
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+    if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_FROM_EMAIL) {
       return res.status(500).json({ error: "Email not configured. Contact support." });
     }
 

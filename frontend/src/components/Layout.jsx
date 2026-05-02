@@ -56,6 +56,11 @@ function Navbar({ onMenuToggle }) {
           rounded-xl transition-all duration-200" title="Achievements">
           <span className="material-symbols-outlined text-xl">workspace_premium</span>
         </button>
+        <button onClick={() => navigate("/help")}
+          className="p-2 text-dim hover:text-white hover:bg-white/5
+          rounded-xl transition-all duration-200" title="Help & Guide">
+          <span className="material-symbols-outlined text-xl">help</span>
+        </button>
         <div onClick={() => navigate("/profile")}
           className="w-9 h-9 rounded-full overflow-hidden border-2 border-white/10
           hover:border-[#00C896]/40 transition-colors duration-200 cursor-pointer ml-1">
