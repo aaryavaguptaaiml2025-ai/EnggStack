@@ -133,6 +133,7 @@ function GoogleBtn({ onSuccess, label="Continue with Google" }) {
     const initGsi = () => {
       window.google.accounts.id.initialize({
         client_id: id,
+        use_fedcm_for_prompt: true,
         callback: (r) => {
           setBusy(false);
           if (r.credential) onSuccess(r.credential);

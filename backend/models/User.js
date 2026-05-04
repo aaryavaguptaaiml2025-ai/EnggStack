@@ -13,6 +13,11 @@ const userSchema = new mongoose.Schema({
   // PIN login
   pin: { type: String, select: false },
 
+  // OTP for Password Reset
+  otp: { type: String, select: false },
+  otpExpiry: { type: Date, select: false },
+  otpAttempts: { type: Number, default: 0, select: false },
+
   // Profile
   avatar:      { type: String, default: "" },
   avatarEmoji: { type: String, default: "🎓" },

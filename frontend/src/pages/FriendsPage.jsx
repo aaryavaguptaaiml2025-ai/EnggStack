@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { api } from "../api";
 import { Card, Btn, Toast, Spinner, Modal, Badge } from "../components/ui";
 import { sfx } from "../hooks/useSfx";
-import { getLevel, LEVEL_NAMES } from "../context/StatsContext";
+import { getLevel, LEVEL_NAMES, useStats } from "../context/StatsContext";
 
 export default function FriendsPage() {
+  const { stats } = useStats();
   const [tab, setTab]           = useState("friends"); // friends | requests | search
   const [friends, setFriends]   = useState([]);
   const [requests, setRequests] = useState({ incoming: [], outgoing: [] });

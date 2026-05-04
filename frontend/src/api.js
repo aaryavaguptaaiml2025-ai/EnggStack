@@ -33,6 +33,7 @@ async function fetchWithRetry(url, opts, retries = 3) {
         continue;
       }
       // Final attempt failed — throw a user-friendly message
+      console.error(`[API] Network request failed after ${retries} attempts:`, err.message);
       throw new Error(
         "Cannot reach the server. It may be waking up — please wait a moment and try again."
       );
@@ -53,12 +54,18 @@ async function req(method, path, body) {
   // Handle non-JSON responses (e.g. PDF blobs, 502 HTML errors from Render)
   const contentType = r.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
-    if (!r.ok) throw new Error(`Server error ${r.status} — is the backend running?`);
+    if (!r.ok) {
+      console.error(`[API] Server error ${r.status} on ${method} ${path}`);
+      throw new Error(`Server error ${r.status} — is the backend running?`);
+    }
     return r;
   }
 
   const data = await r.json();
-  if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+  if (!r.ok) {
+    console.error(`[API Error] ${method} ${path}:`, data.error || `HTTP ${r.status}`);
+    throw new Error(data.error || `HTTP ${r.status}`);
+  }
   return data;
 }
 

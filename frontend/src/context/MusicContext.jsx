@@ -110,17 +110,18 @@ export function MusicProvider({ children }) {
   };
 
   const playCustom = (spotifyUrl) => {
-    // Extract ID and type (track/album/playlist/episode/show) from URL or URI
-    const match = spotifyUrl.match(/(?:spotify\.com\/(track|album|playlist|episode|show)\/|spotify:(track|album|playlist|episode|show):)([a-zA-Z0-9]+)/);
-    if (match) {
-      setActivePL(null);
-      const type = match[1] || match[2];
-      const id = match[3];
-      setCustomLink({ type, id });
-      setPlaying(true);
-      return true;
+    try {
+      const match = spotifyUrl.match(/(track|album|playlist|episode|show)[\/:]([a-zA-Z0-9]+)/);
+      if (match) {
+        setActivePL(null);
+        setCustomLink({ type: match[1], id: match[2] });
+        setPlaying(true);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
     }
-    return false;
   };
 
   const stopAll = () => {
@@ -162,11 +163,11 @@ function PersistentPlayer() {
           transform: showIframe ? 'translateY(0)' : 'translateY(20px)'
         }}
       >
-        {showIframe && (
+        {showIframe && (activePL || customLink) && (
           <iframe
             src={customLink 
               ? `https://open.spotify.com/embed/${customLink.type}/${customLink.id}?utm_source=generator&theme=0` 
-              : `https://open.spotify.com/embed/playlist/${activePL.spotifyId}?utm_source=generator&theme=0`}
+              : `https://open.spotify.com/embed/playlist/${activePL?.spotifyId}?utm_source=generator&theme=0`}
             width="100%" height="80"
             className="border-none block bg-transparent"
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"

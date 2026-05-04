@@ -5,7 +5,14 @@ const User    = require("../models/User");
 const { Stats } = require("../models/index");
 const auth    = require("../middleware/auth");
 const { generateOTP, sendOTPEmail } = require("../utils/mailer");
-const otpStore = require("../utils/otpStore");
+const Otp = require("../models/Otp");
+const rateLimit = require("express-rate-limit");
+
+const otpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: "Too many requests from this IP, please try again after 15 minutes" }
+});
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const sign   = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
@@ -25,7 +32,7 @@ async function ensureStats(userId) {
 }
 
 // ── Step 1: Send OTP ──────────────────────────────────────────────────────────
-router.post("/send-otp", async (req, res) => {
+router.post("/send-otp", otpLimiter, async (req, res) => {
   try {
     const { name, email, password, username } = req.body;
     if (!name || !email || !password)
@@ -40,29 +47,29 @@ router.post("/send-otp", async (req, res) => {
     if (username && await User.findOne({ username: username.trim() }))
       return res.status(400).json({ error: "Username already taken." });
 
-    // If email not configured, skip OTP and create account directly
-    if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_FROM_EMAIL) {
-      console.warn("SENDGRID not configured — creating account without OTP");
-      const user = await User.create({
-        name: name.trim(), email: emailLower, password,
-        username: username ? username.trim() : undefined,
-      });
-      await ensureStats(user._id);
-      return res.json({ token: sign(user._id), user: safe(user), skipOTP: true });
+    // If email not configured, fail explicitly
+    if (!process.env.RESEND_API_KEY) {
+      console.error("RESEND_API_KEY not configured");
+      return res.status(500).json({ error: "Email not configured. Contact support." });
     }
 
     const otp = generateOTP();
-    otpStore.set(emailLower, otp, {
-      name: name.trim(), email: emailLower, password,
-      username: username ? username.trim() : undefined,
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await Otp.deleteMany({ email: emailLower }); // clear existing
+    await Otp.create({
+      email: emailLower,
+      otp,
+      otpExpiry,
+      userData: {
+        name: name.trim(), email: emailLower, password,
+        username: username ? username.trim() : undefined,
+      }
     });
     await sendOTPEmail(emailLower, otp, name.trim());
     res.json({ ok: true, message: `Verification code sent to ${emailLower}` });
   } catch(e) {
     console.error("[Auth Route] send-otp error:", e);
-    if (e.message.includes("authentication") || e.message.includes("SENDGRID")) {
-      return res.status(500).json({ error: "Email authentication failed. Check SENDGRID_API_KEY on Render." });
-    }
     res.status(500).json({ error: e.message || "Failed to send email. Please try again later." });
   }
 });
@@ -73,13 +80,33 @@ router.post("/verify-otp", async (req, res) => {
     const { email, otp } = req.body;
     if (!email || !otp) return res.status(400).json({ error: "Email and code required" });
 
-    const result = otpStore.verify(email.toLowerCase().trim(), otp.toString().trim());
-    if (!result.ok) return res.status(400).json({ error: result.reason });
+    const emailLower = email.toLowerCase().trim();
+    const otpRecord = await Otp.findOne({ email: emailLower });
+    
+    if (!otpRecord) return res.status(400).json({ error: "No pending verification for this email. Please register again." });
+    
+    if (new Date() > otpRecord.otpExpiry) {
+      await Otp.deleteOne({ email: emailLower });
+      return res.status(400).json({ error: "Code expired. Please register again to get a new code." });
+    }
 
-    if (await User.findOne({ email: result.userData.email }))
+    otpRecord.attempts = (otpRecord.attempts || 0) + 1;
+    if (otpRecord.attempts > 5) {
+      await Otp.deleteOne({ email: emailLower });
+      return res.status(400).json({ error: "Too many wrong attempts. Please register again." });
+    }
+
+    if (otpRecord.otp !== otp.toString().trim()) {
+      await otpRecord.save();
+      return res.status(400).json({ error: "Wrong code. Try again." });
+    }
+
+    await Otp.deleteOne({ email: emailLower });
+
+    if (await User.findOne({ email: otpRecord.userData.email }))
       return res.status(400).json({ error: "Email already registered." });
 
-    const user = await User.create(result.userData);
+    const user = await User.create(otpRecord.userData);
     await ensureStats(user._id);
     res.json({ token: sign(user._id), user: safe(user) });
   } catch(e) {
@@ -90,14 +117,19 @@ router.post("/verify-otp", async (req, res) => {
 });
 
 // ── Resend OTP ────────────────────────────────────────────────────────────────
-router.post("/resend-otp", async (req, res) => {
+router.post("/resend-otp", otpLimiter, async (req, res) => {
   try {
     const emailLower = req.body.email?.toLowerCase().trim();
-    const entry = otpStore.get(emailLower);
-    if (!entry) return res.status(400).json({ error: "No pending registration. Fill the form again." });
+    const otpRecord = await Otp.findOne({ email: emailLower });
+    if (!otpRecord) return res.status(400).json({ error: "No pending registration. Fill the form again." });
+    
     const otp = generateOTP();
-    otpStore.set(emailLower, otp, entry.userData);
-    await sendOTPEmail(emailLower, otp, entry.userData?.name || "");
+    otpRecord.otp = otp;
+    otpRecord.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    otpRecord.attempts = 0;
+    await otpRecord.save();
+    
+    await sendOTPEmail(emailLower, otp, otpRecord.userData?.name || "");
     res.json({ ok: true });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -154,7 +186,7 @@ router.get("/me", auth, async (req, res) => {
 });
 
 // ── Forgot Password — Send OTP ───────────────────────────────────────────────
-router.post("/forgot-password", async (req, res) => {
+router.post("/forgot-password", otpLimiter, async (req, res) => {
   try {
     const email = req.body.email?.toLowerCase().trim();
     if (!email) return res.status(400).json({ error: "Email is required" });
@@ -162,12 +194,19 @@ router.post("/forgot-password", async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: "No account found with that email." });
 
-    if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_FROM_EMAIL) {
+    if (!process.env.RESEND_API_KEY) {
       return res.status(500).json({ error: "Email not configured. Contact support." });
     }
 
     const otp = generateOTP();
-    otpStore.set(`reset:${email}`, otp, { email });
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+    // Save to User directly for reset password
+    user.otp = otp;
+    user.otpExpiry = otpExpiry;
+    user.otpAttempts = 0;
+    await user.save();
+
     await sendOTPEmail(email, otp, user.name);
     res.json({ ok: true, message: `Reset code sent to ${email}` });
   } catch (e) {
@@ -186,13 +225,43 @@ router.post("/reset-password", async (req, res) => {
       return res.status(400).json({ error: "Password must be at least 6 characters" });
 
     const emailLower = email.toLowerCase().trim();
-    const result = otpStore.verify(`reset:${emailLower}`, otp.toString().trim());
-    if (!result.ok) return res.status(400).json({ error: result.reason });
-
     const user = await User.findOne({ email: emailLower });
     if (!user) return res.status(400).json({ error: "User not found" });
 
+    if (!user.otp || !user.otpExpiry) {
+      return res.status(400).json({ error: "No pending password reset for this email." });
+    }
+
+    if (new Date() > user.otpExpiry) {
+      user.otp = undefined;
+      user.otpExpiry = undefined;
+      user.otpAttempts = 0;
+      await user.save();
+      return res.status(400).json({ error: "Code expired. Please request a new one." });
+    }
+
+    user.otpAttempts = (user.otpAttempts || 0) + 1;
+    if (user.otpAttempts > 5) {
+      user.otp = undefined;
+      user.otpExpiry = undefined;
+      user.otpAttempts = 0;
+      await user.save();
+      return res.status(400).json({ error: "Too many wrong attempts. Please request a new code." });
+    }
+
+    if (user.otp !== otp.toString().trim()) {
+      await user.save();
+      return res.status(400).json({ error: "Wrong code. Try again." });
+    }
+
+    // Hash password inside User model pre-save hook
     user.password = newPassword;
+    
+    // Clear OTP fields
+    user.otp = undefined;
+    user.otpExpiry = undefined;
+    user.otpAttempts = 0;
+    
     await user.save();
     res.json({ ok: true, message: "Password reset successfully. You can now sign in." });
   } catch (e) {
