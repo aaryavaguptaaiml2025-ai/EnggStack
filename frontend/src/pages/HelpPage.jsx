@@ -41,15 +41,7 @@ export default function HelpPage() {
                 ))}
               </div>
 
-              <div className="mt-6 rounded-xl overflow-hidden shadow-lg border border-white/10">
-                <iframe 
-                  width="100%" height="280" 
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&controls=1&showinfo=0&rel=0" 
-                  title="How XP Works" frameBorder="0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                  allowFullScreen
-                ></iframe>
-              </div>
+
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -104,15 +96,7 @@ export default function HelpPage() {
                 ))}
               </div>
 
-              <div className="mt-6 rounded-xl overflow-hidden shadow-lg border border-white/10">
-                <iframe 
-                  width="100%" height="280" 
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=0&controls=1&showinfo=0&rel=0" 
-                  title="How Badges Work" frameBorder="0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                  allowFullScreen
-                ></iframe>
-              </div>
+
             </div>
           </motion.div>
         );
@@ -167,15 +151,7 @@ export default function HelpPage() {
                  <span className="material-symbols-outlined text-[var(--ac)] text-xl">smart_display</span>
                  How to use Pomodoro effectively
                </h4>
-               <div className="rounded-xl overflow-hidden shadow-lg border border-white/10">
-                <iframe 
-                  width="100%" height="315" 
-                  src="https://www.youtube.com/embed/mNBmG24djoY?autoplay=0&controls=1&showinfo=0&rel=0" 
-                  title="Pomodoro Technique" frameBorder="0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                  allowFullScreen
-                ></iframe>
-              </div>
+
             </div>
           </motion.div>
         );

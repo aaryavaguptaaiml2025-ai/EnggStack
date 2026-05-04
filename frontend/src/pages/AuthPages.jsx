@@ -264,23 +264,31 @@ function OTPStep({ email, onVerified, onBack }) {
 
 /* ───────────────── FORGOT PASSWORD FLOW ───────────────── */
 function ForgotPasswordFlow({ onBack }) {
-  const [step, setStep] = useState(1); // 1=email, 2=otp, 3=newPass
-  const [email, setEmail] = useState("");
+  const storedEmail = localStorage.getItem("resetEmail");
+  const [step, setStep] = useState(storedEmail ? 2 : 1); // 1=email, 2=otp, 3=newPass
+  const [email, setEmail] = useState(storedEmail || "");
   const [otp, setOtp] = useState("");
   const [newPass, setNewPass] = useState("");
   const [err, setErr] = useState("");
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const handleBack = () => {
+    localStorage.removeItem("resetEmail");
+    onBack();
+  };
+
   const sendResetOtp = async () => {
-    if (!email) return setErr("Enter your email");
-    setErr(""); setLoading(true);
+    if (!email) { setMsg(""); return setErr("Enter your email"); }
+    setErr(""); setLoading(true); setMsg("");
     try {
       const res = await api.forgotPassword({ email });
       setMsg(res.message || "Reset code sent!");
+      localStorage.setItem("resetEmail", email);
       sfx.notify();
       setStep(2);
     } catch (e) { 
+      setMsg("");
       setErr(e.message.includes("validation") ? "Something went wrong. Please try again." : e.message); 
       sfx.error(); 
     }
@@ -288,15 +296,23 @@ function ForgotPasswordFlow({ onBack }) {
   };
 
   const resetPassword = async () => {
-    if (otp.length !== 6) return setErr("Enter 6-digit code");
-    if (newPass.length < 6) return setErr("Password must be at least 6 characters");
-    setErr(""); setLoading(true);
+    const currentEmail = localStorage.getItem("resetEmail");
+    if (!currentEmail) {
+      setStep(1);
+      setMsg("");
+      return setErr("Session expired. Please request a new code.");
+    }
+    if (otp.length !== 6) { setMsg(""); return setErr("Enter 6-digit code"); }
+    if (newPass.length < 6) { setMsg(""); return setErr("Password must be at least 6 characters"); }
+    setErr(""); setLoading(true); setMsg("");
     try {
-      const res = await api.resetPassword({ email, otp, newPassword: newPass });
+      const res = await api.resetPassword({ email: currentEmail, otp, newPassword: newPass });
       setMsg(res.message || "Password reset successfully!");
+      localStorage.removeItem("resetEmail");
       sfx.success();
       setStep(3);
     } catch (e) { 
+      setMsg("");
       setErr(e.message.includes("validation") ? "Something went wrong. Please try again." : e.message); 
       sfx.error(); 
     }
@@ -310,7 +326,7 @@ function ForgotPasswordFlow({ onBack }) {
           <span className="material-symbols-outlined text-[var(--ac)] text-5xl mb-3 block">check_circle</span>
           <div className="text-[var(--text)] font-semibold mb-1">Success!</div>
           <div className="text-muted text-sm mb-6">{msg}</div>
-          <button onClick={onBack} className="btn-primary w-full">
+          <button onClick={handleBack} className="btn-primary w-full">
             Back to Sign In
           </button>
         </div>
@@ -340,6 +356,7 @@ function ForgotPasswordFlow({ onBack }) {
           <div className="text-center mb-5">
             <span className="material-symbols-outlined text-[var(--ac)] text-4xl mb-2 block">mark_email_read</span>
             <div className="text-[var(--text)] font-semibold text-sm mb-1">Reset Code</div>
+            <div className="text-xs text-muted mt-1">Enter code sent to <span className="text-[var(--ac)]">{email}</span></div>
           </div>
           <div className="space-y-4">
             <Input value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g,"").slice(0,6))} placeholder="6-digit code" className="text-center tracking-widest font-mono font-bold w-full"/>
@@ -364,7 +381,7 @@ function ForgotPasswordFlow({ onBack }) {
       </button>
 
       <div className="mt-5 text-center">
-        <button onClick={onBack} className="text-dim text-xs hover:text-[var(--text)] transition-colors">
+        <button onClick={handleBack} className="text-dim text-xs hover:text-[var(--text)] transition-colors">
           ← Back to Sign In
         </button>
       </div>

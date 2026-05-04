@@ -244,9 +244,8 @@ router.post("/reset-password", async (req, res) => {
 
     const emailLower = email.toLowerCase().trim();
     const user = await User.findOne({ email: emailLower });
-    if (!user) return res.status(400).json({ error: "User not found" });
-
-    if (!user.otp || !user.otpExpiry) {
+    
+    if (!user || !user.otp || !user.otpExpiry) {
       return res.status(400).json({ error: "No pending password reset for this email." });
     }
 
