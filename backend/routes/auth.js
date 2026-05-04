@@ -1,5 +1,6 @@
 const router  = require("express").Router();
 const jwt     = require("jsonwebtoken");
+const crypto  = require("crypto");
 const { OAuth2Client } = require("google-auth-library");
 const User    = require("../models/User");
 const { Stats } = require("../models/index");
@@ -8,15 +9,22 @@ const { generateOTP, sendOTPEmail } = require("../utils/mailer");
 const Otp = require("../models/Otp");
 const rateLimit = require("express-rate-limit");
 
+// ── Rate limiters ─────────────────────────────────────────────────────────────
 const otpLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
-  message: { error: "Too many requests from this IP, please try again after 15 minutes" }
+  message: { error: "Too many requests. Please try again after 15 minutes." }
 });
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const sign   = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 
+// ── Hash OTP with SHA-256 before storing ──────────────────────────────────────
+function hashOtp(otp) {
+  return crypto.createHash("sha256").update(otp.toString()).digest("hex");
+}
+
+// ── Safe user projection (never leak secrets) ─────────────────────────────────
 const safe = (u) => ({
   id:u._id, name:u.name, email:u.email, username:u.username,
   avatar:u.avatar, avatarEmoji:u.avatarEmoji, googleAvatar:u.googleAvatar,
@@ -26,10 +34,22 @@ const safe = (u) => ({
   hasPin:!!u.pin, hasPassword:!!u.password, hasGoogle:!!u.googleId,
 });
 
+// ── Ensure stats doc exists ───────────────────────────────────────────────────
 async function ensureStats(userId) {
   const e = await Stats.findOne({ user: userId });
   if (!e) await Stats.create({ user: userId });
 }
+
+// ── Friendly error wrapper ────────────────────────────────────────────────────
+function friendlyError(e) {
+  if (e.message?.includes("validation")) return "Something went wrong. Please try again.";
+  if (e.code === 11000) return "Account already exists.";
+  return e.message || "An unexpected error occurred.";
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REGISTRATION FLOW (2-step: send-otp → verify-otp)
+// ═══════════════════════════════════════════════════════════════════════════════
 
 // ── Step 1: Send OTP ──────────────────────────────────────────────────────────
 router.post("/send-otp", otpLimiter, async (req, res) => {
@@ -47,30 +67,31 @@ router.post("/send-otp", otpLimiter, async (req, res) => {
     if (username && await User.findOne({ username: username.trim() }))
       return res.status(400).json({ error: "Username already taken." });
 
-    // If email not configured, fail explicitly
     if (!process.env.RESEND_API_KEY) {
-      console.error("RESEND_API_KEY not configured");
-      return res.status(500).json({ error: "Email not configured. Contact support." });
+      console.error("[Auth] RESEND_API_KEY not configured");
+      return res.status(500).json({ error: "Email service not configured. Contact support." });
     }
 
     const otp = generateOTP();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    await Otp.deleteMany({ email: emailLower }); // clear existing
+    await Otp.deleteMany({ email: emailLower });
     await Otp.create({
       email: emailLower,
-      otp,
-      otpExpiry,
+      otp: hashOtp(otp),
+      otpExpiry: new Date(Date.now() + 10 * 60 * 1000),
       userData: {
-        name: name ? name.trim() : "User", email: emailLower, password,
+        name: (name || "User").trim(),
+        email: emailLower,
+        password,
         username: username ? username.trim() : undefined,
       }
     });
-    await sendOTPEmail(emailLower, otp, name.trim());
+
+    await sendOTPEmail(emailLower, otp, (name || "User").trim());
     res.json({ ok: true, message: `Verification code sent to ${emailLower}` });
   } catch(e) {
-    console.error("[Auth Route] send-otp error:", e);
-    res.status(500).json({ error: e.message || "Failed to send email. Please try again later." });
+    console.error("[Auth] send-otp error:", e);
+    res.status(500).json({ error: "Failed to send verification email. Please try again." });
   }
 });
 
@@ -82,12 +103,13 @@ router.post("/verify-otp", async (req, res) => {
 
     const emailLower = email.toLowerCase().trim();
     const otpRecord = await Otp.findOne({ email: emailLower });
-    
-    if (!otpRecord) return res.status(400).json({ error: "No pending verification for this email. Please register again." });
-    
+
+    if (!otpRecord)
+      return res.status(400).json({ error: "No pending verification. Please register again." });
+
     if (new Date() > otpRecord.otpExpiry) {
       await Otp.deleteOne({ email: emailLower });
-      return res.status(400).json({ error: "Code expired. Please register again to get a new code." });
+      return res.status(400).json({ error: "Code expired. Please register again." });
     }
 
     otpRecord.attempts = (otpRecord.attempts || 0) + 1;
@@ -96,7 +118,7 @@ router.post("/verify-otp", async (req, res) => {
       return res.status(400).json({ error: "Too many wrong attempts. Please register again." });
     }
 
-    if (otpRecord.otp !== otp.toString().trim()) {
+    if (otpRecord.otp !== hashOtp(otp)) {
       await otpRecord.save();
       return res.status(400).json({ error: "Wrong code. Try again." });
     }
@@ -110,9 +132,8 @@ router.post("/verify-otp", async (req, res) => {
     await ensureStats(user._id);
     res.json({ token: sign(user._id), user: safe(user) });
   } catch(e) {
-    if (e.code === 11000) return res.status(400).json({ error: "Account already exists." });
-    console.error("verify-otp:", e.message);
-    res.status(500).json({ error: e.message });
+    console.error("[Auth] verify-otp error:", e);
+    res.status(500).json({ error: friendlyError(e) });
   }
 });
 
@@ -120,88 +141,118 @@ router.post("/verify-otp", async (req, res) => {
 router.post("/resend-otp", otpLimiter, async (req, res) => {
   try {
     const emailLower = req.body.email?.toLowerCase().trim();
+    if (!emailLower) return res.status(400).json({ error: "Email is required" });
+
     const otpRecord = await Otp.findOne({ email: emailLower });
-    if (!otpRecord) return res.status(400).json({ error: "No pending registration. Fill the form again." });
-    
+    if (!otpRecord) return res.status(400).json({ error: "No pending registration. Please register again." });
+
     const otp = generateOTP();
-    otpRecord.otp = otp;
+    otpRecord.otp = hashOtp(otp);
     otpRecord.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
     otpRecord.attempts = 0;
     await otpRecord.save();
-    
-    await sendOTPEmail(emailLower, otp, otpRecord.userData?.name || "");
-    res.json({ ok: true });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+
+    await sendOTPEmail(emailLower, otp, otpRecord.userData?.name || "User");
+    res.json({ ok: true, message: "New code sent!" });
+  } catch(e) {
+    console.error("[Auth] resend-otp error:", e);
+    res.status(500).json({ error: "Failed to resend code. Please try again." });
+  }
 });
 
-// ── Login ─────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// LOGIN FLOWS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── Email/Password Login ──────────────────────────────────────────────────────
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: "Email and password required" });
+
     const user = await User.findOne({ email: email.toLowerCase().trim() }).select("+password");
     if (!user) return res.status(400).json({ error: "No account found with that email." });
     if (!user.password) return res.status(400).json({ error: "This account uses Google login. Please sign in with Google." });
     if (!(await user.comparePassword(password))) return res.status(400).json({ error: "Wrong password." });
+
     await ensureStats(user._id);
     res.json({ token: sign(user._id), user: safe(user) });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) {
+    console.error("[Auth] login error:", e);
+    res.status(500).json({ error: "Login failed. Please try again." });
+  }
 });
 
 // ── Google OAuth ──────────────────────────────────────────────────────────────
 router.post("/google", async (req, res) => {
   try {
     const { credential } = req.body;
-    if (!credential) return res.status(400).json({ error: "No credential" });
+    if (!credential) return res.status(400).json({ error: "No credential provided" });
+
     const gid = process.env.GOOGLE_CLIENT_ID;
     if (!gid || gid.includes("YOUR_"))
-      return res.status(500).json({ error: "Google OAuth not configured. Add GOOGLE_CLIENT_ID to Render." });
+      return res.status(500).json({ error: "Google OAuth not configured on server." });
+
     const ticket = await client.verifyIdToken({ idToken: credential, audience: gid });
     const payload = ticket.getPayload();
     const { sub: googleId, email, name, picture } = payload;
-    let user = await User.findOne({ email });
-    if (!user) { 
-      try {
-        user = new User({ name: name || "User", email, googleId, googleAvatar: picture });
-        await user.save();
-        await ensureStats(user._id);
-      } catch (err) {
-        console.error("User save error:", err);
-        return res.status(500).json({ error: "User creation failed" });
-      }
-    } else if (!user.googleId) { 
-      try {
-        user.googleId = googleId; 
-        user.googleAvatar = picture; 
-        await user.save(); 
-      } catch (err) {
-        console.error("User save error:", err);
-        return res.status(500).json({ error: "User update failed" });
-      }
+
+    let user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      user = new User({
+        name: name || "User",
+        email: email.toLowerCase(),
+        googleId,
+        googleAvatar: picture || "",
+      });
+      await user.save();
+      await ensureStats(user._id);
+    } else if (!user.googleId) {
+      user.googleId = googleId;
+      user.googleAvatar = picture || "";
+      await user.save();
     }
+
     res.json({ token: sign(user._id), user: safe(user) });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) {
+    console.error("[Auth] google error:", e);
+    res.status(500).json({ error: "Google login failed. Please try again." });
+  }
 });
 
 // ── PIN Login ─────────────────────────────────────────────────────────────────
 router.post("/pin-login", async (req, res) => {
   try {
     const { email, pin } = req.body;
-    const user = await User.findOne({ email: email?.toLowerCase().trim() }).select("+pin");
+    if (!email || !pin) return res.status(400).json({ error: "Email and PIN required" });
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() }).select("+pin");
     if (!user || !user.pin) return res.status(400).json({ error: "No PIN set for this account." });
     if (!(await user.comparePin(pin))) return res.status(400).json({ error: "Wrong PIN." });
+
     res.json({ token: sign(user._id), user: safe(user) });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) {
+    console.error("[Auth] pin-login error:", e);
+    res.status(500).json({ error: "PIN login failed. Please try again." });
+  }
 });
 
-// ── Me ────────────────────────────────────────────────────────────────────────
+// ── Me (current user) ────────────────────────────────────────────────────────
 router.get("/me", auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(safe(user));
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) {
+    console.error("[Auth] me error:", e);
+    res.status(500).json({ error: "Failed to fetch user" });
+  }
 });
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FORGOT PASSWORD FLOW (2-step: forgot-password → reset-password)
+// ═══════════════════════════════════════════════════════════════════════════════
 
 // ── Forgot Password — Send OTP ───────────────────────────────────────────────
 router.post("/forgot-password", otpLimiter, async (req, res) => {
@@ -209,27 +260,25 @@ router.post("/forgot-password", otpLimiter, async (req, res) => {
     const email = req.body.email?.toLowerCase().trim();
     if (!email) return res.status(400).json({ error: "Email is required" });
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+otp +otpExpiry +otpAttempts");
     if (!user) return res.status(400).json({ error: "No account found with that email." });
 
     if (!process.env.RESEND_API_KEY) {
-      return res.status(500).json({ error: "Email not configured. Contact support." });
+      return res.status(500).json({ error: "Email service not configured. Contact support." });
     }
 
     const otp = generateOTP();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-    // Save to User directly for reset password
-    user.otp = otp;
-    user.otpExpiry = otpExpiry;
+    user.otp = hashOtp(otp);
+    user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
     user.otpAttempts = 0;
     await user.save();
 
-    await sendOTPEmail(email, otp, user.name);
+    await sendOTPEmail(email, otp, user.name || "User");
     res.json({ ok: true, message: `Reset code sent to ${email}` });
   } catch (e) {
-    console.error("forgot-password:", e.message);
-    res.status(500).json({ error: e.message });
+    console.error("[Auth] forgot-password error:", e);
+    res.status(500).json({ error: "Failed to send reset code. Please try again." });
   }
 });
 
@@ -243,10 +292,10 @@ router.post("/reset-password", async (req, res) => {
       return res.status(400).json({ error: "Password must be at least 6 characters" });
 
     const emailLower = email.toLowerCase().trim();
-    const user = await User.findOne({ email: emailLower });
-    
+    const user = await User.findOne({ email: emailLower }).select("+otp +otpExpiry +otpAttempts +password");
+
     if (!user || !user.otp || !user.otpExpiry) {
-      return res.status(400).json({ error: "No pending password reset for this email." });
+      return res.status(400).json({ error: "No pending password reset. Please request a new code." });
     }
 
     if (new Date() > user.otpExpiry) {
@@ -266,29 +315,22 @@ router.post("/reset-password", async (req, res) => {
       return res.status(400).json({ error: "Too many wrong attempts. Please request a new code." });
     }
 
-    if (user.otp !== otp.toString().trim()) {
+    if (user.otp !== hashOtp(otp)) {
       await user.save();
       return res.status(400).json({ error: "Wrong code. Try again." });
     }
 
-    // Hash password inside User model pre-save hook
+    // Set new password (hashed via pre-save hook) and clear OTP fields
     user.password = newPassword;
-    
-    // Clear OTP fields
     user.otp = undefined;
     user.otpExpiry = undefined;
     user.otpAttempts = 0;
-    
-    try {
-      await user.save();
-    } catch (err) {
-      console.error("User save error:", err);
-      return res.status(500).json({ error: "User save failed" });
-    }
+    await user.save();
+
     res.json({ ok: true, message: "Password reset successfully. You can now sign in." });
   } catch (e) {
-    console.error("reset-password:", e.message);
-    res.status(500).json({ error: e.message });
+    console.error("[Auth] reset-password error:", e);
+    res.status(500).json({ error: "Password reset failed. Please try again." });
   }
 });
 

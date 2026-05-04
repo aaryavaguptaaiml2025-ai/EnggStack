@@ -1,10 +1,18 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../api";
 import { Input, Btn, Spinner } from "../components/ui";
 import { sfx } from "../hooks/useSfx";
 import { motion } from "framer-motion";
+
+/* ───────────────── ERROR SANITIZER ───────────────── */
+function cleanError(msg) {
+  if (!msg) return "Something went wrong. Please try again.";
+  if (msg.includes("validation")) return "Something went wrong. Please try again.";
+  if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) return "Cannot reach server. Please try again.";
+  return msg;
+}
 
 /* ───────────────── PASSWORD INPUT WITH VISIBILITY TOGGLE ───────────────── */
 function PasswordInput({ value, onChange, placeholder, onKeyDown, className = "" }) {
@@ -124,46 +132,59 @@ function getGoogleClientId() {
 
 function GoogleBtn({ onSuccess, label="Continue with Google" }) {
   const [busy, setBusy] = useState(false);
+  const [gError, setGError] = useState("");
   const btnRef = useRef(null);
+  const cbRef = useRef(onSuccess);
+  cbRef.current = onSuccess;
 
   useEffect(() => {
     const id = getGoogleClientId();
     if (!id) return;
     
     const initGsi = () => {
-      window.google.accounts.id.initialize({
-        client_id: id,
-        use_fedcm_for_prompt: true,
-        callback: (r) => {
-          setBusy(false);
-          if (r.credential) onSuccess(r.credential);
-        },
-      });
-      // Render the actual button instead of using the prompt (One Tap), 
-      // as One Tap fails on Safari/Firefox due to cookie blocking.
-      window.google.accounts.id.renderButton(btnRef.current, {
-        theme: "outline",
-        size: "large",
-        shape: "rectangular",
-        width: 320,
-        text: "continue_with"
-      });
+      try {
+        window.google.accounts.id.initialize({
+          client_id: id,
+          use_fedcm_for_prompt: true,
+          callback: (r) => {
+            setBusy(false);
+            if (r.credential) cbRef.current(r.credential);
+            else setGError("Google login was cancelled. Please try again.");
+          },
+        });
+        if (btnRef.current) {
+          window.google.accounts.id.renderButton(btnRef.current, {
+            theme: "outline",
+            size: "large",
+            shape: "rectangular",
+            width: 320,
+            text: "continue_with"
+          });
+        }
+      } catch (err) {
+        console.error("[GoogleBtn] init error:", err);
+        setGError("Google login unavailable. Please use email/password.");
+      }
     };
 
     if (!window.google) {
       const s = document.createElement("script");
       s.src = "https://accounts.google.com/gsi/client";
       s.onload = initGsi;
+      s.onerror = () => setGError("Failed to load Google. Please use email/password.");
       document.head.appendChild(s);
     } else {
       initGsi();
     }
-  }, [onSuccess]);
+  }, []);
 
   return (
     <div className="mb-5 flex flex-col items-center">
       {busy && <Spinner size={20} />}
       <div ref={btnRef} className={`w-full flex justify-center ${busy ? 'hidden' : 'block'}`} />
+      {gError && (
+        <div className="text-[var(--clr-danger)] text-xs mt-2 text-center">{gError}</div>
+      )}
     </div>
   );
 }
@@ -289,7 +310,7 @@ function ForgotPasswordFlow({ onBack }) {
       setStep(2);
     } catch (e) { 
       setMsg("");
-      setErr(e.message.includes("validation") ? "Something went wrong. Please try again." : e.message); 
+      setErr(cleanError(e.message)); 
       sfx.error(); 
     }
     setLoading(false);
@@ -313,7 +334,7 @@ function ForgotPasswordFlow({ onBack }) {
       setStep(3);
     } catch (e) { 
       setMsg("");
-      setErr(e.message.includes("validation") ? "Something went wrong. Please try again." : e.message); 
+      setErr(cleanError(e.message)); 
       sfx.error(); 
     }
     setLoading(false);
@@ -420,7 +441,7 @@ export function LoginPage() {
       sfx.success();
       navigate("/dashboard");
     } catch(e) { 
-      setErr(e.message.includes("validation") ? "Something went wrong. Please try again." : e.message); 
+      setErr(cleanError(e.message)); 
       sfx.error(); 
     }
     setLoading(false);
@@ -432,7 +453,7 @@ export function LoginPage() {
       sfx.success();
       navigate("/dashboard");
     } catch(e) { 
-      setErr(e.message.includes("validation") ? "Google login failed. Please try again." : e.message); 
+      setErr(cleanError(e.message)); 
       sfx.error(); 
     }
   };
@@ -540,16 +561,11 @@ export function RegisterPage() {
     setErr("");
     setLoading(true);
     try {
-      const result = await sendOtp(name, email, pass, "");
-      if (result.skipOTP) {
-        sfx.success();
-        navigate("/dashboard");
-      } else {
-        sfx.notify();
-        setStep(2);
-      }
+      await sendOtp(name, email, pass, "");
+      sfx.notify();
+      setStep(2);
     } catch(e) {
-      setErr(e.message.includes("validation") ? "Registration failed. Please check your details and try again." : e.message);
+      setErr(cleanError(e.message));
       sfx.error();
     }
     setLoading(false);
@@ -563,7 +579,7 @@ export function RegisterPage() {
       sfx.success();
       navigate("/dashboard");
     } catch(e) { 
-      setErr(e.message.includes("validation") ? "Google login failed. Please try again." : e.message); 
+      setErr(cleanError(e.message)); 
       sfx.error(); 
     }
   };
