@@ -241,26 +241,26 @@ export default function DashboardPage() {
   return (
     <div className="page-container">
       {/* ── Header ── */}
-      <div className="mb-4">
-        <div className="text-xs text-dim font-mono mb-1">
+      <div className="mb-6">
+        <div className="text-[11px] text-dim font-mono tracking-wider mb-2 uppercase">
           {new Date().toLocaleDateString("en-IN", {
             weekday: "long", year: "numeric", month: "long", day: "numeric",
           })}
         </div>
-        <div className="flex items-center gap-3 mb-1 flex-wrap">
-          <h1 className="text-2xl md:text-3xl font-extrabold text-on-surface tracking-tight">
+        <div className="flex items-center gap-3 mb-2 flex-wrap">
+          <h1 className="text-2xl md:text-[32px] font-extrabold text-on-surface tracking-tight leading-tight">
             {greeting}, {user?.name?.split(" ")[0]}
           </h1>
           {urgentDeadline && (
             <span className="inline-flex items-center gap-1.5 text-[11px] font-bold
-              px-2.5 py-1 rounded-full bg-red-400/10 text-red-400 border border-red-400/20
+              px-3 py-1.5 rounded-full bg-red-400/[0.08] text-red-400 border border-red-400/[0.15]
               urgency-ring">
               <span className="material-symbols-outlined text-xs">warning</span>
               {urgentDeadline.title} due soon
             </span>
           )}
         </div>
-        <p className="text-sm text-[#00C896]/60 italic">"{quote}"</p>
+        <p className="text-sm text-[#00C896]/50 italic font-medium">"{quote}"</p>
       </div>
 
       {/* ── Today's Plan (MOST PROMINENT) ── */}
@@ -272,18 +272,18 @@ export default function DashboardPage() {
       />
 
       {/* ── Daily Goal ── */}
-      <div className="glass-card p-5 mb-6 flex items-center gap-4">
-        <div className="w-10 h-10 rounded-xl bg-[#00C896]/10 flex items-center justify-center flex-shrink-0">
+      <div className="glass-card p-5 mb-7 flex items-center gap-4">
+        <div className="w-10 h-10 rounded-xl bg-[#00C896]/[0.08] flex items-center justify-center flex-shrink-0">
           <span className="material-symbols-outlined text-[#00C896]">flag</span>
         </div>
         <div className="flex-1">
-          <div className="flex justify-between mb-1.5">
+          <div className="flex justify-between mb-2">
             <span className="text-xs font-semibold text-on-surface">
               Daily Goal — {stats.minsToday || 0}/{goal} mins
             </span>
             <span className="text-xs text-[#00C896] font-bold">{goalPct}%</span>
           </div>
-          <ProgressBar value={stats.minsToday || 0} max={goal} color="#00C896" height={7} />
+          <ProgressBar value={stats.minsToday || 0} max={goal} color="#00C896" height={6} />
         </div>
         {goalPct >= 100 && (
           <span className="material-symbols-outlined text-[#00C896] text-2xl filled">
@@ -293,7 +293,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Stat Cards (animated, 3D tilt, staggered, gradient border) ── */}
-      <div className="grid-4 grid grid-cols-4 gap-4 mb-6">
+      <div className="grid-4 grid grid-cols-4 gap-4 mb-7">
         {STAT_CONFIG.map((cfg, i) => (
           <StatCard
             key={i}
@@ -311,10 +311,10 @@ export default function DashboardPage() {
       </div>
 
       {/* ── XP Bar ── */}
-      <div className="mb-6"><XPBar xp={stats.xp || 0} /></div>
+      <div className="mb-7"><XPBar xp={stats.xp || 0} /></div>
 
       {/* ── Row 1: Suggestions | Subjects | Weekly ── */}
-      <div className="grid-3 grid grid-cols-3 gap-5 mb-5">
+      <div className="grid-3 grid grid-cols-3 gap-5 mb-6">
         {/* Smart Suggestions — orange accent */}
         <Card accent="#f97316">
           <div className="flex items-center gap-2 mb-4">
@@ -454,7 +454,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Row 2: Notes | Deadlines | Badges ── */}
-      <div className="grid-3 grid grid-cols-[1.3fr_1fr_1fr] gap-5 mb-5">
+      <div className="grid-3 grid grid-cols-[1.3fr_1fr_1fr] gap-5 mb-6">
         {/* Notes — green accent */}
         <Card>
           <div className="flex justify-between items-center mb-4">

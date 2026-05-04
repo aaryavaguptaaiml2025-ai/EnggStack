@@ -69,40 +69,39 @@ function AuthWrap({ children }) {
       <BackgroundOrbs />
       
       {/* Subtle Grid Background */}
-      <div className="absolute inset-0 z-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiLz48L3N2Zz4=')] bg-[length:40px_40px] opacity-50" />
+      <div className="absolute inset-0 z-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiLz48L3N2Zz4=')] bg-[length:40px_40px] opacity-40" />
       
-      <div className="relative z-10 w-full max-w-sm perspective-1000">
+      <div className="relative z-10 w-full max-w-md perspective-1000">
         <motion.div 
-          initial={{ opacity: 0, y: 30, rotateX: 10, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
+          initial={{ opacity: 0, y: 40, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="glass-card p-8 rounded-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-          style={{ backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)" }}
+          className="bg-[#111827]/40 backdrop-blur-2xl p-8 sm:p-10 rounded-[32px] border border-white/[0.08] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.05)]"
         >
-          <div className="flex flex-col items-center text-center mb-8 relative">
+          <div className="flex flex-col items-center text-center mb-10 relative">
             <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.2 }}
-              className="relative w-16 h-16 mb-4 flex items-center justify-center"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+              className="relative w-16 h-16 mb-6 flex items-center justify-center"
             >
-              <div className="absolute inset-0 bg-[#00C896]/20 blur-xl rounded-full" />
-              <img src="/cognit-logo.png" alt="Cognit Logo" className="w-full h-full object-contain relative z-10 drop-shadow-lg" />
+              <div className="absolute inset-0 bg-[#00C896]/20 blur-2xl rounded-full" />
+              <img src="/cognit-logo.png" alt="Cognit Logo" className="w-full h-full object-contain relative z-10 drop-shadow-2xl" />
             </motion.div>
             
             <motion.h1 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-              className="text-3xl font-extrabold grad-text tracking-tight mb-1"
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="text-3xl font-bold grad-text tracking-tight mb-2"
             >
-              Cognit
+              Welcome to Cognit
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-              className="text-muted text-sm"
+              transition={{ delay: 0.4, duration: 0.5 }}
+              className="text-dim text-sm font-medium"
             >
               Your engineering OS
             </motion.p>
@@ -111,7 +110,7 @@ function AuthWrap({ children }) {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
           >
             {children}
           </motion.div>
@@ -464,14 +463,14 @@ export function LoginPage() {
     <AuthWrap>
       <div className="flex flex-col gap-2 mb-2">
         {hasGoogle && (
-          <>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
             <GoogleBtn onSuccess={handleGoogle} />
-            <div className="flex items-center gap-4 my-4">
-              <div className="h-px flex-1 bg-white/10"/>
-              <span className="text-[10px] font-bold text-dim uppercase tracking-widest">or</span>
-              <div className="h-px flex-1 bg-white/10"/>
+            <div className="flex items-center gap-4 my-6">
+              <div className="h-px flex-1 bg-white/[0.06]"/>
+              <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">or continue with email</span>
+              <div className="h-px flex-1 bg-white/[0.06]"/>
             </div>
-          </>
+          </motion.div>
         )}
       </div>
 
@@ -602,14 +601,14 @@ export function RegisterPage() {
     <AuthWrap>
       <div className="flex flex-col gap-2 mb-2">
         {hasGoogle && (
-          <>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
             <GoogleBtn onSuccess={handleGoogle} label="Sign up with Google" />
-            <div className="flex items-center gap-4 my-4">
-              <div className="h-px flex-1 bg-white/10"/>
-              <span className="text-[10px] font-bold text-dim uppercase tracking-widest">or</span>
-              <div className="h-px flex-1 bg-white/10"/>
+            <div className="flex items-center gap-4 my-6">
+              <div className="h-px flex-1 bg-white/[0.06]"/>
+              <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">or register with email</span>
+              <div className="h-px flex-1 bg-white/[0.06]"/>
             </div>
-          </>
+          </motion.div>
         )}
       </div>
 

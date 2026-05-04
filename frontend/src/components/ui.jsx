@@ -14,14 +14,22 @@ export function ProgressBar({ value, max, color = "#00C896", height = 7, glow = 
   );
 }
 
-export function Card({ children, style, accent, onClick, className="" }) {
+import { motion, AnimatePresence } from "framer-motion";
+
+export function Card({ children, style, accent, onClick, className="", delay=0 }) {
   return (
-    <div onClick={onClick}
-      className={`glass-card p-6 transition-all duration-200 hover:bg-white/[.08]
+    <motion.div 
+      onClick={onClick}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={onClick ? { y: -2, boxShadow: "0 10px 30px -10px rgba(0,0,0,0.5)", backgroundColor: "rgba(255,255,255,0.04)" } : undefined}
+      whileTap={onClick ? { scale: 0.98 } : undefined}
+      className={`glass-card p-6 transition-colors duration-200
         ${onClick ? "cursor-pointer" : ""} ${className}`}
       style={{ borderTop:accent?`2px solid ${accent}`:undefined, ...style }}>
       {children}
-    </div>
+    </motion.div>
   );
 }
 
@@ -53,22 +61,31 @@ export function Toast({ msg, color = "#00C896", onClose }) {
 
 export function Modal({ title, onClose, children, width = 480 }) {
   return (
-    <div className="fade-in fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[2000] p-4"
-      onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="slide-up bg-[#0B1220] border border-white/10
-        rounded-2xl shadow-xl p-8 w-full max-h-[90vh] overflow-y-auto"
-        style={{ maxWidth:width }}>
-        <div className="flex justify-between items-center mb-6">
-          <span className="text-lg font-bold text-on-surface">{title}</span>
-          <button onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-white/5 border border-white/10
-              flex items-center justify-center text-dim hover:text-on-surface transition-colors duration-200">
-            <span className="material-symbols-outlined text-lg">close</span>
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
+    <AnimatePresence>
+      <motion.div 
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-[#0B1220]/80 backdrop-blur-md flex items-center justify-center z-[2000] p-4"
+        onClick={e => e.target === e.currentTarget && onClose()}>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="bg-[#111827] border border-white/10
+            rounded-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] p-8 w-full max-h-[90vh] overflow-y-auto"
+          style={{ maxWidth:width }}>
+          <div className="flex justify-between items-center mb-6">
+            <span className="text-xl font-bold text-on-surface tracking-tight">{title}</span>
+            <button onClick={onClose}
+              className="w-8 h-8 rounded-full bg-white/5 border border-white/10
+                flex items-center justify-center text-dim hover:text-on-surface hover:bg-white/10 hover:scale-105 active:scale-95 transition-all duration-200">
+              <span className="material-symbols-outlined text-lg">close</span>
+            </button>
+          </div>
+          {children}
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
@@ -87,36 +104,42 @@ export function Input({ label, error, style, className="", ...props }) {
 export function Btn({ children, color, onClick, disabled, full, variant="fill", style, size="md" }) {
   const c = color || "#00C896";
   const sizeClasses = {
-    sm: "text-xs px-3.5 py-2",
-    md: "text-sm px-5 py-2.5",
-    lg: "text-base px-7 py-3.5",
+    sm: "text-xs px-4 py-2",
+    md: "text-sm px-6 py-3",
+    lg: "text-base px-8 py-3.5",
   }[size];
 
-  const base = `inline-flex items-center justify-center gap-2 font-semibold
-    rounded-xl whitespace-nowrap transition-all duration-200
+  const base = `inline-flex items-center justify-center gap-2 font-semibold tracking-wide
+    rounded-xl whitespace-nowrap outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0B1220]
     ${full ? "w-full" : ""} ${sizeClasses}
-    ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer active:scale-95"}`;
+    ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`;
 
   if (variant === "fill") return (
-    <button onClick={onClick} disabled={disabled}
+    <motion.button onClick={onClick} disabled={disabled}
+      whileHover={!disabled ? { y: -1, boxShadow: `0 8px 20px -8px ${c}` } : {}}
+      whileTap={!disabled ? { scale: 0.97 } : {}}
       className={`${base} text-[#0B1220] hover:brightness-110`}
-      style={{ background:disabled?"#374151":c, boxShadow:disabled?"none":`0 2px 4px rgba(0,0,0,0.1)`, ...style }}>
+      style={{ background:disabled?"#374151":c, boxShadow:disabled?"none":`0 4px 10px -4px ${c}`, focusRingColor: c, ...style }}>
       {children}
-    </button>
+    </motion.button>
   );
   if (variant === "outline") return (
-    <button onClick={onClick} disabled={disabled}
-      className={`${base} bg-transparent hover:bg-white/5`}
-      style={{ color:disabled?"#4a5568":c, border:`1px solid ${disabled?"#374151":c+"44"}`, ...style }}>
+    <motion.button onClick={onClick} disabled={disabled}
+      whileHover={!disabled ? { y: -1, backgroundColor: "rgba(255,255,255,0.05)" } : {}}
+      whileTap={!disabled ? { scale: 0.97 } : {}}
+      className={`${base} bg-transparent`}
+      style={{ color:disabled?"#4a5568":c, border:`1.5px solid ${disabled?"#374151":c+"66"}`, focusRingColor: c, ...style }}>
       {children}
-    </button>
+    </motion.button>
   );
   return (
-    <button onClick={onClick} disabled={disabled}
-      className={`${base} bg-transparent border border-white/10 text-dim hover:text-on-surface hover:bg-white/5`}
+    <motion.button onClick={onClick} disabled={disabled}
+      whileHover={!disabled ? { backgroundColor: "rgba(255,255,255,0.05)", color: "#f3f4f6" } : {}}
+      whileTap={!disabled ? { scale: 0.97 } : {}}
+      className={`${base} bg-transparent border border-transparent text-dim`}
       style={style}>
       {children}
-    </button>
+    </motion.button>
   );
 }
 

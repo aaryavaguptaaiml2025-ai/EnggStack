@@ -12,13 +12,14 @@ const STATUS = { focus: "FOCUS", short: "SHORT BREAK", long: "LONG BREAK" };
 /* ── SVG Ring Timer Component ── */
 function PomodoroRing({ progress, timeStr, label, mode }) {
   const reduced = useReducedMotion();
-  const R = 90;
+  const SIZE = 280;
+  const R = 120;
   const circ = 2 * Math.PI * R;
   const offset = circ * (1 - progress / 100);
 
   return (
-    <div className="relative w-[220px] h-[220px] flex items-center justify-center mb-8">
-      <svg width={220} height={220} className="absolute" style={{ transform: "rotate(-90deg)" }}>
+    <div className="relative flex items-center justify-center mb-10" style={{ width: SIZE, height: SIZE }}>
+      <svg width={SIZE} height={SIZE} className="absolute" style={{ transform: "rotate(-90deg)" }}>
         <defs>
           <linearGradient id="ringGrad" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#00C896" />
@@ -26,20 +27,20 @@ function PomodoroRing({ progress, timeStr, label, mode }) {
           </linearGradient>
         </defs>
         {/* Background track */}
-        <circle cx={110} cy={110} r={R} fill="none"
-          stroke="rgba(255,255,255,0.06)" strokeWidth={10} />
+        <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none"
+          stroke="rgba(255,255,255,0.04)" strokeWidth={8} />
         {/* Glow ring */}
-        <circle cx={110} cy={110} r={R} fill="none"
-          stroke="rgba(0,200,150,0.2)" strokeWidth={18}
+        <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none"
+          stroke="rgba(0,200,150,0.15)" strokeWidth={20}
           strokeDasharray={circ} strokeDashoffset={offset}
           strokeLinecap="round"
           style={{
-            filter: "blur(6px)",
+            filter: "blur(8px)",
             transition: reduced ? "none" : "stroke-dashoffset 0.8s ease",
           }} />
         {/* Main progress ring */}
-        <circle cx={110} cy={110} r={R} fill="none"
-          stroke="url(#ringGrad)" strokeWidth={10}
+        <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none"
+          stroke="url(#ringGrad)" strokeWidth={8}
           strokeDasharray={circ} strokeDashoffset={offset}
           strokeLinecap="round"
           style={{
@@ -47,10 +48,10 @@ function PomodoroRing({ progress, timeStr, label, mode }) {
           }} />
       </svg>
       <div className="text-center z-10 flex flex-col items-center">
-        <div className="text-2xl font-bold tracking-wider font-mono text-[var(--text)]">
+        <div className="text-[48px] font-bold tracking-wider font-mono text-[var(--text)] leading-none">
           {timeStr}
         </div>
-        <div className="label-text mt-1" style={{ color: CLR[mode] }}>
+        <div className="text-[11px] font-bold uppercase tracking-widest mt-2" style={{ color: CLR[mode] }}>
           {label}
         </div>
       </div>
@@ -168,18 +169,18 @@ export default function PomodoroPage() {
       </div>
 
       {/* Session Stats */}
-      <div className="w-full max-w-2xl grid grid-cols-3 gap-4 mb-8">
-        <div className="glass-card p-4 text-center">
-          <div className="text-[28px] font-bold text-[var(--text)]">{sess}</div>
-          <div className="label-text mt-1 text-muted">Today's Sessions</div>
+      <div className="w-full max-w-2xl grid grid-cols-3 gap-5 mb-10">
+        <div className="glass-card p-5 text-center">
+          <div className="text-[32px] font-bold text-[var(--text)] leading-none">{sess}</div>
+          <div className="label-text mt-2 text-dim">Today's Sessions</div>
         </div>
-        <div className="glass-card p-4 text-center">
-          <div className="text-[28px] font-bold text-[var(--text)]">{stats.minsToday || 0}m</div>
-          <div className="label-text mt-1 text-muted">Total Focus Time</div>
+        <div className="glass-card p-5 text-center">
+          <div className="text-[32px] font-bold text-[var(--text)] leading-none">{stats.minsToday || 0}m</div>
+          <div className="label-text mt-2 text-dim">Total Focus Time</div>
         </div>
-        <div className="glass-card p-4 text-center">
-          <div className="text-[28px] font-bold text-[var(--clr-streak)]">{stats.streak || 0}</div>
-          <div className="label-text mt-1 text-[var(--clr-streak)]">Current Streak</div>
+        <div className="glass-card p-5 text-center">
+          <div className="text-[32px] font-bold text-[var(--clr-streak)] leading-none">{stats.streak || 0}</div>
+          <div className="label-text mt-2 text-[var(--clr-streak)]">Current Streak</div>
         </div>
       </div>
 

@@ -40,12 +40,13 @@ export default function Sidebar({ onClose }) {
   const isActive = (to) => location.pathname === to || location.pathname.startsWith(to + "/");
 
   return (
-    <aside className="glass-sidebar w-[250px] flex flex-col h-screen overflow-y-auto">
+    <aside className="w-[260px] flex flex-col h-screen overflow-y-auto
+      bg-[#0a101e]/80 backdrop-blur-2xl border-r border-white/[0.06]">
       {/* Logo + close */}
-      <div className="p-5 pb-3 flex items-center justify-between">
+      <div className="p-5 pb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img src="/cognit-logo.png" alt="Cognit" className="w-7 h-7 object-contain flex-shrink-0" />
-          <span className="text-[15px] font-extrabold text-on-surface tracking-tight">Cognit</span>
+          <img src="/cognit-logo.png" alt="Cognit" className="w-8 h-8 object-contain flex-shrink-0" />
+          <span className="text-[16px] font-extrabold text-on-surface tracking-tight">Cognit</span>
         </div>
         {onClose && (
           <button onClick={onClose}
@@ -57,43 +58,43 @@ export default function Sidebar({ onClose }) {
       </div>
 
       {/* Nav links */}
-      <nav className="flex-1 px-3 py-2 overflow-y-auto space-y-0.5">
+      <nav className="flex-1 px-3 py-3 overflow-y-auto space-y-0.5">
         {NAV.map(n => {
           const active = isActive(n.to);
           return (
             <NavLink key={n.to} to={n.to} onClick={handleNav}
-              className="relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium
-                transition-all duration-200"
+              className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+                transition-all duration-200 group"
               style={{ color: active ? "#00C896" : undefined }}
             >
               {/* Animated active pill background */}
               {active && (
                 reduced ? (
-                  <div className="absolute inset-0 rounded-lg bg-[#00C896]/10"
-                    style={{ boxShadow: "0 0 12px rgba(0,200,150,0.15)" }} />
+                  <div className="absolute inset-0 rounded-xl bg-[#00C896]/[0.08]"
+                    style={{ boxShadow: "0 0 12px rgba(0,200,150,0.1)" }} />
                 ) : (
                   <motion.div
                     layoutId="activeNav"
-                    className="absolute inset-0 rounded-lg bg-[#00C896]/10"
-                    style={{ boxShadow: "0 0 12px rgba(0,200,150,0.15)" }}
+                    className="absolute inset-0 rounded-xl bg-[#00C896]/[0.08]"
+                    style={{ boxShadow: "0 0 16px rgba(0,200,150,0.1)" }}
                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   />
                 )
               )}
-              {/* Icon with gradient when active */}
+              {/* Icon */}
               <span
-                className="material-symbols-outlined text-[20px] relative z-10"
+                className={`material-symbols-outlined text-[20px] relative z-10 transition-colors duration-200 ${!active ? 'group-hover:text-white/60' : ''}`}
                 style={active ? {
                   background: "linear-gradient(135deg, #8b5cf6, #06b6d4)",
                   backgroundClip: "text",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
-                } : { color: "#6b7280" }}
+                } : { color: "#4b5563" }}
               >
                 {n.icon}
               </span>
-              <span className={`text-[13px] font-medium truncate relative z-10 ${
-                active ? "text-[#00C896]" : "text-muted hover:text-on-surface"
+              <span className={`text-[13px] font-medium truncate relative z-10 transition-colors duration-200 ${
+                active ? "text-[#00C896]" : "text-[#6b7280] group-hover:text-white/80"
               }`}>
                 {n.label}
               </span>
@@ -120,15 +121,15 @@ export default function Sidebar({ onClose }) {
       )}
 
       {/* User + sign out */}
-      <div className="p-4 pt-2 border-t border-white/10">
-        <div className="flex items-center gap-3 mb-3 cursor-pointer hover:bg-white/5
-          rounded-xl p-1.5 -mx-1.5 transition-all duration-200"
+      <div className="p-4 pt-2 border-t border-white/[0.06]">
+        <div className="flex items-center gap-3 mb-3 cursor-pointer hover:bg-white/[0.04]
+          rounded-xl p-2 -mx-1 transition-all duration-200"
           onClick={() => { sfx.click(); navigate("/profile"); if (onClose) onClose(); }}>
-          <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden border-2 border-white/10">
+          <div className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden border-2 border-white/[0.08]">
             {avatar
               ? <img src={avatar} alt="" className="w-full h-full object-cover"/>
               : <div className="w-full h-full bg-white/5 flex items-center justify-center
-                  text-xs font-bold text-on-surface">{initials}</div>
+                  text-[11px] font-bold text-on-surface">{initials}</div>
             }
           </div>
           <div className="min-w-0">
@@ -137,8 +138,8 @@ export default function Sidebar({ onClose }) {
           </div>
         </div>
         <button onClick={() => { sfx.click(); logout(); navigate("/login"); }}
-          className="w-full border border-white/10 rounded-xl py-2 text-dim text-xs
-            hover:border-danger/50 hover:text-danger transition-all duration-200">
+          className="w-full border border-white/[0.06] rounded-xl py-2.5 text-dim text-xs font-medium
+            hover:border-[#f87171]/30 hover:text-[#f87171] hover:bg-[#f87171]/[0.04] transition-all duration-200">
           Sign out
         </button>
       </div>
