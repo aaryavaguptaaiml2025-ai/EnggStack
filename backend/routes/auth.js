@@ -62,7 +62,7 @@ router.post("/send-otp", otpLimiter, async (req, res) => {
       otp,
       otpExpiry,
       userData: {
-        name: name.trim(), email: emailLower, password,
+        name: name ? name.trim() : "User", email: emailLower, password,
         username: username ? username.trim() : undefined,
       }
     });
@@ -157,10 +157,28 @@ router.post("/google", async (req, res) => {
     if (!gid || gid.includes("YOUR_"))
       return res.status(500).json({ error: "Google OAuth not configured. Add GOOGLE_CLIENT_ID to Render." });
     const ticket = await client.verifyIdToken({ idToken: credential, audience: gid });
-    const { sub: googleId, email, name, picture } = ticket.getPayload();
-    let user = await User.findOne({ $or: [{ googleId }, { email }] });
-    if (!user) { user = await User.create({ name, email, googleId, googleAvatar: picture }); await ensureStats(user._id); }
-    else if (!user.googleId) { user.googleId = googleId; user.googleAvatar = picture; await user.save(); }
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name, picture } = payload;
+    let user = await User.findOne({ email });
+    if (!user) { 
+      try {
+        user = new User({ name: name || "User", email, googleId, googleAvatar: picture });
+        await user.save();
+        await ensureStats(user._id);
+      } catch (err) {
+        console.error("User save error:", err);
+        return res.status(500).json({ error: "User creation failed" });
+      }
+    } else if (!user.googleId) { 
+      try {
+        user.googleId = googleId; 
+        user.googleAvatar = picture; 
+        await user.save(); 
+      } catch (err) {
+        console.error("User save error:", err);
+        return res.status(500).json({ error: "User update failed" });
+      }
+    }
     res.json({ token: sign(user._id), user: safe(user) });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
@@ -262,7 +280,12 @@ router.post("/reset-password", async (req, res) => {
     user.otpExpiry = undefined;
     user.otpAttempts = 0;
     
-    await user.save();
+    try {
+      await user.save();
+    } catch (err) {
+      console.error("User save error:", err);
+      return res.status(500).json({ error: "User save failed" });
+    }
     res.json({ ok: true, message: "Password reset successfully. You can now sign in." });
   } catch (e) {
     console.error("reset-password:", e.message);

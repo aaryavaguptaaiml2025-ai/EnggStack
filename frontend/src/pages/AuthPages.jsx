@@ -280,7 +280,10 @@ function ForgotPasswordFlow({ onBack }) {
       setMsg(res.message || "Reset code sent!");
       sfx.notify();
       setStep(2);
-    } catch (e) { setErr(e.message); sfx.error(); }
+    } catch (e) { 
+      setErr(e.message.includes("validation") ? "Something went wrong. Please try again." : e.message); 
+      sfx.error(); 
+    }
     setLoading(false);
   };
 
@@ -293,7 +296,10 @@ function ForgotPasswordFlow({ onBack }) {
       setMsg(res.message || "Password reset successfully!");
       sfx.success();
       setStep(3);
-    } catch (e) { setErr(e.message); sfx.error(); }
+    } catch (e) { 
+      setErr(e.message.includes("validation") ? "Something went wrong. Please try again." : e.message); 
+      sfx.error(); 
+    }
     setLoading(false);
   };
 
@@ -396,7 +402,10 @@ export function LoginPage() {
       await login(email,pass);
       sfx.success();
       navigate("/dashboard");
-    } catch(e){ setErr(e.message); sfx.error(); }
+    } catch(e) { 
+      setErr(e.message.includes("validation") ? "Something went wrong. Please try again." : e.message); 
+      sfx.error(); 
+    }
     setLoading(false);
   };
 
@@ -405,7 +414,10 @@ export function LoginPage() {
       await googleLogin(credential);
       sfx.success();
       navigate("/dashboard");
-    } catch(e) { setErr(e.message); sfx.error(); }
+    } catch(e) { 
+      setErr(e.message.includes("validation") ? "Google login failed. Please try again." : e.message); 
+      sfx.error(); 
+    }
   };
 
   const hasGoogle = !!getGoogleClientId();
@@ -520,7 +532,7 @@ export function RegisterPage() {
         setStep(2);
       }
     } catch(e) {
-      setErr(e.message);
+      setErr(e.message.includes("validation") ? "Registration failed. Please check your details and try again." : e.message);
       sfx.error();
     }
     setLoading(false);
@@ -533,7 +545,10 @@ export function RegisterPage() {
       await googleLogin(credential);
       sfx.success();
       navigate("/dashboard");
-    } catch(e) { setErr(e.message); sfx.error(); }
+    } catch(e) { 
+      setErr(e.message.includes("validation") ? "Google login failed. Please try again." : e.message); 
+      sfx.error(); 
+    }
   };
 
   if (step === 2) {
