@@ -23,10 +23,14 @@ const AMBIENT_SOUNDS = [
 ];
 export { AMBIENT_SOUNDS };
 
+// Section 4.1: Validate YouTube ID format
+const isValidYouTubeId = (id) => /^[a-zA-Z0-9_-]{11}$/.test(id);
+
 export function getYouTubeId(url) {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url?.match(regExp);
-  return (match && match[2].length === 11) ? match[2] : null;
+  if (match && match[2].length === 11 && isValidYouTubeId(match[2])) return match[2];
+  return null;
 }
 
 export function MusicProvider({ children }) {
@@ -60,12 +64,24 @@ export function MusicProvider({ children }) {
     nodesRef.current = [];
   }, []);
 
+  // Section 2.5: Cleanup AudioContext on unmount
+  useEffect(() => {
+    return () => {
+      stopAmbient();
+      if (acRef.current) {
+        try { acRef.current.close(); } catch {}
+        acRef.current = null;
+      }
+    };
+  }, [stopAmbient]);
+
   const playAmbient = useCallback((type) => {
     stopAmbient();
     if (type === "off") return;
     try {
       if (!acRef.current) acRef.current = new (window.AudioContext || window.webkitAudioContext)();
       const ac = acRef.current;
+      // Section 2.5: Always resume suspended AudioContext (browsers require user gesture)
       if (ac.state === "suspended") ac.resume();
       const master = ac.createGain();
       master.gain.value = 0.16;

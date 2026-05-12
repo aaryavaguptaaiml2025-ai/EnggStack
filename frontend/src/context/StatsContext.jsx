@@ -55,12 +55,13 @@ export function StatsProvider({ children }) {
     setPrevBadges(earned);
   }, [stats]);
 
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const logPomodoro = async (mins=25, subjectId) => {
-    const s = await api.logPomodoro({ mins, subjectId });
+    const s = await api.logPomodoro({ mins, subjectId, timezone: tz });
     setStats(s); sfx.complete();
   };
   const logFocus = async (mins, subjectId) => {
-    const s = await api.logFocus({ mins, subjectId });
+    const s = await api.logFocus({ mins, subjectId, timezone: tz });
     setStats(s); sfx.xp();
   };
 

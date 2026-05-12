@@ -12,6 +12,85 @@ function getUser(req) {
   try { return jwt.verify(token, process.env.JWT_SECRET); } catch { return null; }
 }
 
+// Section 2.6: Improved markdown-to-PDF rendering
+// Renders basic markdown (headings, bold, bullets, code blocks) as styled PDF text
+function renderMarkdown(doc, content, startY) {
+  const lines = (content || "(empty note)").split("\n");
+  let y = startY;
+  const leftMargin = 50;
+  const pageWidth = 495;
+  const lineHeight = 16;
+  const pageBottom = doc.page.height - 60;
+
+  for (const line of lines) {
+    // Check if we need a new page
+    if (y > pageBottom) {
+      doc.addPage();
+      y = 50;
+    }
+
+    // Code block lines (```...```)
+    if (line.startsWith("```")) continue;
+
+    // Heading 1: # Title
+    if (/^# (.+)/.test(line)) {
+      const text = line.replace(/^# /, "");
+      doc.fillColor("#0f172a").fontSize(18).font("Helvetica-Bold");
+      doc.text(text, leftMargin, y, { width: pageWidth });
+      y += 24;
+      continue;
+    }
+
+    // Heading 2: ## Title
+    if (/^## (.+)/.test(line)) {
+      const text = line.replace(/^## /, "");
+      doc.fillColor("#1e293b").fontSize(15).font("Helvetica-Bold");
+      doc.text(text, leftMargin, y, { width: pageWidth });
+      y += 20;
+      continue;
+    }
+
+    // Heading 3: ### Title
+    if (/^### (.+)/.test(line)) {
+      const text = line.replace(/^### /, "");
+      doc.fillColor("#334155").fontSize(13).font("Helvetica-Bold");
+      doc.text(text, leftMargin, y, { width: pageWidth });
+      y += 18;
+      continue;
+    }
+
+    // Bullet points: - item or * item
+    if (/^[-*] (.+)/.test(line)) {
+      const text = line.replace(/^[-*] /, "").replace(/\*\*(.*?)\*\*/g, "$1");
+      doc.fillColor("#1e293b").fontSize(11).font("Helvetica");
+      doc.text(`  •  ${text}`, leftMargin, y, { width: pageWidth - 20, lineGap: 3 });
+      y += Math.max(lineHeight, doc.heightOfString(`  •  ${text}`, { width: pageWidth - 20 })) + 2;
+      continue;
+    }
+
+    // Numbered lists: 1. item
+    if (/^\d+\.\s(.+)/.test(line)) {
+      const text = line.replace(/\*\*(.*?)\*\*/g, "$1");
+      doc.fillColor("#1e293b").fontSize(11).font("Helvetica");
+      doc.text(`  ${text}`, leftMargin, y, { width: pageWidth - 20, lineGap: 3 });
+      y += Math.max(lineHeight, doc.heightOfString(`  ${text}`, { width: pageWidth - 20 })) + 2;
+      continue;
+    }
+
+    // Empty lines = paragraph spacing
+    if (line.trim() === "") {
+      y += 8;
+      continue;
+    }
+
+    // Regular text (strip bold markers for display)
+    const text = line.replace(/\*\*(.*?)\*\*/g, "$1").replace(/`([^`]+)`/g, "$1");
+    doc.fillColor("#1e293b").fontSize(11).font("Helvetica");
+    doc.text(text, leftMargin, y, { width: pageWidth, lineGap: 4 });
+    y += Math.max(lineHeight, doc.heightOfString(text, { width: pageWidth })) + 2;
+  }
+}
+
 function buildPDF(doc, title, subject, content, createdAt, updatedAt) {
   // Dark header bar
   doc.rect(0, 0, doc.page.width, 72).fill("#0f172a");
@@ -26,8 +105,9 @@ function buildPDF(doc, title, subject, content, createdAt, updatedAt) {
 
   const bodyTop = subject ? 156 : 140;
   doc.moveTo(50, bodyTop - 6).lineTo(545, bodyTop - 6).strokeColor("#e2e8f0").stroke();
-  doc.fillColor("#1e293b").fontSize(12).font("Helvetica")
-    .text(content || "(empty note)", 50, bodyTop, { lineGap: 5, width: 495 });
+
+  // Section 2.6: Use markdown renderer instead of plain text
+  renderMarkdown(doc, content, bodyTop);
 
   // Footer
   doc.fillColor("#ccc").fontSize(8)
@@ -35,7 +115,7 @@ function buildPDF(doc, title, subject, content, createdAt, updatedAt) {
 }
 
 // Export single note
-router.get("/notes/:id", async (req, res) => {
+router.get("/notes/:id", async (req, res, next) => {
   try {
     const user = getUser(req);
     if (!user) return res.status(401).json({ error: "Unauthorized" });
@@ -50,11 +130,11 @@ router.get("/notes/:id", async (req, res) => {
     doc.pipe(res);
     buildPDF(doc, note.title, note.subject, note.content, note.createdAt, note.updatedAt);
     doc.end();
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { next(e); }
 });
 
 // Export all notes
-router.get("/notes-all", async (req, res) => {
+router.get("/notes-all", async (req, res, next) => {
   try {
     const user = getUser(req);
     if (!user) return res.status(401).json({ error: "Unauthorized" });
@@ -71,14 +151,13 @@ router.get("/notes-all", async (req, res) => {
     doc.fillColor("#888").fontSize(16).font("Helvetica").text("All Notes Export", 50, 250, { align: "center" });
     doc.fillColor("#444").fontSize(12).text(`${notes.length} notes · ${new Date().toLocaleDateString("en-IN")}`, 50, 290, { align: "center" });
 
-    notes.forEach((note, i) => {
+    notes.forEach((note) => {
       doc.addPage();
       buildPDF(doc, note.title, note.subject, note.content, note.createdAt, note.updatedAt);
     });
 
     doc.end();
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { next(e); }
 });
 
 module.exports = router;
-

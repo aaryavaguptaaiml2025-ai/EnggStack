@@ -171,10 +171,22 @@ export function NotesPage() {
   const [toast,   setToast]   = useState(null);
   const [search,  setSearch]  = useState("");
   const [form,    setForm]    = useState({ title:"", subject:"", content:"" });
+  const [page,    setPage]    = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const load = async () => {
+  const load = async (p = page) => {
     setLoad(true);
-    try { setNotes(await api.getNotes()); } catch(e) { console.error(e); }
+    try {
+      const res = await api.getNotes(p, 20);
+      // Handle both paginated and legacy response formats
+      if (res.notes) {
+        setNotes(res.notes);
+        setTotalPages(res.totalPages || 1);
+        setPage(res.page || 1);
+      } else {
+        setNotes(Array.isArray(res) ? res : []);
+      }
+    } catch(e) { console.error(e); }
     finally { setLoad(false); }
   };
   useEffect(() => { load(); }, []);
@@ -283,6 +295,20 @@ export function NotesPage() {
                 </div>
               </div>
             ))}
+            {/* Section 4.4: Pagination controls */}
+            {totalPages > 1 && (
+              <div className="flex justify-between items-center p-2 mt-2 border-t border-white/10">
+                <button disabled={page <= 1} onClick={() => load(page - 1)}
+                  className="text-xs text-muted hover:text-[var(--ac)] disabled:opacity-30 px-2 py-1">
+                  ← Prev
+                </button>
+                <span className="text-[10px] text-dim">{page} / {totalPages}</span>
+                <button disabled={page >= totalPages} onClick={() => load(page + 1)}
+                  className="text-xs text-muted hover:text-[var(--ac)] disabled:opacity-30 px-2 py-1">
+                  Next →
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

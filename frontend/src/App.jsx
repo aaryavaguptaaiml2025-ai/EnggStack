@@ -6,6 +6,7 @@ import { ToastProvider } from "./context/ToastContext";
 import { PomodoroProvider } from "./context/PomodoroContext";
 import { AnimatePresence, motion } from "framer-motion";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import Layout from "./components/Layout";
 import { LoginPage, RegisterPage } from "./pages/AuthPages";
 import DashboardPage    from "./pages/DashboardPage";
@@ -33,18 +34,20 @@ function PageWrap({ children }) {
   const reduced = typeof window !== "undefined"
     && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  if (reduced) return <>{children}</>;
+  if (reduced) return <ErrorBoundary>{children}</ErrorBoundary>;
 
   return (
-    <motion.div
-      variants={pageVariants}
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      style={{ width: "100%", minHeight: "100%" }}
-    >
-      {children}
-    </motion.div>
+    <ErrorBoundary>
+      <motion.div
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        style={{ width: "100%", minHeight: "100%" }}
+      >
+        {children}
+      </motion.div>
+    </ErrorBoundary>
   );
 }
 

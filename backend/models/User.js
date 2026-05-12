@@ -33,6 +33,9 @@ const userSchema = new mongoose.Schema({
   notifyDeadlines: { type: Boolean, default: true },
   notifyBreak:     { type: Boolean, default: true },
 
+  // Sound effects (Section 3.4 — default OFF for new users)
+  soundEnabled: { type: Boolean, default: false },
+
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
@@ -49,13 +52,4 @@ userSchema.pre("save", async function () {
 userSchema.methods.comparePassword = function (p) { return bcrypt.compare(p, this.password); };
 userSchema.methods.comparePin      = function (p) { return bcrypt.compare(p, this.pin); };
 
-const User = mongoose.model("User", userSchema);
-
-// ── Drop stale indexes from old schema versions ───────────────────────────────
-// The old schema had a `uid` field that created a unique index.
-// This migration runs once on startup and silently removes it.
-User.collection.dropIndex("uid_1").catch(() => {
-  // Index doesn't exist or already dropped — that's fine, ignore
-});
-
-module.exports = User;
+module.exports = mongoose.model("User", userSchema);

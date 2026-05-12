@@ -284,7 +284,27 @@ export default function SettingsPage() {
             {/* NOTIFICATIONS SECTION */}
             {activeTab === "notifications" && (
               <motion.div key="notifications" initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-10}} transition={{duration:0.2}} className="space-y-6">
-                <h2 className="text-xl font-bold text-[var(--text)] mb-6">Notifications</h2>
+                <h2 className="text-xl font-bold text-[var(--text)] mb-6">Notifications & Sound</h2>
+                
+                {/* Sound Toggle (Section 3.4) */}
+                <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                  <div>
+                    <span className="text-sm text-[var(--text)] font-medium">Sound effects</span>
+                    <div className="text-xs text-muted mt-0.5">Play sounds for level-ups, badges, and interactions</div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const updated = await api.updateProfile({ soundEnabled: !user?.soundEnabled });
+                        applyUser(updated);
+                        toast_ok(updated.soundEnabled ? "Sounds enabled" : "Sounds disabled");
+                      } catch (e) { toast_err(e.message); }
+                    }}
+                    className={`w-10 h-6 rounded-full relative transition-colors ${user?.soundEnabled ? 'bg-[var(--ac)]' : 'bg-white/20'}`}>
+                    <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${user?.soundEnabled ? 'translate-x-5' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+
                 <div className="space-y-2">
                   {["Daily reminders", "Deadline alerts", "Weekly summary", "Achievement unlocked"].map((item, i) => (
                     <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
@@ -311,6 +331,34 @@ export default function SettingsPage() {
                   <input type="password" value={newPass} onChange={e=>setNewPass(e.target.value)} className="input-field w-full" placeholder="New Password (min 6 chars)" />
                   <button onClick={changePassword} disabled={saving} className="btn-outline px-6">
                     {saving ? <Spinner size={16} color="currentColor"/> : "Update Password"}
+                  </button>
+                </div>
+
+                {/* Data Export (Section 4.3) */}
+                <div className="pt-8 border-t border-white/10">
+                  <h3 className="text-sm font-semibold text-[var(--text)] mb-2">Export Data</h3>
+                  <p className="text-xs text-muted mb-4">Download all your data (notes, deadlines, sessions, analytics) as a JSON file.</p>
+                  <button
+                    onClick={async () => {
+                      try {
+                        setSaving(true);
+                        const data = await api.exportData();
+                        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `cognit-export-${new Date().toISOString().split('T')[0]}.json`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        toast_ok('Data exported successfully!');
+                      } catch (e) { toast_err(e.message); }
+                      finally { setSaving(false); }
+                    }}
+                    disabled={saving}
+                    className="btn-outline px-6 flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-sm">download</span>
+                    {saving ? <Spinner size={16} color="currentColor"/> : 'Export My Data'}
                   </button>
                 </div>
 

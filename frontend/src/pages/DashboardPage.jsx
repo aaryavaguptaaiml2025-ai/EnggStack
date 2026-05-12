@@ -204,7 +204,10 @@ export default function DashboardPage() {
         notified.current = true;
       }
     }).catch(() => {});
-    api.getNotes().then(n => setNotes(n.slice(0, 3))).catch(() => {});
+    api.getNotes(1, 3).then(res => {
+      const notes = res?.notes || (Array.isArray(res) ? res : []);
+      setNotes(notes.slice(0, 3));
+    }).catch(() => {});
   }, [toast]);
 
   /* Derived data */

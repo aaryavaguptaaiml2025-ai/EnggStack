@@ -2,7 +2,13 @@ const router = require("express").Router();
 const auth   = require("../middleware/auth");
 const { Stats } = require("../models/index");
 
-const todayStr = () => new Date().toISOString().split("T")[0]; // "2024-01-15"
+// Section 2.7: Use client-provided timezone for bucketing, fallback to server UTC
+const todayStr = (tz) => {
+  try {
+    if (tz) return new Date().toLocaleDateString("en-CA", { timeZone: tz });
+  } catch {}
+  return new Date().toISOString().split("T")[0];
+};
 const todayDate = () => new Date().toDateString();
 const dayIdx  = () => new Date().getDay();
 
@@ -17,17 +23,17 @@ async function getOrCreate(userId) {
   return s;
 }
 
-router.get("/", auth, async (req, res) => {
+router.get("/", auth, async (req, res, next) => {
   try {
     const s = await getOrCreate(req.user.id);
     await s.save();
     res.json(s);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { next(e); }
 });
 
-router.post("/pomodoro", auth, async (req, res) => {
+router.post("/pomodoro", auth, async (req, res, next) => {
   try {
-    const { mins = 25, subjectId } = req.body;
+    const { mins = 25, subjectId, timezone } = req.body;
     const s = await getOrCreate(req.user.id);
 
     // Streak
@@ -47,9 +53,10 @@ router.post("/pomodoro", auth, async (req, res) => {
     w[dayIdx()] = (w[dayIdx()]||0) + mins;
     s.weeklyMins = w;
 
-    // Heatmap
+    // Heatmap — use client timezone for correct bucketing (Section 2.7)
     const hm = s.heatmap || new Map();
-    hm.set(todayStr(), (hm.get(todayStr())||0) + mins);
+    const dateKey = todayStr(timezone);
+    hm.set(dateKey, (hm.get(dateKey)||0) + mins);
     s.heatmap = hm;
 
     // Subject time
@@ -61,12 +68,12 @@ router.post("/pomodoro", auth, async (req, res) => {
 
     await s.save();
     res.json(s);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { next(e); }
 });
 
-router.post("/focus", auth, async (req, res) => {
+router.post("/focus", auth, async (req, res, next) => {
   try {
-    const { mins, subjectId } = req.body;
+    const { mins, subjectId, timezone } = req.body;
     const s = await getOrCreate(req.user.id);
     s.totalMins  = (s.totalMins||0)  + mins;
     s.minsToday  = (s.minsToday||0)  + mins;
@@ -75,7 +82,8 @@ router.post("/focus", auth, async (req, res) => {
     w[dayIdx()] = (w[dayIdx()]||0) + mins;
     s.weeklyMins = w;
     const hm = s.heatmap || new Map();
-    hm.set(todayStr(), (hm.get(todayStr())||0) + mins);
+    const dateKey = todayStr(timezone);
+    hm.set(dateKey, (hm.get(dateKey)||0) + mins);
     s.heatmap = hm;
     if (subjectId) {
       const st = s.subjectTime || new Map();
@@ -84,7 +92,7 @@ router.post("/focus", auth, async (req, res) => {
     }
     await s.save();
     res.json(s);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { next(e); }
 });
 
 module.exports = router;

@@ -31,6 +31,7 @@ const safe = (u) => ({
   theme:u.theme, accentColor:u.accentColor,
   dailyGoalMins:u.dailyGoalMins, dailyGoalPomos:u.dailyGoalPomos,
   customQuotes:u.customQuotes, notifyDeadlines:u.notifyDeadlines, notifyBreak:u.notifyBreak,
+  soundEnabled:u.soundEnabled,
   hasPin:!!u.pin, hasPassword:!!u.password, hasGoogle:!!u.googleId,
 });
 
@@ -221,8 +222,13 @@ router.post("/google", async (req, res) => {
   }
 });
 
-// ── PIN Login ─────────────────────────────────────────────────────────────────
-router.post("/pin-login", async (req, res) => {
+// ── PIN Login (Section 1.3 — strict rate limiter) ─────────────────────────────
+const pinLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: "Too many login attempts. Try again in 15 minutes." },
+});
+router.post("/pin-login", pinLimiter, async (req, res) => {
   try {
     const { email, pin } = req.body;
     if (!email || !pin) return res.status(400).json({ error: "Email and PIN required" });

@@ -3,6 +3,7 @@ import { api } from "../api";
 import { Spinner } from "../components/ui";
 import { sfx } from "../hooks/useSfx";
 import { motion, AnimatePresence } from "framer-motion";
+import DOMPurify from "dompurify";
 
 const SUGGESTIONS = [
   "Explain recursion",
@@ -10,8 +11,9 @@ const SUGGESTIONS = [
   "Solve this problem"
 ];
 
+// Section 1.6: Sanitize all rendered HTML
 function md(text) {
-  return text
+  const raw = text
     .replace(/```(\w*)\n?([\s\S]*?)```/g,(_,lang,code)=>`<pre class="bg-black/30 border border-white/10 rounded-xl p-4 overflow-x-auto text-xs font-mono text-[var(--ac)] leading-relaxed my-2">${code.trim()}</pre>`)
     .replace(/`([^`]+)`/g,`<code class="bg-[var(--ac)]/15 px-1.5 py-0.5 rounded font-mono text-xs text-[var(--ac)]">$1</code>`)
     .replace(/\*\*(.*?)\*\*/g,"<strong class='text-[var(--text)]'>$1</strong>")
@@ -19,6 +21,7 @@ function md(text) {
     .replace(/^## (.+)$/gm,"<div class='text-base font-extrabold text-[var(--text)] my-3'>$1</div>")
     .replace(/^- (.+)$/gm,"<div class='pl-4 my-1 text-[var(--text)]'>• $1</div>")
     .replace(/\n/g,"<br/>");
+  return DOMPurify.sanitize(raw);
 }
 
 export default function AIChatPage() {
@@ -26,12 +29,20 @@ export default function AIChatPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
+  const [sessionId, setSessionId] = useState(null);
+  const [sessions, setSessions] = useState([]);
+  const [showSessions, setShowSessions] = useState(false);
   const bottom = useRef(null);
   const textareaRef = useRef(null);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
   }, [msgs, loading]);
+
+  // Load recent sessions on mount (Section 3.5)
+  useEffect(() => {
+    api.getChatSessions().then(setSessions).catch(() => {});
+  }, []);
 
   const handleInput = (e) => {
     setInput(e.target.value);
@@ -56,9 +67,12 @@ export default function AIChatPage() {
     try {
       // Need to send only role/content to API
       const apiHistory = h.map(({ role, content }) => ({ role, content }));
-      const { reply } = await api.chat(apiHistory);
-      setMsgs(prev => [...prev, { role: "assistant", content: reply, time: new Date() }]);
+      const result = await api.chat(apiHistory, sessionId);
+      setMsgs(prev => [...prev, { role: "assistant", content: result.reply, time: new Date() }]);
+      if (result.sessionId) setSessionId(result.sessionId);
       sfx.notify();
+      // Refresh sessions list
+      api.getChatSessions().then(setSessions).catch(() => {});
     } catch (e) {
       setErr(e.message);
       sfx.error();
@@ -70,8 +84,21 @@ export default function AIChatPage() {
 
   const clearChat = () => {
     setMsgs([]);
+    setSessionId(null);
     setErr("");
     sfx.click();
+  };
+
+  const loadSession = async (sid) => {
+    try {
+      const session = await api.getChatSession(sid);
+      setMsgs(session.messages.map(m => ({ ...m, time: new Date(m.timestamp) })));
+      setSessionId(sid);
+      setShowSessions(false);
+      sfx.click();
+    } catch (e) {
+      setErr(e.message);
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -92,15 +119,55 @@ export default function AIChatPage() {
             <div className="text-[10px] text-muted uppercase tracking-wider font-semibold">Powered by GPT-4o</div>
           </div>
         </div>
-        {msgs.length > 0 && (
-          <button onClick={clearChat} className="btn-outline px-3 py-1.5 text-xs flex items-center gap-1">
-            <span className="material-symbols-outlined text-sm">add</span> New chat
+        <div className="flex items-center gap-2">
+          {/* Session History Toggle (Section 3.5) */}
+          <button onClick={() => { setShowSessions(!showSessions); sfx.click(); }}
+            className="btn-outline px-3 py-1.5 text-xs flex items-center gap-1">
+            <span className="material-symbols-outlined text-sm">history</span> History
           </button>
-        )}
+          {msgs.length > 0 && (
+            <button onClick={clearChat} className="btn-outline px-3 py-1.5 text-xs flex items-center gap-1">
+              <span className="material-symbols-outlined text-sm">add</span> New chat
+            </button>
+          )}
+        </div>
       </div>
 
+      {/* Session History Sidebar (Section 3.5) */}
+      <AnimatePresence>
+        {showSessions && (
+          <motion.div
+            initial={{ opacity: 0, x: 300 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 300 }}
+            transition={{ duration: 0.2 }}
+            className="absolute right-0 top-[60px] bottom-0 w-72 z-50 glass-card border-l border-[var(--border)] overflow-y-auto p-4"
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-bold text-[var(--text)]">Recent Chats</h3>
+              <button onClick={() => setShowSessions(false)} className="text-muted hover:text-[var(--text)]">
+                <span className="material-symbols-outlined text-sm">close</span>
+              </button>
+            </div>
+            {sessions.length === 0 ? (
+              <p className="text-xs text-muted text-center py-8">No previous chats</p>
+            ) : (
+              <div className="space-y-2">
+                {sessions.map(s => (
+                  <button key={s._id} onClick={() => loadSession(s._id)}
+                    className={`w-full text-left p-3 rounded-xl text-xs transition-all hover:bg-white/5 ${sessionId === s._id ? "bg-[var(--ac)]/10 border border-[var(--ac)]/20" : "border border-white/5"}`}>
+                    <div className="text-[var(--text)] font-medium truncate">{s.title}</div>
+                    <div className="text-muted mt-1">{new Date(s.updatedAt).toLocaleDateString()}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-4 py-6 custom-scrollbar relative">
         {msgs.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center px-4">
             <span className="material-symbols-outlined text-6xl mb-4" style={{ color: "rgba(0,200,150,0.2)" }}>psychology</span>
@@ -136,7 +203,7 @@ export default function AIChatPage() {
                       dangerouslySetInnerHTML={{ __html: md(m.content) }} 
                     />
                     <div className="text-[10px] text-dim mt-1.5 mx-1">
-                      {m.time ? m.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now"}
+                      {m.time ? new Date(m.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now"}
                     </div>
                   </div>
                 </motion.div>
