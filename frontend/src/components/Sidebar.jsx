@@ -18,6 +18,8 @@ const NAV = [
   { to:"/gamification", icon:"emoji_events",     label:"Achievements" },
   { to:"/music",        icon:"music_note",       label:"Music"        },
   { to:"/calculator",   icon:"calculate",        label:"Calculator"   },
+  { to:"/flashcards",   icon:"style",            label:"Flashcards"   },
+  { to:"/ai-chat",      icon:"psychology",       label:"AI Chat"      },
   { to:"/friends",      icon:"group",            label:"Friends"      },
   { to:"/settings",     icon:"settings",         label:"Settings"     },
 ];

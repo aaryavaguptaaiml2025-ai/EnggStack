@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { StatsProvider } from "./context/StatsContext";
@@ -8,6 +9,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import Layout from "./components/Layout";
+import CommandPalette from "./components/CommandPalette";
+import ShortcutsHelp from "./components/ShortcutsHelp";
+import OfflineBanner from "./components/OfflineBanner";
 import { LoginPage, RegisterPage } from "./pages/AuthPages";
 import DashboardPage    from "./pages/DashboardPage";
 import PomodoroPage     from "./pages/PomodoroPage";
@@ -20,6 +24,7 @@ import CalculatorPage   from "./pages/CalculatorPage";
 import AIChatPage       from "./pages/AIChatPage";
 import ProfilePage      from "./pages/ProfilePage";
 import FriendsPage      from "./pages/FriendsPage";
+import FlashcardsPage   from "./pages/FlashcardsPage";
 import { DeadlinesPage, NotesPage, ChecklistPage, SubjectsPage, TimetablePage, GamificationPage } from "./pages/OtherPages";
 
 /* ── Page transition wrapper ── */
@@ -75,6 +80,7 @@ function AnimatedRoutes() {
         <Route path="/profile"      element={<PageWrap><ProfilePage/></PageWrap>}/>
         <Route path="/friends"      element={<PageWrap><FriendsPage/></PageWrap>}/>
         <Route path="/help"         element={<PageWrap><HelpPage/></PageWrap>}/>
+        <Route path="/flashcards"   element={<PageWrap><FlashcardsPage/></PageWrap>}/>
         <Route path="*"             element={<Navigate to="/dashboard" replace/>}/>
       </Routes>
     </AnimatePresence>
@@ -83,6 +89,7 @@ function AnimatedRoutes() {
 
 function AppLayout() {
   const { user, loading } = useAuth();
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-[#0B1220] relative">
@@ -110,6 +117,22 @@ function AppLayout() {
         <Layout>
           <AnimatedRoutes />
         </Layout>
+        {/* Command Palette — mounted at app root */}
+        <CommandPalette onShortcuts={() => setShortcutsOpen(true)} />
+        {/* Shortcuts Help */}
+        <ShortcutsHelp open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+        {/* Offline detection */}
+        <OfflineBanner />
+        {/* Floating ? button */}
+        <button
+          onClick={() => setShortcutsOpen(true)}
+          className="fixed bottom-6 right-6 z-[999] w-9 h-9 rounded-full bg-white/10 border border-white/10
+            flex items-center justify-center text-muted hover:text-[var(--text)] hover:bg-white/20
+            transition-all duration-200 text-sm font-bold backdrop-blur-sm"
+          title="Keyboard shortcuts (?)"
+        >
+          ?
+        </button>
       </PomodoroProvider>
     </MusicProvider>
   );

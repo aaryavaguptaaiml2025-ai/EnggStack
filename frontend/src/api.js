@@ -185,6 +185,24 @@ export const api = {
   getFriendStats:    (id)  => req("GET",    `/friends/${id}/stats`),
   removeFriend:      (id)  => req("DELETE", `/friends/${id}`),
 
+  // flashcards (Feature 1)
+  getDecks:       ()          => req("GET",    "/flashcards/decks"),
+  createDeck:     (b)         => req("POST",   "/flashcards/decks", b),
+  deleteDeck:     (id)        => req("DELETE", `/flashcards/decks/${id}`),
+  getDueCards:    (deckId)    => req("GET",    `/flashcards/decks/${deckId}/due`),
+  getDeckCards:   (deckId)    => req("GET",    `/flashcards/decks/${deckId}/cards`),
+  createCard:     (b)         => req("POST",   "/flashcards/cards", b),
+  reviewCard:     (cardId, rating) => req("POST", `/flashcards/cards/${cardId}/review`, { rating }),
+  deleteCard:     (cardId)    => req("DELETE", `/flashcards/cards/${cardId}`),
+
+  // weekly reports (Feature 3)
+  getReports:     ()  => req("GET",  "/reports"),
+  generateReport: ()  => req("POST", "/reports/weekly"),
+
+  // account data (Feature 5)
+  exportData:     ()    => req("GET", "/user/export"),
+  deleteAccount:  (pin) => req("DELETE", "/user/account", { pin }),
+
   // export PDFs — sends token in Authorization header via fetch
   exportNote: async (id) => {
     const r = await fetchWithRetry(`${BASE}/api/export/notes/${id}`, {

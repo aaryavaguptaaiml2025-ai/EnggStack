@@ -99,8 +99,10 @@ app.use("/api/checklist", require("./routes/checklist"));
 app.use("/api/timetable", require("./routes/timetable"));
 app.use("/api/subjects",  require("./routes/subjects"));
 app.use("/api/reminders", require("./routes/reminders"));
-app.use("/api/export",    require("./routes/export"));
-app.use("/api/friends",   require("./routes/friends"));
+app.use("/api/export",      require("./routes/export"));
+app.use("/api/friends",     require("./routes/friends"));
+app.use("/api/flashcards",  require("./routes/flashcards"));
+app.use("/api/reports",     require("./routes/reports"));
 
 // Health check — also prevents "Cannot GET /" confusion
 app.get("/",         (_, res) => res.json({ status: "Cognit API is running" }));

@@ -21,7 +21,7 @@ const ACCENTS = [
 const EMOJIS = ["👨‍💻","👩‍💻","🚀","🧠","☕","🦉","📚","🎯","⚡","💡","🎓","🎧"];
 
 export default function SettingsPage() {
-  const { user, refreshUser, applyUser } = useAuth();
+  const { user, refreshUser, applyUser, logout } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
   const [toast, setToast] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -45,6 +45,7 @@ export default function SettingsPage() {
   const [curPass, setCurPass] = useState("");
   const [newPass, setNewPass] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deletePin, setDeletePin] = useState("");
 
   const toast_ok  = (msg) => { sfx.success(); setToast({ msg, color:"#00C896" }); };
   const toast_err = (msg) => { sfx.error(); setToast({ msg, color:"#f87171" }); };
@@ -368,10 +369,32 @@ export default function SettingsPage() {
                   
                   {deleteConfirm ? (
                     <div className="p-4 rounded-xl border border-[var(--clr-danger)]/30 bg-[var(--clr-danger)]/10">
-                      <p className="text-xs text-[var(--text)] mb-3 font-semibold">Are you absolutely sure?</p>
+                      <p className="text-xs text-[var(--text)] mb-3 font-semibold">Enter your PIN to confirm deletion:</p>
+                      <input 
+                        type="password" 
+                        value={deletePin} 
+                        onChange={e => setDeletePin(e.target.value)} 
+                        placeholder="Your PIN" 
+                        maxLength={6}
+                        className="input-field w-full mb-3" 
+                      />
                       <div className="flex gap-3">
-                        <button className="px-4 py-2 rounded-lg bg-[var(--clr-danger)] text-white text-xs font-bold hover:bg-[var(--clr-danger)]/80">Yes, Delete Everything</button>
-                        <button onClick={() => setDeleteConfirm(false)} className="px-4 py-2 rounded-lg bg-white/10 text-[var(--text)] text-xs font-semibold hover:bg-white/20">Cancel</button>
+                        <button 
+                          disabled={saving}
+                          onClick={async () => {
+                            try {
+                              setSaving(true);
+                              await api.deleteAccount(deletePin || undefined);
+                              toast_ok("Account deleted. Goodbye!");
+                              setTimeout(() => { logout(); window.location.href = "/login"; }, 1500);
+                            } catch (e) { toast_err(e.message); }
+                            finally { setSaving(false); }
+                          }}
+                          className="px-4 py-2 rounded-lg bg-[var(--clr-danger)] text-white text-xs font-bold hover:bg-[var(--clr-danger)]/80"
+                        >
+                          {saving ? <Spinner size={14} color="white"/> : "Yes, Delete Everything"}
+                        </button>
+                        <button onClick={() => { setDeleteConfirm(false); setDeletePin(""); }} className="px-4 py-2 rounded-lg bg-white/10 text-[var(--text)] text-xs font-semibold hover:bg-white/20">Cancel</button>
                       </div>
                     </div>
                   ) : (

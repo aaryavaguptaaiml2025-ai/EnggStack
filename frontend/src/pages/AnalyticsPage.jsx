@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useStats, getLevel, LEVEL_NAMES, XP_THRESHOLDS } from "../context/StatsContext";
 import { api } from "../api";
 import { Card, ProgressBar, Heatmap } from "../components/ui";
+import { Spinner } from "../components/ui";
+import { motion } from "framer-motion";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -13,10 +15,30 @@ const COLORS = ["#00C896","#3b82f6","#fbbf24","#8b5cf6","#f87171","#f472b6","#34
 export default function AnalyticsPage() {
   const { stats } = useStats();
   const [subjects, setSubjects] = useState([]);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [reports, setReports] = useState([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(()=>{ 
     api.getSubjects().then(setSubjects).catch(()=>{}); 
   },[]);
+
+  useEffect(() => {
+    if (activeTab === "reports") {
+      setReportsLoading(true);
+      api.getReports().then(setReports).catch(() => {}).finally(() => setReportsLoading(false));
+    }
+  }, [activeTab]);
+
+  const generateReport = async () => {
+    setGenerating(true);
+    try {
+      const report = await api.generateReport();
+      setReports(prev => [report, ...prev]);
+    } catch (e) { console.error(e); }
+    finally { setGenerating(false); }
+  };
 
   // Weekly data mapping
   const wMins = stats.weeklyMins || [0,0,0,0,0,0,0];
@@ -179,6 +201,101 @@ export default function AnalyticsPage() {
           </div>
         )}
       </div>
+
+      {/* Tabs: Overview | Reports */}
+      <div className="flex gap-2 mb-6 mt-8">
+        {["overview", "reports"].map(tab => (
+          <button key={tab} onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200
+              ${activeTab === tab
+                ? "bg-[#8b5cf6]/10 border border-[#8b5cf6]/20 text-[#8b5cf6]"
+                : "bg-white/5 border border-white/10 text-muted hover:bg-white/10"}`}
+          >
+            {tab === "overview" ? "📊 Overview" : "📋 Weekly Reports"}
+          </button>
+        ))}
+      </div>
+
+      {/* Reports Tab */}
+      {activeTab === "reports" && (
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-bold text-[var(--text)]">AI Study Reports</h2>
+            <button onClick={generateReport} disabled={generating}
+              className="btn-outline px-4 py-2 text-xs flex items-center gap-2 font-bold">
+              {generating ? <Spinner size={14} color="currentColor" /> : (
+                <><span className="material-symbols-outlined text-sm">auto_awesome</span> Generate Now</>
+              )}
+            </button>
+          </div>
+
+          {reportsLoading ? (
+            <div className="text-center py-12"><Spinner /></div>
+          ) : reports.length === 0 ? (
+            <Card className="text-center py-12">
+              <span className="material-symbols-outlined text-4xl text-dim mb-3 block">summarize</span>
+              <div className="text-muted text-sm mb-4">No reports yet. Generate your first weekly study report!</div>
+              <button onClick={generateReport} disabled={generating}
+                className="bg-[#8b5cf6]/10 border border-[#8b5cf6]/20 rounded-xl px-6 py-3 text-[#8b5cf6] text-sm font-bold hover:bg-[#8b5cf6]/20 transition-all duration-200">
+                Generate Report
+              </button>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {reports.map((r, i) => (
+                <motion.div key={r._id || i}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  <Card>
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <div className="text-sm font-bold text-[var(--text)] mb-1">
+                          Week of {new Date(r.weekStart).toLocaleDateString("en-IN", { month: "short", day: "numeric" })} — {new Date(r.weekEnd).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
+                        </div>
+                        <div className="text-xs text-muted">{r.summary}</div>
+                      </div>
+                      <div className="text-[10px] text-dim">{new Date(r.createdAt).toLocaleDateString()}</div>
+                    </div>
+
+                    {/* Stats grid */}
+                    <div className="grid grid-cols-4 gap-3 mb-4">
+                      {[
+                        { label: "Study Time", value: `${Math.round((r.totalMins || 0) / 60)}h`, icon: "schedule", color: "#3b82f6" },
+                        { label: "Sessions", value: r.sessions, icon: "event", color: "#00C896" },
+                        { label: "Streak", value: `${r.streakStatus}d`, icon: "local_fire_department", color: "#f97316" },
+                        { label: "Deadlines", value: `${r.deadlinesDone}/${(r.deadlinesDone || 0) + (r.deadlinesMissed || 0)}`, icon: "check_circle", color: "#8b5cf6" },
+                      ].map((s, j) => (
+                        <div key={j} className="p-3 rounded-xl bg-white/5 border border-white/5 text-center">
+                          <span className="material-symbols-outlined text-lg" style={{ color: s.color }}>{s.icon}</span>
+                          <div className="text-base font-bold text-[var(--text)] mt-1">{s.value}</div>
+                          <div className="text-[10px] text-muted">{s.label}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* AI Recommendations */}
+                    {r.aiRecommendations?.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="text-xs font-semibold text-[#8b5cf6] mb-2 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-sm">auto_awesome</span>
+                          AI Recommendations
+                        </div>
+                        {r.aiRecommendations.map((rec, k) => (
+                          <div key={k} className="p-3 rounded-xl bg-[#8b5cf6]/5 border border-[#8b5cf6]/10 text-xs text-[var(--text)] leading-relaxed">
+                            {k + 1}. {rec}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
