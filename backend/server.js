@@ -93,8 +93,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ── Local Dev Start ───────────────────────────────────────────────────────────
-if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
+// ── Server Start ──────────────────────────────────────────────────────────────
+if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 5000;
   connectDB().then(() => {
     app.listen(PORT, () => console.log(`✅ Server on port ${PORT}`));
