@@ -40,6 +40,28 @@ const aiLimiter = rateLimit({
   message: { error: "Too many AI requests, slow down." },
 });
 
+// ── DB Connection (Serverless Friendly) ───────────────────────────────────────
+let isConnected = false;
+const connectDB = async () => {
+  if (isConnected) return;
+  if (!process.env.MONGO_URI) { console.error("❌ MONGO_URI is not defined"); return; }
+  try {
+    const db = await mongoose.connect(process.env.MONGO_URI);
+    isConnected = db.connections[0].readyState === 1;
+    if (process.env.NODE_ENV !== "production") console.log("✅ MongoDB connected");
+  } catch (err) {
+    console.error("❌ MongoDB connection error:", err.message);
+  }
+};
+
+// Ensure DB connects before handling requests in Serverless
+app.use(async (req, res, next) => {
+  if (req.path.startsWith("/api")) {
+    await connectDB();
+  }
+  next();
+});
+
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use("/api/auth",      require("./routes/auth"));
 app.use("/api/ai",        aiLimiter, require("./routes/ai"));
@@ -71,17 +93,13 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ── DB + Start ────────────────────────────────────────────────────────────────
-const PORT = process.env.PORT || 5000;
-
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("✅ MongoDB connected");
+// ── Local Dev Start ───────────────────────────────────────────────────────────
+if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
+  const PORT = process.env.PORT || 5000;
+  connectDB().then(() => {
     app.listen(PORT, () => console.log(`✅ Server on port ${PORT}`));
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB failed:", err.message);
-    // Still start server so health check works
-    app.listen(PORT, () => console.log(`⚠️  Server on port ${PORT} (no DB)`));
   });
+}
+
+// ── Vercel Export ─────────────────────────────────────────────────────────────
+module.exports = app;
