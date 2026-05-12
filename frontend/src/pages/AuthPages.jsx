@@ -5,6 +5,7 @@ import { api } from "../api";
 import { Input, Btn, Spinner } from "../components/ui";
 import { sfx } from "../hooks/useSfx";
 import { motion } from "framer-motion";
+import { GoogleLogin } from "@react-oauth/google";
 
 /* ───────────────── ERROR SANITIZER ───────────────── */
 function cleanError(msg) {
@@ -132,55 +133,63 @@ function getGoogleClientId() {
 function GoogleBtn({ onSuccess, label="Continue with Google" }) {
   const [busy, setBusy] = useState(false);
   const [gError, setGError] = useState("");
-  const btnRef = useRef(null);
-  const cbRef = useRef(onSuccess);
-  cbRef.current = onSuccess;
 
-  useEffect(() => {
+  const doRedirect = useCallback(() => {
+    setBusy(true);
     const id = getGoogleClientId();
     if (!id) return;
-    
-    const initGsi = () => {
-      try {
-        window.google.accounts.id.initialize({
-          client_id: id,
-          use_fedcm_for_prompt: true,
-          callback: (r) => {
-            setBusy(false);
-            if (r.credential) cbRef.current(r.credential);
-            else setGError("Google login was cancelled. Please try again.");
-          },
-        });
-        if (btnRef.current) {
-          window.google.accounts.id.renderButton(btnRef.current, {
-            theme: "outline",
-            size: "large",
-            shape: "rectangular",
-            width: 320,
-            text: "continue_with"
-          });
-        }
-      } catch (err) {
-        console.error("[GoogleBtn] init error:", err);
-        setGError("Google login unavailable. Please use email/password.");
-      }
+    const rootUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+    const options = {
+      redirect_uri: window.location.origin + window.location.pathname,
+      client_id: id,
+      response_type: "id_token",
+      scope: "email profile",
+      nonce: "nonce_" + Date.now(),
+      prompt: "select_account"
     };
-
-    if (!window.google) {
-      const s = document.createElement("script");
-      s.src = "https://accounts.google.com/gsi/client";
-      s.onload = initGsi;
-      s.onerror = () => setGError("Failed to load Google. Please use email/password.");
-      document.head.appendChild(s);
-    } else {
-      initGsi();
-    }
+    const qs = new URLSearchParams(options);
+    window.location.assign(`${rootUrl}?${qs.toString()}`);
   }, []);
 
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes("id_token=")) {
+      setBusy(true);
+      const params = new URLSearchParams(hash.substring(1));
+      const token = params.get("id_token");
+      if (token) {
+        window.history.replaceState(null, null, window.location.pathname);
+        onSuccess(token);
+      }
+    }
+  }, [onSuccess]);
+
   return (
-    <div className="mb-5 flex flex-col items-center">
-      {busy && <Spinner size={20} />}
-      <div ref={btnRef} className={`w-full flex justify-center ${busy ? 'hidden' : 'block'}`} />
+    <div className="mb-5 flex flex-col items-center w-full">
+      {busy && <div className="py-2"><Spinner size={24} /></div>}
+      <div className={`w-full flex flex-col items-center ${busy ? 'hidden' : 'block'}`}>
+        <GoogleLogin
+          onSuccess={(res) => {
+            setBusy(false);
+            onSuccess(res.credential);
+          }}
+          onError={() => {
+            console.warn("[GSI_LOGGER]: Popup failed, triggering fallback redirect.");
+            doRedirect();
+          }}
+          useOneTap={true}
+          theme="filled_black"
+          shape="rectangular"
+          text={label === "Sign up with Google" ? "signup_with" : "continue_with"}
+          width="320"
+        />
+        <button 
+          onClick={doRedirect} 
+          className="text-xs text-dim hover:text-white mt-3 underline decoration-white/20 underline-offset-2 transition-colors"
+        >
+          Having trouble with the popup? Use redirect
+        </button>
+      </div>
       {gError && (
         <div className="text-[var(--clr-danger)] text-xs mt-2 text-center">{gError}</div>
       )}
@@ -241,6 +250,9 @@ function OTPStep({ email, onVerified, onBack }) {
 
       <div className={err ? "animate-shake" : ""}>
         <Input
+          name="otp"
+          type="text"
+          autoComplete="one-time-code"
           value={otp}
           onChange={e => setOtp(e.target.value.replace(/\D/g,"").slice(0,6))}
           placeholder="Enter 6-digit OTP"
@@ -379,7 +391,7 @@ function ForgotPasswordFlow({ onBack }) {
             <div className="text-xs text-muted mt-1">Enter code sent to <span className="text-[var(--ac)]">{email}</span></div>
           </div>
           <div className="space-y-4">
-            <Input value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g,"").slice(0,6))} placeholder="6-digit code" className="text-center tracking-widest font-mono font-bold w-full"/>
+            <Input name="otp" type="text" autoComplete="one-time-code" value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g,"").slice(0,6))} placeholder="6-digit code" className="text-center tracking-widest font-mono font-bold w-full"/>
             <PasswordInput value={newPass} onChange={e => setNewPass(e.target.value)} placeholder="New Password" onKeyDown={e => e.key === "Enter" && resetPassword()} />
           </div>
         </div>

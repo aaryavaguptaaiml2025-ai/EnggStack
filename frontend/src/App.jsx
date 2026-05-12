@@ -5,6 +5,7 @@ import { MusicProvider } from "./context/MusicContext";
 import { ToastProvider } from "./context/ToastContext";
 import { PomodoroProvider } from "./context/PomodoroContext";
 import { AnimatePresence, motion } from "framer-motion";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import Layout from "./components/Layout";
 import { LoginPage, RegisterPage } from "./pages/AuthPages";
 import DashboardPage    from "./pages/DashboardPage";
@@ -112,9 +113,12 @@ function AppLayout() {
 }
 
 export default function App() {
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || (typeof window !== 'undefined' && window.__GOOGLE_CLIENT_ID__) || "dummy_client_id";
+
   return (
-    <BrowserRouter>
-      <ToastProvider>
+    <GoogleOAuthProvider clientId={clientId}>
+      <BrowserRouter>
+        <ToastProvider>
         <AuthProvider>
           <StatsProvider>
             <Routes>
@@ -126,5 +130,6 @@ export default function App() {
         </AuthProvider>
       </ToastProvider>
     </BrowserRouter>
+  </GoogleOAuthProvider>
   );
 }
