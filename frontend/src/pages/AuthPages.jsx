@@ -506,7 +506,7 @@ export function LoginPage() {
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
         className="flex justify-between items-center mt-3 px-1"
       >
-        <button onClick={() => navigate("/login")} className="text-[11px] font-semibold text-dim hover:text-[var(--text)] transition-colors">Use PIN to sign in</button>
+        <button onClick={() => navigate("/login")} className="text-[11px] font-semibold text-dim hover:text-[var(--text)] transition-colors"></button>
         <button onClick={() => setShowForgot(true)} className="text-[11px] font-semibold text-[var(--ac)] hover:underline">Forgot password?</button>
       </motion.div>
 
