@@ -53,12 +53,12 @@ function BackgroundOrbs() {
   if (reduced) return null;
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-      <div className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-[#00C896]/8 blur-[120px]" 
-           style={{ animation: 'floatOrb1 15s ease-in-out infinite' }} />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] rounded-full bg-[#8b5cf6]/8 blur-[100px]" 
-           style={{ animation: 'floatOrb2 20s ease-in-out infinite' }} />
-      <div className="absolute top-[30%] left-[30%] w-[200px] h-[200px] rounded-full bg-[#3b82f6]/5 blur-[80px]" 
-           style={{ animation: 'floatOrb3 18s ease-in-out infinite' }} />
+      <div className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full blur-[120px]" 
+           style={{ background: 'color-mix(in srgb, var(--ac) 8%, transparent)', animation: 'floatOrb1 15s ease-in-out infinite' }} />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] rounded-full blur-[100px]" 
+           style={{ background: 'color-mix(in srgb, var(--clr-purple, #8b5cf6) 8%, transparent)', animation: 'floatOrb2 20s ease-in-out infinite' }} />
+      <div className="absolute top-[30%] left-[30%] w-[200px] h-[200px] rounded-full blur-[80px]" 
+           style={{ background: 'color-mix(in srgb, var(--clr-streak, #3b82f6) 5%, transparent)', animation: 'floatOrb3 18s ease-in-out infinite' }} />
     </div>
   );
 }
@@ -86,7 +86,7 @@ function AuthWrap({ children }) {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
               className="relative w-16 h-16 mb-6 flex items-center justify-center"
             >
-              <div className="absolute inset-0 bg-[#00C896]/20 blur-2xl rounded-full" />
+              <div className="absolute inset-0 blur-2xl rounded-full" style={{ background: 'color-mix(in srgb, var(--ac) 20%, transparent)' }} />
               <img src="/cognit-logo.png" alt="Cognit Logo" className="w-full h-full object-contain relative z-10 drop-shadow-2xl" />
             </motion.div>
             
@@ -495,7 +495,10 @@ export function LoginPage() {
       >
         <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }} className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-dim text-lg group-focus-within:text-[var(--ac)] transition-colors duration-200">alternate_email</span>
-          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email Address" type="email" className="input-field pl-12 w-full transition-all focus:shadow-[0_0_15px_rgba(0,200,150,0.2)]"/>
+          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email Address" type="email" 
+            className="input-field pl-12 w-full transition-all"
+            style={{ boxShadow: email ? 'none' : 'none' }}
+          />
         </motion.div>
         <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}>
           <PasswordInput value={pass} onChange={e=>setPass(e.target.value)} onKeyDown={e => e.key === "Enter" && go()} placeholder="Password" />
@@ -523,7 +526,8 @@ export function LoginPage() {
         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
         whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
         onClick={go} disabled={loading} 
-        className="btn-primary w-full mt-6 shadow-[0_0_20px_rgba(0,200,150,0.3)] hover:shadow-[0_0_25px_rgba(0,200,150,0.5)] transition-all"
+        className="btn-primary w-full mt-6 transition-all"
+        style={{ boxShadow: '0 0 20px color-mix(in srgb, var(--ac) 30%, transparent)' }}
       >
         {loading ? <><Spinner size={14}/> <span className="ml-2">Signing in...</span></> : "Sign in"}
       </motion.button>
@@ -631,11 +635,11 @@ export function RegisterPage() {
       >
         <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }} className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-dim text-lg group-focus-within:text-[var(--ac)] transition-colors duration-200">person</span>
-          <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full Name" className="input-field pl-12 w-full transition-all focus:shadow-[0_0_15px_rgba(0,200,150,0.2)]"/>
+          <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full Name" className="input-field pl-12 w-full transition-all"/>
         </motion.div>
         <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }} className="relative group">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-dim text-lg group-focus-within:text-[var(--ac)] transition-colors duration-200">alternate_email</span>
-          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email Address" type="email" className="input-field pl-12 w-full transition-all focus:shadow-[0_0_15px_rgba(0,200,150,0.2)]"/>
+          <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email Address" type="email" className="input-field pl-12 w-full transition-all"/>
         </motion.div>
         <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }}>
           <PasswordInput value={pass} onChange={e=>setPass(e.target.value)} placeholder="Password" />
@@ -665,7 +669,8 @@ export function RegisterPage() {
         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
         whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
         onClick={handleSendOTP} disabled={loading} 
-        className="btn-primary w-full mt-6 shadow-[0_0_20px_rgba(0,200,150,0.3)] hover:shadow-[0_0_25px_rgba(0,200,150,0.5)] transition-all"
+        className="btn-primary w-full mt-6 transition-all"
+        style={{ boxShadow: '0 0 20px color-mix(in srgb, var(--ac) 30%, transparent)' }}
       >
         {loading ? <><Spinner size={14}/> <span className="ml-2">Creating account...</span></> : "Create account"}
       </motion.button>

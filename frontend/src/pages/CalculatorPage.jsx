@@ -177,7 +177,8 @@ export default function CalculatorPage() {
         <button
           onClick={() => { sfx.click(); setShowHistory(!showHistory); }}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300
-            ${showHistory ? 'bg-[var(--ac)] text-[#0B1220] shadow-[0_0_20px_rgba(0,200,150,0.3)]' : 'glass-card text-dim hover:text-on-surface'}`}
+            ${showHistory ? 'text-[var(--bg)] shadow-md' : 'text-dim hover:text-[var(--text)]'}`}
+          style={{ background: showHistory ? 'var(--ac)' : 'var(--card)' }}
         >
           <span className="material-symbols-outlined text-lg">history</span>
           History
@@ -187,10 +188,10 @@ export default function CalculatorPage() {
       <div className="flex-1 flex gap-6 min-h-0 relative">
         {/* Main Calculator */}
         <div className={`flex-1 flex flex-col transition-all duration-300 ${showHistory ? 'lg:max-w-[65%]' : 'max-w-xl mx-auto w-full'}`}>
-          <Card className="flex-1 flex flex-col p-6 shadow-2xl relative overflow-hidden bg-[#0B132B]/80 backdrop-blur-2xl border-white/[0.08]">
+          <div className="flex-1 flex flex-col p-6 shadow-2xl relative overflow-hidden rounded-3xl" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
             {/* Display */}
             <div className="flex-none mb-6">
-              <div className="w-full bg-[#050A15]/50 rounded-2xl p-6 min-h-[140px] flex flex-col justify-end items-end relative overflow-hidden border border-white/5 shadow-inner">
+              <div className="w-full rounded-2xl p-6 min-h-[140px] flex flex-col justify-end items-end relative overflow-hidden shadow-inner" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
                 <div className="absolute top-4 left-4 flex gap-2">
                   <button onClick={() => setIsRad(false)} className={`text-[10px] font-bold px-2 py-1 rounded transition-colors ${!isRad ? 'bg-[var(--ac)] text-black' : 'text-dim hover:bg-white/5'}`}>DEG</button>
                   <button onClick={() => setIsRad(true)} className={`text-[10px] font-bold px-2 py-1 rounded transition-colors ${isRad ? 'bg-[var(--ac)] text-black' : 'text-dim hover:bg-white/5'}`}>RAD</button>
@@ -200,7 +201,7 @@ export default function CalculatorPage() {
                   {expr}
                 </div>
                 <div className={`font-mono text-4xl sm:text-5xl tracking-tight font-light truncate w-full text-right transition-colors duration-300 ${
-                  result === "Error" ? "text-red-400" : "text-[var(--ac)]"
+                  result === "Error" ? "text-[var(--clr-danger, #f87171)]" : "text-[var(--ac)]"
                 }`}>
                   {result || expr}
                 </div>
@@ -245,32 +246,32 @@ export default function CalculatorPage() {
                 )}
               </AnimatePresence>
 
-              <Btn label="C" onClick={() => input("C")} cls="text-[var(--clr-danger)] hover:bg-[var(--clr-danger)]/10 font-bold" />
-              <Btn label="()" onClick={() => input(expr.split("(").length > expr.split(")").length ? ")" : "(")} cls="text-[var(--ac)] bg-[var(--ac)]/5 hover:bg-[var(--ac)]/15" />
-              <Btn label="%" onClick={() => input("%")} cls="text-[var(--ac)] bg-[var(--ac)]/5 hover:bg-[var(--ac)]/15" />
-              <Btn label="÷" onClick={() => input("/")} cls="text-[var(--ac)] bg-[var(--ac)]/10 hover:bg-[var(--ac)]/20 text-2xl" />
+              <Btn label="C" onClick={() => input("C")} cls="text-[var(--clr-danger, #f87171)] font-bold" style={{ background: 'color-mix(in srgb, var(--clr-danger, #f87171) 10%, transparent)' }} />
+              <Btn label="()" onClick={() => input(expr.split("(").length > expr.split(")").length ? ")" : "(")} cls="text-[var(--ac)]" style={{ background: 'color-mix(in srgb, var(--ac) 10%, transparent)' }} />
+              <Btn label="%" onClick={() => input("%")} cls="text-[var(--ac)]" style={{ background: 'color-mix(in srgb, var(--ac) 10%, transparent)' }} />
+              <Btn label="÷" onClick={() => input("/")} cls="text-[var(--ac)] text-2xl" style={{ background: 'color-mix(in srgb, var(--ac) 15%, transparent)' }} />
 
               <Btn label="7" onClick={() => input("7")} />
               <Btn label="8" onClick={() => input("8")} />
               <Btn label="9" onClick={() => input("9")} />
-              <Btn label="×" onClick={() => input("*")} cls="text-[var(--ac)] bg-[var(--ac)]/10 hover:bg-[var(--ac)]/20 text-2xl" />
+              <Btn label="×" onClick={() => input("*")} cls="text-[var(--ac)] text-2xl" style={{ background: 'color-mix(in srgb, var(--ac) 15%, transparent)' }} />
 
               <Btn label="4" onClick={() => input("4")} />
               <Btn label="5" onClick={() => input("5")} />
               <Btn label="6" onClick={() => input("6")} />
-              <Btn label="-" onClick={() => input("-")} cls="text-[var(--ac)] bg-[var(--ac)]/10 hover:bg-[var(--ac)]/20 text-3xl" />
+              <Btn label="-" onClick={() => input("-")} cls="text-[var(--ac)] text-3xl" style={{ background: 'color-mix(in srgb, var(--ac) 15%, transparent)' }} />
 
               <Btn label="1" onClick={() => input("1")} />
               <Btn label="2" onClick={() => input("2")} />
               <Btn label="3" onClick={() => input("3")} />
-              <Btn label="+" onClick={() => input("+")} cls="text-[var(--ac)] bg-[var(--ac)]/10 hover:bg-[var(--ac)]/20 text-2xl" />
+              <Btn label="+" onClick={() => input("+")} cls="text-[var(--ac)] text-2xl" style={{ background: 'color-mix(in srgb, var(--ac) 15%, transparent)' }} />
 
               <Btn label="±" onClick={() => input("±")} />
               <Btn label="0" onClick={() => input("0")} />
               <Btn label="." onClick={() => input(".")} cls="text-2xl" />
-              <Btn label="=" onClick={() => input("=")} cls="bg-gradient-to-br from-[var(--ac)] to-[#00a37a] text-black shadow-[0_0_15px_rgba(0,200,150,0.4)] hover:shadow-[0_0_25px_rgba(0,200,150,0.6)] text-3xl font-light scale-100 hover:scale-[1.02]" />
+              <Btn label="=" onClick={() => input("=")} cls="text-[var(--bg)] text-3xl font-light scale-100 hover:scale-[1.02]" style={{ background: 'var(--ac)', boxShadow: '0 0 20px color-mix(in srgb, var(--ac) 40%, transparent)' }} />
             </div>
-          </Card>
+          </div>
         </div>
 
         {/* History Panel */}
@@ -282,14 +283,14 @@ export default function CalculatorPage() {
               exit={{ opacity: 0, x: 20, width: 0 }}
               className="hidden lg:flex flex-col min-w-[300px]"
             >
-              <Card className="flex-1 flex flex-col p-0 overflow-hidden border-white/[0.05] bg-[#050A15]/60 backdrop-blur-md">
-                <div className="p-4 border-b border-white/[0.05] flex justify-between items-center bg-white/[0.02]">
-                  <span className="text-sm font-bold text-on-surface flex items-center gap-2">
+              <div className="flex-1 flex flex-col p-0 overflow-hidden rounded-3xl" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+                <div className="p-4 flex justify-between items-center" style={{ borderBottom: '1px solid var(--border)' }}>
+                  <span className="text-sm font-bold flex items-center gap-2" style={{ color: 'var(--text)' }}>
                     <span className="material-symbols-outlined text-[18px] text-[var(--ac)]">history</span>
                     Recent Calculations
                   </span>
                   {history.length > 0 && (
-                    <button onClick={() => { sfx.click(); setHistory([]); }} className="text-[10px] uppercase font-bold text-dim hover:text-red-400 transition-colors">Clear</button>
+                    <button onClick={() => { sfx.click(); setHistory([]); }} className="text-[10px] uppercase font-bold text-dim hover:text-[var(--clr-danger, #f87171)] transition-colors">Clear</button>
                   )}
                 </div>
                 <div className="flex-1 overflow-y-auto p-2 space-y-1">
@@ -303,15 +304,16 @@ export default function CalculatorPage() {
                       <button
                         key={item.id}
                         onClick={() => loadHistoryItem(item)}
-                        className="w-full text-right p-3 rounded-xl hover:bg-white/5 transition-all group border border-transparent hover:border-white/5 flex flex-col items-end gap-1"
+                        className="w-full text-right p-3 rounded-xl hover:brightness-125 transition-all group border flex flex-col items-end gap-1"
+                        style={{ border: '1px solid transparent' }}
                       >
-                        <div className="text-xs text-dim font-mono group-hover:text-on-surface transition-colors truncate w-full">{item.expr}</div>
+                        <div className="text-xs text-dim font-mono group-hover:text-[var(--text)] transition-colors truncate w-full">{item.expr}</div>
                         <div className="text-lg font-light text-[var(--ac)] font-mono">{item.result}</div>
                       </button>
                     ))
                   )}
                 </div>
-              </Card>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -337,9 +339,10 @@ export default function CalculatorPage() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="lg:hidden fixed bottom-0 left-0 right-0 z-50 h-[60vh] bg-[#0B132B] rounded-t-3xl border-t border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex flex-col"
+              className="lg:hidden fixed bottom-0 left-0 right-0 z-50 h-[60vh] rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex flex-col"
+              style={{ background: 'var(--bg)', borderTop: '1px solid var(--border)' }}
             >
-              <div className="p-4 border-b border-white/[0.05] flex justify-between items-center">
+              <div className="p-4 flex justify-between items-center" style={{ borderBottom: '1px solid var(--border)' }}>
                 <span className="text-sm font-bold text-on-surface">History</span>
                 <button onClick={() => setShowHistory(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-dim hover:text-white">
                   <span className="material-symbols-outlined text-lg">close</span>
@@ -353,7 +356,8 @@ export default function CalculatorPage() {
                     <button
                       key={item.id}
                       onClick={() => loadHistoryItem(item)}
-                      className="w-full text-right p-4 rounded-xl bg-white/5 active:bg-white/10 transition-all flex flex-col items-end gap-1"
+                      className="w-full text-right p-4 rounded-xl transition-all flex flex-col items-end gap-1 hover:brightness-125"
+                      style={{ background: 'var(--card2)' }}
                     >
                       <div className="text-xs text-dim font-mono truncate w-full">{item.expr}</div>
                       <div className="text-xl font-light text-[var(--ac)] font-mono">{item.result}</div>
@@ -369,11 +373,12 @@ export default function CalculatorPage() {
   );
 }
 
-function Btn({ label, onClick, cls = "" }) {
+function Btn({ label, onClick, cls = "", style = {} }) {
   return (
     <button
       onClick={onClick}
-      className={`h-full min-h-[3.5rem] rounded-[18px] flex items-center justify-center text-xl sm:text-2xl transition-all duration-200 active:scale-90 bg-white/5 hover:bg-white/10 text-on-surface ${cls}`}
+      className={`h-full min-h-[3.5rem] rounded-[18px] flex items-center justify-center text-xl sm:text-2xl transition-all duration-200 active:scale-90 hover:brightness-125 ${cls}`}
+      style={{ background: 'var(--card2)', color: 'var(--text)', ...style }}
     >
       {label}
     </button>
@@ -384,7 +389,8 @@ function SciBtn({ label, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="h-10 rounded-xl flex items-center justify-center text-[13px] sm:text-[14px] transition-all active:scale-90 bg-[#050A15]/50 hover:bg-white/10 text-dim hover:text-[var(--ac)] font-mono"
+      className="h-10 rounded-xl flex items-center justify-center text-[13px] sm:text-[14px] transition-all active:scale-90 hover:brightness-125 font-mono"
+      style={{ background: 'var(--bg)', color: 'var(--dim)' }}
     >
       {label}
     </button>

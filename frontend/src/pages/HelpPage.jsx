@@ -1,206 +1,194 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { sfx } from "../hooks/useSfx";
-import { useStats } from "../context/StatsContext";
+
+const FAQ = [
+  { cat: "Getting Started", icon: "rocket_launch", items: [
+    { q: "What is Cognit?", a: "Cognit is a premium student productivity platform that combines study tracking, music, pomodoro timers, notes, deadlines, and gamification into one beautiful experience." },
+    { q: "How do I track my study time?", a: "Use the Pomodoro timer on the Pomodoro page, or start the study timer from the Music player. Your study sessions are automatically logged and visible in Analytics." },
+    { q: "Is my data synced across devices?", a: "Yes! All your data is stored securely on our servers and syncs across any device where you're logged in." },
+  ]},
+  { cat: "Music & Focus", icon: "headphones", items: [
+    { q: "How does the music player work?", a: "Navigate to the Music page to choose from curated playlists or paste your own YouTube/SoundCloud URL. The persistent mini-player stays at the bottom of your screen." },
+    { q: "What are ambient sounds?", a: "Ambient sounds (rain, white noise, binaural beats, etc.) are generated in-browser using Web Audio API. They layer on top of music for enhanced focus." },
+    { q: "Can I create a queue?", a: "Yes! Click the 'Queue' button on any playlist card to add it to your queue. Tracks play sequentially when the current one ends." },
+  ]},
+  { cat: "Productivity", icon: "task_alt", items: [
+    { q: "How does the XP system work?", a: "You earn XP for completing tasks, study sessions, maintaining streaks, and hitting daily goals. XP unlocks new levels and badges." },
+    { q: "What are badges?", a: "Badges are achievement rewards for milestones like study streaks, total hours studied, and feature usage. Check the Achievements page to see all available badges." },
+    { q: "How do deadlines work?", a: "Add deadlines with due dates and priorities. They appear on your dashboard with urgency indicators and countdown timers." },
+  ]},
+  { cat: "Account & Settings", icon: "settings", items: [
+    { q: "How do I change themes?", a: "Go to Settings > Appearance to choose from 5 premium themes (Dark, Midnight, Forest, Ocean, Candy) and 8 accent colors. Changes apply instantly." },
+    { q: "Can I export my data?", a: "Yes, go to Settings > Account > Export Data to download all your information as a JSON file." },
+    { q: "How do I delete my account?", a: "Go to Settings > Account > Danger Zone. You'll need to confirm with your PIN before the account is permanently deleted." },
+    { q: "How do I reset my password?", a: "Go to Settings > Account > Change Password. Enter your current password and a new one (minimum 6 characters)." },
+  ]},
+  { cat: "Keyboard Shortcuts", icon: "keyboard", items: [
+    { q: "What shortcuts are available?", a: "Press Ctrl+K to open the Command Palette, or press ? to see all keyboard shortcuts. Common ones: Ctrl+K (Command Palette), / (Search), Ctrl+P (Pomodoro)." },
+    { q: "How do I use the Command Palette?", a: "Press Ctrl+K to open it, then type to search for any page, action, or setting. Press Enter to navigate or execute." },
+  ]},
+];
+
+function FAQItem({ item, isOpen, onToggle }) {
+  return (
+    <motion.div layout className="rounded-xl overflow-hidden transition-all"
+      style={{ border: '1px solid var(--border)', background: isOpen ? 'color-mix(in srgb, var(--ac) 3%, transparent)' : 'var(--card)' }}>
+      <button onClick={onToggle}
+        className="w-full flex items-center justify-between p-4 text-left transition-colors hover:bg-white/[.03]">
+        <span className="text-sm font-semibold pr-4" style={{ color: isOpen ? 'var(--ac)' : 'var(--text)' }}>{item.q}</span>
+        <motion.span animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}
+          className="material-symbols-outlined text-lg flex-shrink-0" style={{ color: 'var(--muted)' }}>
+          expand_more
+        </motion.span>
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}>
+            <div className="px-4 pb-4 text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>
+              {item.a}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
 
 export default function HelpPage() {
-  const { stats } = useStats();
-  const [activeTab, setActiveTab] = useState("xp");
+  const [search, setSearch] = useState("");
+  const [openId, setOpenId] = useState(null);
+  const [activeCat, setActiveCat] = useState(null);
 
-  const tabs = [
-    { id: "xp", icon: "bolt", label: "XP & Leveling", color: "#00C896" },
-    { id: "badges", icon: "workspace_premium", label: "Badges & Rewards", color: "#8b5cf6" },
-    { id: "social", icon: "group", label: "Friends & Sharing", color: "#3b82f6" },
-    { id: "tools", icon: "apps", label: "Platform Tools", color: "#f59e0b" }
-  ];
+  const filtered = useMemo(() => {
+    if (!search.trim() && !activeCat) return FAQ;
+    return FAQ.map(cat => ({
+      ...cat,
+      items: cat.items.filter(item =>
+        (!search.trim() || item.q.toLowerCase().includes(search.toLowerCase()) || item.a.toLowerCase().includes(search.toLowerCase())) &&
+        (!activeCat || activeCat === cat.cat)
+      )
+    })).filter(cat => cat.items.length > 0);
+  }, [search, activeCat]);
 
-  const renderContent = () => {
-    switch(activeTab) {
-      case "xp":
-        return (
-          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-10}} className="space-y-6">
-            <div className="glass-card p-6 border-l-4" style={{borderColor: "#00C896"}}>
-              <h3 className="text-xl font-bold text-on-surface mb-2 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#00C896]">bolt</span>
-                How to Earn XP
-              </h3>
-              <p className="text-muted text-sm leading-relaxed mb-4">
-                XP (Experience Points) measures your productivity. You earn XP by engaging in productive activities on Cognit. Every action contributes to your overall level!
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {[
-                  { act: "Complete a Pomodoro session", pts: "+50 XP" },
-                  { act: "Finish a checklist item", pts: "+10 XP" },
-                  { act: "Add a new note", pts: "+5 XP" },
-                  { act: "Daily login streak", pts: "+XP Multiplier" }
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center justify-between bg-white/5 p-3 rounded-lg border border-white/5">
-                    <span className="text-sm text-dim">{item.act}</span>
-                    <span className="text-sm font-bold text-[#00C896]">{item.pts}</span>
-                  </div>
-                ))}
-              </div>
-
-
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="glass-card p-6">
-                <h4 className="font-bold text-on-surface mb-2 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#00C896]">moving</span>
-                  Leveling Up
-                </h4>
-                <p className="text-sm text-muted">
-                  Every 1000 XP, you level up. Higher levels unlock new avatar borders and profile themes. 
-                  Currently, you are Level <span className="font-bold text-[#00C896]">{Math.floor((stats?.xp || 0) / 1000) + 1}</span> with <span className="font-bold text-[#00C896]">{stats?.xp || 0} XP</span>.
-                </p>
-              </div>
-              <div className="glass-card p-6">
-                <h4 className="font-bold text-on-surface mb-2 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#f97316]">local_fire_department</span>
-                  Daily Streaks
-                </h4>
-                <p className="text-sm text-muted">
-                  Logging in and completing at least one task or pomodoro session every day increases your streak. 
-                  Higher streaks multiply the XP you earn from all activities!
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        );
-      case "badges":
-        return (
-          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-10}} className="space-y-6">
-            <div className="glass-card p-6 border-l-4" style={{borderColor: "#8b5cf6"}}>
-              <h3 className="text-xl font-bold text-on-surface mb-2 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#8b5cf6]">workspace_premium</span>
-                Achievements & Badges
-              </h3>
-              <p className="text-muted text-sm leading-relaxed mb-4">
-                Badges are special milestones you unlock by hitting specific goals. They are displayed permanently on your profile.
-              </p>
-              <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
-                {[
-                  { icon: "local_fire_department", name: "On Fire", desc: "Reach a 7-day streak", col: "#f97316" },
-                  { icon: "timer", name: "Deep Focus", desc: "Complete 100 Pomodoros", col: "#00C896" },
-                  { icon: "edit_note", name: "Scholar", desc: "Write 50 notes", col: "#3b82f6" },
-                  { icon: "star", name: "Elite", desc: "Reach Level 50", col: "#eab308" }
-                ].map((b, i) => (
-                  <div key={i} className="min-w-[140px] flex-shrink-0 bg-white/5 rounded-xl p-4 text-center border border-white/5 flex flex-col items-center gap-2 hover:bg-white/10 transition-colors">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center mb-1" style={{background: `${b.col}20`, color: b.col}}>
-                      <span className="material-symbols-outlined text-2xl">{b.icon}</span>
-                    </div>
-                    <div className="text-sm font-bold text-on-surface">{b.name}</div>
-                    <div className="text-[10px] text-dim">{b.desc}</div>
-                  </div>
-                ))}
-              </div>
-
-
-            </div>
-          </motion.div>
-        );
-      case "social":
-        return (
-          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-10}} className="space-y-6">
-            <div className="glass-card p-6 border-l-4" style={{borderColor: "#3b82f6"}}>
-              <h3 className="text-xl font-bold text-on-surface mb-2 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#3b82f6]">group</span>
-                Friends & Social
-              </h3>
-              <p className="text-muted text-sm leading-relaxed mb-4">
-                Studying is better with friends. Connect with others to stay motivated and track each other's progress.
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-start gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
-                  <span className="material-symbols-outlined text-[#3b82f6] text-2xl mt-1">person_add</span>
-                  <div>
-                    <h4 className="text-sm font-bold text-on-surface">Adding Friends</h4>
-                    <p className="text-xs text-dim mt-1">Search for your friends using their exact email address in the Friends tab. Send a request, and once they accept, you're connected!</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
-                  <span className="material-symbols-outlined text-[#3b82f6] text-2xl mt-1">monitoring</span>
-                  <div>
-                    <h4 className="text-sm font-bold text-on-surface">Activity Visibility</h4>
-                    <p className="text-xs text-dim mt-1">Your friends can see your current Level, XP, and any Badges you've earned on their Friends dashboard. Use this for friendly competition!</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        );
-      case "tools":
-        return (
-          <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, y:-10}} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { i: "timer", t: "Pomodoro", d: "Use the built-in Pomodoro timer to focus. You can configure work, short break, and long break intervals in its settings." },
-              { i: "music_note", t: "Music", d: "Play lo-fi, classical, or ambient noises. Music persists across all pages using the floating mini-player." },
-              { i: "calendar_month", t: "Timetable & Calendar", d: "Organize your classes and daily schedule. Sync your deadlines to stay on top of your work." },
-              { i: "auto_awesome", t: "AI Chat", d: "Need help? Click the floating Premium AI Chat button on the bottom right to get instant tutoring or answers." }
-            ].map((t, i) => (
-              <div key={i} className="glass-card p-5 hover:bg-white/[0.08] transition-colors group cursor-pointer border border-white/5">
-                <span className="material-symbols-outlined text-[var(--ac)] text-3xl mb-3 group-hover:scale-110 transition-transform">{t.i}</span>
-                <h4 className="text-sm font-bold text-on-surface mb-1">{t.t}</h4>
-                <p className="text-xs text-dim leading-relaxed">{t.d}</p>
-              </div>
-            ))}
-            
-            <div className="md:col-span-2 glass-card p-5 border border-white/5">
-               <h4 className="text-sm font-bold text-on-surface mb-3 flex items-center gap-2">
-                 <span className="material-symbols-outlined text-[var(--ac)] text-xl">smart_display</span>
-                 How to use Pomodoro effectively
-               </h4>
-
-            </div>
-          </motion.div>
-        );
-      default: return null;
-    }
-  };
+  const totalResults = filtered.reduce((s, c) => s + c.items.length, 0);
 
   return (
     <div className="page-container max-w-4xl mx-auto">
-      <div className="mb-8 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold grad-text tracking-tight flex items-center justify-center sm:justify-start gap-3">
-            <span className="material-symbols-outlined text-[var(--ac)] text-4xl">help</span>
-            Platform Guide
-          </h1>
-          <p className="text-muted text-sm mt-2">Learn how to maximize your productivity on Cognit.</p>
+      {/* Header */}
+      <motion.div className="mb-8"
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="flex items-center gap-3 mb-1">
+          <span className="material-symbols-outlined text-3xl grad-text filled">help</span>
+          <h1 className="text-3xl font-extrabold grad-text tracking-tight">Help Center</h1>
         </div>
+        <p className="text-sm" style={{ color: 'var(--muted)' }}>Find answers to common questions</p>
+      </motion.div>
+
+      {/* Search */}
+      <motion.div className="mb-6" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <div className="relative">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-lg" style={{ color: 'var(--dim)' }}>search</span>
+          <input value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Search help topics..."
+            className="input-field pl-12 py-4 text-base" />
+          {search && (
+            <button onClick={() => setSearch("")}
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-white/10 transition-colors"
+              style={{ color: 'var(--dim)' }}>
+              <span className="material-symbols-outlined text-sm">close</span>
+            </button>
+          )}
+        </div>
+        {search && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            className="text-xs mt-2 ml-1" style={{ color: 'var(--muted)' }}>
+            {totalResults} result{totalResults !== 1 ? 's' : ''} found
+          </motion.div>
+        )}
+      </motion.div>
+
+      {/* Category Filters */}
+      <motion.div className="flex flex-wrap gap-2 mb-8"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
+        <button onClick={() => setActiveCat(null)}
+          className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+          style={!activeCat ? {
+            background: 'color-mix(in srgb, var(--ac) 12%, transparent)',
+            color: 'var(--ac)',
+            border: '1px solid color-mix(in srgb, var(--ac) 25%, transparent)',
+          } : {
+            background: 'var(--card)', color: 'var(--muted)', border: '1px solid var(--border)',
+          }}>
+          All
+        </button>
+        {FAQ.map(cat => (
+          <button key={cat.cat} onClick={() => setActiveCat(activeCat === cat.cat ? null : cat.cat)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+            style={activeCat === cat.cat ? {
+              background: 'color-mix(in srgb, var(--ac) 12%, transparent)',
+              color: 'var(--ac)',
+              border: '1px solid color-mix(in srgb, var(--ac) 25%, transparent)',
+            } : {
+              background: 'var(--card)', color: 'var(--muted)', border: '1px solid var(--border)',
+            }}>
+            <span className="material-symbols-outlined text-sm">{cat.icon}</span>
+            {cat.cat}
+          </button>
+        ))}
+      </motion.div>
+
+      {/* FAQ Sections */}
+      <div className="space-y-8">
+        {filtered.map((cat, ci) => (
+          <motion.div key={cat.cat}
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: ci * 0.05 }}>
+            <div className="flex items-center gap-2 mb-3 ml-1">
+              <span className="material-symbols-outlined text-lg" style={{ color: 'var(--ac)' }}>{cat.icon}</span>
+              <h2 className="text-base font-bold" style={{ color: 'var(--text)' }}>{cat.cat}</h2>
+              <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'var(--card2)', color: 'var(--dim)' }}>{cat.items.length}</span>
+            </div>
+            <div className="space-y-2">
+              {cat.items.map((item, ii) => {
+                const id = `${ci}-${ii}`;
+                return (
+                  <FAQItem key={id} item={item} isOpen={openId === id}
+                    onToggle={() => setOpenId(openId === id ? null : id)} />
+                );
+              })}
+            </div>
+          </motion.div>
+        ))}
+
+        {filtered.length === 0 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            className="text-center py-16 rounded-2xl"
+            style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+            <span className="material-symbols-outlined text-5xl mb-4 block" style={{ color: 'var(--dim)' }}>search_off</span>
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>No results for "{search}"</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--dim)' }}>Try a different search term</p>
+          </motion.div>
+        )}
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Sidebar Nav */}
-        <div className="w-full md:w-64 flex flex-row md:flex-col gap-2 overflow-x-auto no-scrollbar pb-2 md:pb-0">
-          {tabs.map(tab => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => { sfx.click(); setActiveTab(tab.id); }}
-                className={`flex-shrink-0 flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border
-                  ${isActive ? 'bg-white/10 text-white shadow-lg' : 'bg-transparent text-dim hover:bg-white/5 border-transparent'}
-                `}
-                style={isActive ? { borderColor: `${tab.color}50`, borderLeftWidth: '4px', borderLeftColor: tab.color } : {}}
-              >
-                <span className="material-symbols-outlined" style={{ color: isActive ? tab.color : 'inherit' }}>
-                  {tab.icon}
-                </span>
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Content Area */}
-        <div className="flex-1 min-w-0">
-          <AnimatePresence mode="wait">
-            {renderContent()}
-          </AnimatePresence>
-        </div>
-      </div>
+      {/* Contact */}
+      <motion.div className="mt-12 p-6 rounded-2xl text-center"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+        style={{ background: 'color-mix(in srgb, var(--ac) 5%, transparent)', border: '1px solid color-mix(in srgb, var(--ac) 15%, transparent)' }}>
+        <span className="material-symbols-outlined text-3xl mb-3 block" style={{ color: 'var(--ac)' }}>support_agent</span>
+        <h3 className="text-base font-bold mb-1" style={{ color: 'var(--text)' }}>Still need help?</h3>
+        <p className="text-xs mb-4" style={{ color: 'var(--muted)' }}>Reach out to us and we'll get back to you soon</p>
+        <a href="mailto:support@cognit.app"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all hover:brightness-110"
+          style={{ background: 'var(--ac)', color: 'var(--bg)', boxShadow: '0 4px 14px color-mix(in srgb, var(--ac) 30%, transparent)' }}>
+          <span className="material-symbols-outlined text-base">mail</span>
+          Contact Support
+        </a>
+      </motion.div>
     </div>
   );
 }

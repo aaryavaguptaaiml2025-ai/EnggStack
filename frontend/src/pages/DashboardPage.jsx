@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { useStats, BADGES, getLevel, LEVEL_NAMES, XP_THRESHOLDS } from "../context/StatsContext";
 import { useToast } from "../context/ToastContext";
@@ -8,6 +8,64 @@ import { api } from "../api";
 import { Card, ProgressBar, Badge } from "../components/ui";
 import XPBar from "../components/XPBar";
 import TodaysPlan from "../components/TodaysPlan";
+
+/* ── Ambient Background with floating particles ── */
+function AmbientBackground() {
+  const reduced = useReducedMotion();
+  if (reduced) return null;
+  const particles = Array.from({ length: 20 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    size: Math.random() * 3 + 1,
+    duration: Math.random() * 15 + 10,
+    delay: Math.random() * 10,
+    opacity: Math.random() * 0.3 + 0.1,
+  }));
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      {/* Gradient orbs */}
+      <motion.div
+        className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full blur-[160px]"
+        style={{ background: 'color-mix(in srgb, var(--ac) 6%, transparent)' }}
+        animate={{ x: [0, 30, -20, 0], y: [0, -40, 20, 0], scale: [1, 1.05, 0.95, 1] }}
+        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute -bottom-[20%] -right-[10%] w-[50%] h-[50%] rounded-full blur-[140px]"
+        style={{ background: 'color-mix(in srgb, var(--glow, #8b5cf6) 5%, transparent)' }}
+        animate={{ x: [0, -40, 30, 0], y: [0, 30, -40, 0], scale: [1, 0.95, 1.05, 1] }}
+        transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute top-[40%] left-[50%] w-[30%] h-[30%] rounded-full blur-[120px]"
+        style={{ background: 'color-mix(in srgb, var(--ac) 3%, transparent)' }}
+        animate={{ x: [0, 50, -30, 0], y: [0, -30, 50, 0] }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+      />
+      {/* Floating particles */}
+      {particles.map(p => (
+        <motion.div key={p.id}
+          className="absolute rounded-full"
+          style={{
+            left: `${p.x}%`, bottom: '-10px',
+            width: p.size, height: p.size,
+            background: 'var(--ac, #00C896)',
+            opacity: p.opacity,
+          }}
+          animate={{ y: [0, -window.innerHeight - 50], opacity: [0, p.opacity, p.opacity, 0] }}
+          transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: "linear" }}
+        />
+      ))}
+      {/* Light beam */}
+      <motion.div
+        className="absolute top-0 left-0 w-[200px] h-[200%] rotate-45 opacity-0"
+        style={{ background: 'linear-gradient(90deg, transparent, color-mix(in srgb, var(--ac) 4%, transparent), transparent)' }}
+        animate={{ x: ['-200px', '200vw'], opacity: [0, 0.06, 0] }}
+        transition={{ duration: 8, repeat: Infinity, repeatDelay: 12, ease: "linear" }}
+      />
+    </div>
+  );
+}
 
 /* ── Constants ── */
 const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -242,18 +300,30 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="page-container">
+    <div className="page-container relative">
+      <AmbientBackground />
       {/* ── Header ── */}
-      <div className="mb-6">
-        <div className="text-[11px] text-dim font-mono tracking-wider mb-2 uppercase">
+      <div className="mb-6 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-[11px] font-mono tracking-wider mb-2 uppercase"
+          style={{ color: 'var(--dim)' }}
+        >
           {new Date().toLocaleDateString("en-IN", {
             weekday: "long", year: "numeric", month: "long", day: "numeric",
           })}
-        </div>
+        </motion.div>
         <div className="flex items-center gap-3 mb-2 flex-wrap">
-          <h1 className="text-2xl md:text-[32px] font-extrabold text-on-surface tracking-tight leading-tight">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="text-2xl md:text-[32px] font-extrabold tracking-tight leading-tight grad-text"
+          >
             {greeting}, {user?.name?.split(" ")[0]}
-          </h1>
+          </motion.h1>
           {urgentDeadline && (
             <span className="inline-flex items-center gap-1.5 text-[11px] font-bold
               px-3 py-1.5 rounded-full bg-red-400/[0.08] text-red-400 border border-red-400/[0.15]

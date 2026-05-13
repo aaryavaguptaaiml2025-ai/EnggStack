@@ -5,7 +5,7 @@ import { usePomodoro } from "../context/PomodoroContext";
 import { Toast } from "../components/ui";
 import MovingBorderButton from "../components/ui/MovingBorderButton";
 
-const CLR = { focus: "#00C896", short: "#3b82f6", long: "#8b5cf6" };
+const CLR = { focus: "var(--ac)", short: "var(--clr-blue, #3b82f6)", long: "var(--clr-purple, #8b5cf6)" };
 const LBL = { focus: "Focus Session", short: "Short Break", long: "Long Break" };
 const STATUS = { focus: "FOCUS", short: "SHORT BREAK", long: "LONG BREAK" };
 
@@ -22,8 +22,8 @@ function PomodoroRing({ progress, timeStr, label, mode }) {
       <svg width={SIZE} height={SIZE} className="absolute" style={{ transform: "rotate(-90deg)" }}>
         <defs>
           <linearGradient id="ringGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#00C896" />
-            <stop offset="100%" stopColor="#00e6a0" />
+            <stop offset="0%" stopColor={CLR[mode]} />
+            <stop offset="100%" stopColor={CLR[mode]} style={{ filter: "brightness(1.2)" }} />
           </linearGradient>
         </defs>
         {/* Background track */}
@@ -31,7 +31,7 @@ function PomodoroRing({ progress, timeStr, label, mode }) {
           stroke="rgba(255,255,255,0.04)" strokeWidth={8} />
         {/* Glow ring */}
         <circle cx={SIZE/2} cy={SIZE/2} r={R} fill="none"
-          stroke="rgba(0,200,150,0.15)" strokeWidth={20}
+          stroke={`color-mix(in srgb, ${CLR[mode]} 25%, transparent)`} strokeWidth={20}
           strokeDasharray={circ} strokeDashoffset={offset}
           strokeLinecap="round"
           style={{
@@ -65,7 +65,7 @@ function XPToast({ xp, onDone }) {
   
   if (reduced) {
     return (
-      <div className="fixed bottom-8 right-8 z-[9999] text-[#00C896] font-extrabold text-2xl">
+      <div className="fixed bottom-8 right-8 z-[9999] font-extrabold text-2xl" style={{ color: 'var(--ac)' }}>
         +{xp} XP
       </div>
     );
@@ -136,8 +136,12 @@ export default function PomodoroPage() {
           return (
             <button key={m} onClick={() => sw(m)}
               className={`px-4 py-2 rounded-xl text-sm transition-all duration-200
-                ${active ? "font-semibold" : "glass-card text-muted hover:text-[var(--text)]"}`}
-              style={active ? { background: "var(--ac-dim, rgba(0,200,150,0.15))", border: "1px solid rgba(0,200,150,0.4)", color: "var(--ac)" } : {}}>
+                ${active ? "font-semibold" : "text-muted hover:text-[var(--text)]"}`}
+              style={{
+                background: active ? `color-mix(in srgb, ${CLR[m]} 15%, transparent)` : 'var(--card)',
+                border: active ? `1px solid color-mix(in srgb, ${CLR[m]} 40%, transparent)` : '1px solid var(--border)',
+                color: active ? CLR[m] : 'inherit'
+              }}>
               {label} {durations[m]}m
             </button>
           );
@@ -154,7 +158,7 @@ export default function PomodoroPage() {
         <MovingBorderButton
           onClick={toggleTimer}
           className="btn-primary px-10 py-3.5 rounded-full flex items-center justify-center gap-2 text-lg font-bold"
-          style={{ background: "var(--ac)", color: "#0B1220" }}
+          style={{ background: CLR[mode], color: "#0B1220" }}
         >
           <span className="material-symbols-outlined text-2xl">
             {run ? "pause" : "play_arrow"}
@@ -178,9 +182,9 @@ export default function PomodoroPage() {
           <div className="text-[32px] font-bold text-[var(--text)] leading-none">{stats.minsToday || 0}m</div>
           <div className="label-text mt-2 text-dim">Total Focus Time</div>
         </div>
-        <div className="glass-card p-5 text-center">
-          <div className="text-[32px] font-bold text-[var(--clr-streak)] leading-none">{stats.streak || 0}</div>
-          <div className="label-text mt-2 text-[var(--clr-streak)]">Current Streak</div>
+        <div className="p-5 text-center rounded-3xl" style={{ background: 'var(--card)' }}>
+          <div className="text-[32px] font-bold leading-none" style={{ color: 'var(--clr-streak, #f97316)' }}>{stats.streak || 0}</div>
+          <div className="label-text mt-2" style={{ color: 'var(--clr-streak, #f97316)' }}>Current Streak</div>
         </div>
       </div>
 

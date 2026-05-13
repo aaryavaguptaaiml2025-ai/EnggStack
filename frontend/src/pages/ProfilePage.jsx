@@ -1,226 +1,173 @@
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
-import { useStats, getLevel, LEVEL_NAMES, XP_THRESHOLDS, BADGES } from "../context/StatsContext";
+import { useStats, getLevel, LEVEL_NAMES, LEVEL_ICONS, XP_THRESHOLDS, BADGES } from "../context/StatsContext";
+import { Heatmap, ProgressBar } from "../components/ui";
 import { api } from "../api";
-import { Card, Btn, Toast, Spinner, ProgressBar } from "../components/ui";
-import { sfx } from "../hooks/useSfx";
-import SparklesWrapper from "../components/ui/SparklesWrapper";
-
-/* ── Avatar Upload Service ────────────────────────────────
- * Currently stores as base64. To switch to cloud storage (S3/Cloudinary),
- * replace uploadAvatar() with an API call that returns a URL.
- * The rest of the component uses `avatarUrl` generically.
- */
-async function uploadAvatar(file) {
-  return new Promise((resolve, reject) => {
-    if (file.size > 1024 * 1024) return reject(new Error("Image must be under 1MB"));
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result); // base64 string
-    reader.onerror = () => reject(new Error("Failed to read file"));
-    reader.readAsDataURL(file);
-  });
-}
 
 export default function ProfilePage() {
-  const { user, refreshUser, applyUser } = useAuth();
+  const { user } = useAuth();
   const { stats } = useStats();
-  const fileRef = useRef(null);
-  const [toast, setToast] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(user?.name || "");
-  const [username, setUsername] = useState(user?.username || "");
+  const [heatmap, setHeatmap] = useState({});
 
-  const avatar = user?.avatar || user?.googleAvatar;
-  const initials = user?.name?.split(" ").map(w => w[0]).join("").toUpperCase().slice(0,2) || "?";
+  useEffect(() => {
+    api.getHeatmap?.().then(setHeatmap).catch(() => {});
+  }, []);
+
   const lv = getLevel(stats.xp || 0);
   const lo = XP_THRESHOLDS[lv] || 0;
   const hi = XP_THRESHOLDS[lv + 1] || lo + 500;
+  const xpProgress = ((stats.xp || 0) - lo) / (hi - lo);
+
   const earnedBadges = BADGES.filter(b => b.check(stats));
+  const totalStudyHrs = Math.round((stats.totalStudyMins || 0) / 60);
+  const joinDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" }) : "N/A";
 
-  const toast_ok  = (msg) => { sfx.success(); setToast({ msg, color:"#00C896" }); };
-  const toast_err = (msg) => { sfx.error(); setToast({ msg, color:"#f87171" }); };
-
-  const handleAvatarChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setSaving(true);
-    try {
-      const avatarData = await uploadAvatar(file);
-      const updated = await api.updateProfile({ avatar: avatarData });
-      applyUser(updated);
-      await refreshUser();
-      toast_ok("Avatar updated!");
-    } catch(err) {
-      toast_err(err.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const saveProfile = async () => {
-    setSaving(true);
-    try {
-      const updated = await api.updateProfile({ name, username: username || undefined });
-      applyUser(updated);
-      await refreshUser();
-      setEditing(false);
-      toast_ok("Profile saved!");
-    } catch(e) { toast_err(e.message); }
-    finally { setSaving(false); }
-  };
-
-  const STAT_ITEMS = [
-    { icon:"bolt", label:"Total XP", value:stats.xp || 0, color:"#fbbf24" },
-    { icon:"local_fire_department", label:"Streak", value:`${stats.streak || 0}d`, color:"#f97316" },
-    { icon:"timer", label:"Pomodoros", value:stats.pomodoros || 0, color:"#f87171" },
-    { icon:"schedule", label:"Total Hours", value:`${Math.floor((stats.totalMins||0)/60)}h`, color:"#3b82f6" },
+  const statItems = [
+    { label: "Total XP", value: stats.xp || 0, icon: "star", color: "var(--ac)" },
+    { label: "Study Hours", value: totalStudyHrs, icon: "schedule", color: "#60a5fa" },
+    { label: "Current Streak", value: `${stats.streak || 0}d`, icon: "local_fire_department", color: "#f97316" },
+    { label: "Sessions", value: stats.totalSessions || 0, icon: "target", color: "#a78bfa" },
+    { label: "Badges", value: earnedBadges.length, icon: "military_tech", color: "#fbbf24" },
+    { label: "Level", value: lv + 1, icon: "workspace_premium", color: "#f472b6" },
   ];
 
   return (
-    <div className="page-container max-w-3xl">
-      {toast && <Toast msg={toast.msg} color={toast.color} onClose={()=>setToast(null)}/>}
+    <div className="page-container max-w-5xl mx-auto">
+      {/* Hero Header */}
+      <motion.div className="relative rounded-3xl overflow-hidden mb-8"
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+        
+        {/* Background gradient */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, color-mix(in srgb, var(--ac) 8%, transparent), transparent 60%)` }} />
+          <motion.div className="absolute -top-[30%] -right-[10%] w-[50%] h-[80%] rounded-full blur-[100px]"
+            style={{ background: 'color-mix(in srgb, var(--ac) 6%, transparent)' }}
+            animate={{ x: [0, 20, 0], y: [0, -10, 0] }}
+            transition={{ duration: 12, repeat: Infinity }}
+          />
+        </div>
 
-      {/* ── Hero Profile Card ── */}
-      <div className="hero-card p-8 mb-6 fade-up">
-        <div className="flex flex-col sm:flex-row items-center gap-6">
+        <div className="relative p-8 md:p-10 flex flex-col md:flex-row items-center gap-8">
           {/* Avatar */}
-          <div className="relative group">
-            <div className="w-24 h-24 rounded-full overflow-hidden border-[3px] border-[#00C896]/30
-              flex-shrink-0 bg-white/5 cursor-pointer"
-              onClick={() => fileRef.current?.click()}>
-              {avatar
-                ? <img src={avatar} alt="" className="w-full h-full object-cover"/>
-                : <div className="w-full h-full flex items-center justify-center
-                    text-2xl font-bold text-on-surface">{initials}</div>
-              }
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center
-                opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                <span className="material-symbols-outlined text-white text-lg">photo_camera</span>
-              </div>
+          <motion.div
+            initial={{ scale: 0 }} animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
+            className="relative">
+            <div className="w-24 h-24 rounded-full flex items-center justify-center text-4xl font-black relative"
+              style={{
+                background: `linear-gradient(135deg, var(--ac), color-mix(in srgb, var(--ac) 60%, #8b5cf6))`,
+                color: 'var(--bg)',
+                boxShadow: `0 0 30px color-mix(in srgb, var(--ac) 25%, transparent)`,
+              }}>
+              {user?.name?.[0]?.toUpperCase() || "?"}
+              {/* Level ring */}
+              <div className="absolute -inset-1 rounded-full border-2 glow-pulse" style={{ borderColor: 'var(--ac)' }} />
             </div>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden"
-              onChange={handleAvatarChange}/>
-            {saving && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Spinner size={20}/>
-              </div>
-            )}
-          </div>
+            <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center text-xs font-black"
+              style={{ background: 'var(--bg)', border: '2px solid var(--ac)', color: 'var(--ac)' }}>
+              {lv + 1}
+            </div>
+          </motion.div>
 
           {/* Info */}
-          <div className="flex-1 text-center sm:text-left">
-            {editing ? (
-              <div className="space-y-2 mb-3">
-                <input value={name} onChange={e=>setName(e.target.value)}
-                  className="bg-transparent text-xl font-extrabold text-on-surface outline-none
-                    border-b border-white/20 focus:border-[#00C896]/50 w-full transition-colors"
-                  placeholder="Your name"/>
-                <input value={username} onChange={e=>setUsername(e.target.value)}
-                  className="bg-transparent text-sm text-muted outline-none
-                    border-b border-white/20 focus:border-[#00C896]/50 w-full transition-colors"
-                  placeholder="@username"/>
-              </div>
-            ) : (
-              <>
-                <h1 className="text-2xl font-extrabold text-on-surface mb-0.5">{user?.name}</h1>
-                <div className="text-sm text-muted mb-1">@{user?.username || user?.email?.split("@")[0]}</div>
-              </>
-            )}
-            <SparklesWrapper count={7} colors={["#f59e0b", "#8b5cf6"]}>
-              <div className="flex items-center gap-2 justify-center sm:justify-start mb-3
-                px-3 py-1.5 rounded-full bg-[#8b5cf6]/10 border border-[#8b5cf6]/20">
-                <span className="material-symbols-outlined text-[#8b5cf6] text-base filled">workspace_premium</span>
-                <span className="text-xs font-bold text-[#8b5cf6]">Level {lv+1} — {LEVEL_NAMES[lv]}</span>
-              </div>
-            </SparklesWrapper>
-            <div className="flex gap-2 justify-center sm:justify-start">
-              {editing ? (
-                <>
-                  <Btn color="#00C896" size="sm" onClick={saveProfile} disabled={saving}>
-                    {saving ? "Saving..." : "Save"}
-                  </Btn>
-                  <Btn variant="ghost" size="sm" onClick={()=>{setEditing(false);setName(user?.name||"");setUsername(user?.username||"");}}>
-                    Cancel
-                  </Btn>
-                </>
-              ) : (
-                <Btn color="#3b82f6" size="sm" variant="outline" onClick={()=>setEditing(true)}>
-                  <span className="material-symbols-outlined text-sm mr-1">edit</span>Edit Profile
-                </Btn>
-              )}
+          <motion.div className="flex-1 text-center md:text-left"
+            initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+            <h1 className="text-2xl md:text-3xl font-extrabold mb-1 grad-text">{user?.name}</h1>
+            {user?.username && <p className="text-sm font-mono mb-1" style={{ color: 'var(--muted)' }}>@{user.username}</p>}
+            {user?.bio && <p className="text-sm mb-3" style={{ color: 'var(--muted)' }}>{user.bio}</p>}
+            
+            <div className="flex items-center gap-4 flex-wrap justify-center md:justify-start">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
+                style={{ background: 'color-mix(in srgb, var(--ac) 10%, transparent)', color: 'var(--ac)', border: '1px solid color-mix(in srgb, var(--ac) 20%, transparent)' }}>
+                <span className="material-symbols-outlined text-sm filled">{LEVEL_ICONS[lv] || "workspace_premium"}</span>
+                {LEVEL_NAMES[lv]}
+              </span>
+              <span className="text-xs" style={{ color: 'var(--dim)' }}>
+                <span className="material-symbols-outlined text-sm align-middle mr-1">calendar_today</span>
+                Joined {joinDate}
+              </span>
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* ── XP Progress ── */}
-      <Card className="mb-6 fade-up" style={{animationDelay:".1s"}}>
-        <div className="flex items-center gap-3 mb-3">
-          <span className="material-symbols-outlined text-[#8b5cf6] text-lg filled">workspace_premium</span>
-          <div>
-            <div className="text-sm font-bold text-on-surface">Level {lv+1} — {LEVEL_NAMES[lv]}</div>
-            <div className="text-[11px] text-muted">{stats.xp||0} / {hi} XP · {hi-(stats.xp||0)} to next level</div>
-          </div>
+            {/* XP Bar */}
+            <div className="mt-4 max-w-sm mx-auto md:mx-0">
+              <div className="flex justify-between mb-1.5">
+                <span className="text-[10px] font-mono" style={{ color: 'var(--dim)' }}>Level {lv + 1}</span>
+                <span className="text-[10px] font-mono" style={{ color: 'var(--ac)' }}>{stats.xp || 0} / {hi} XP</span>
+              </div>
+              <ProgressBar value={xpProgress * 100} max={100} color="var(--ac)" glow height={6} />
+            </div>
+          </motion.div>
         </div>
-        <ProgressBar value={(stats.xp||0)-lo} max={hi-lo} color="#8b5cf6" glow />
-      </Card>
+      </motion.div>
 
-      {/* ── Stats Grid ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        {STAT_ITEMS.map((s,i) => (
-          <Card key={i} className="fade-up text-center" style={{animationDelay:`${.15+i*.05}s`}}>
-            <span className="material-symbols-outlined text-2xl mb-2 block" style={{color:s.color}}>{s.icon}</span>
-            <div className="text-lg font-extrabold" style={{color:s.color}}>{s.value}</div>
-            <div className="text-[10px] text-muted mt-0.5">{s.label}</div>
-          </Card>
+      {/* Stats Grid */}
+      <motion.div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-8"
+        initial="hidden" animate="visible"
+        variants={{ visible: { transition: { staggerChildren: 0.05 } } }}>
+        {statItems.map((s, i) => (
+          <motion.div key={i}
+            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+            whileHover={{ y: -3, scale: 1.02 }}
+            className="stat-card text-center p-4">
+            <span className="material-symbols-outlined text-2xl mb-2 block filled" style={{ color: s.color }}>{s.icon}</span>
+            <div className="text-xl font-extrabold mb-0.5" style={{ color: 'var(--text)' }}>{s.value}</div>
+            <div className="text-[10px] font-medium uppercase tracking-wider" style={{ color: 'var(--dim)' }}>{s.label}</div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      {/* ── Badges ── */}
-      <Card className="mb-6 fade-up" style={{animationDelay:".35s"}}>
-        <div className="text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#fbbf24] filled">military_tech</span>
-          Earned Badges ({earnedBadges.length}/{BADGES.length})
+      {/* Heatmap */}
+      <motion.div className="glass-card p-6 mb-8"
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <div className="flex items-center gap-2 mb-4">
+          <span className="material-symbols-outlined text-lg" style={{ color: 'var(--ac)' }}>grid_view</span>
+          <h2 className="text-base font-bold" style={{ color: 'var(--text)' }}>Study Activity</h2>
+        </div>
+        <Heatmap data={heatmap} />
+      </motion.div>
+
+      {/* Badges */}
+      <motion.div className="glass-card p-6"
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-lg" style={{ color: '#fbbf24' }}>military_tech</span>
+            <h2 className="text-base font-bold" style={{ color: 'var(--text)' }}>Badges Earned</h2>
+          </div>
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
+            style={{ background: 'color-mix(in srgb, #fbbf24 10%, transparent)', color: '#fbbf24' }}>
+            {earnedBadges.length} / {BADGES.length}
+          </span>
         </div>
         {earnedBadges.length === 0 ? (
-          <div className="text-center py-5">
-            <span className="material-symbols-outlined text-dim text-3xl mb-2 block">emoji_events</span>
-            <div className="text-xs text-muted">No badges yet — keep studying!</div>
+          <div className="text-center py-8">
+            <span className="material-symbols-outlined text-4xl mb-3 block" style={{ color: 'var(--dim)' }}>emoji_events</span>
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>Complete tasks to earn your first badge!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {earnedBadges.map(b => (
-              <div key={b.id} className="p-3 rounded-xl flex gap-2 items-center"
-                style={{background:b.color+"0a", border:`1px solid ${b.color}25`}}>
-                <span className="material-symbols-outlined text-lg" style={{color:b.color}}>{b.icon}</span>
-                <div className="text-xs font-semibold" style={{color:b.color}}>{b.label}</div>
-              </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {earnedBadges.map((b, i) => (
+              <motion.div key={b.id}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.05 }}
+                whileHover={{ scale: 1.05, y: -3 }}
+                className="p-4 rounded-xl text-center"
+                style={{
+                  background: `${b.color}08`,
+                  border: `1px solid ${b.color}25`,
+                  boxShadow: `0 0 15px ${b.color}10`,
+                }}>
+                <div className="text-2xl mb-1">{b.icon}</div>
+                <div className="text-xs font-bold mb-0.5" style={{ color: 'var(--text)' }}>{b.name}</div>
+                <div className="text-[10px]" style={{ color: 'var(--dim)' }}>{b.desc}</div>
+              </motion.div>
             ))}
           </div>
         )}
-      </Card>
-
-      {/* ── Account Info ── */}
-      <Card className="fade-up" style={{animationDelay:".4s"}}>
-        <div className="text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#3b82f6]">info</span>
-          Account Details
-        </div>
-        <div className="space-y-3">
-          {[
-            {label:"Email", value:user?.email, icon:"mail"},
-            {label:"Login Methods", value:[user?.hasPassword&&"Password",user?.hasGoogle&&"Google"].filter(Boolean).join(", ")||"None", icon:"key"},
-          ].map((r,i) => (
-            <div key={i} className="flex items-center gap-3 py-2 border-b border-white/5">
-              <span className="material-symbols-outlined text-dim text-base">{r.icon}</span>
-              <span className="text-xs text-muted flex-1">{r.label}</span>
-              <span className="text-xs text-on-surface font-medium">{r.value}</span>
-            </div>
-          ))}
-        </div>
-      </Card>
+      </motion.div>
     </div>
   );
 }

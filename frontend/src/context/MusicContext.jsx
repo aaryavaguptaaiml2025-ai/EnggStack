@@ -43,6 +43,13 @@ export function MusicProvider({ children }) {
   const [progress,  setProgress]  = useState(0);
   const [duration,  setDuration]  = useState(0);
   const [seeking,   setSeeking]   = useState(false);
+  const [speed,     setSpeed]     = useState(1);
+  
+  const [queue,     setQueue]     = useState([]);
+  const [recentlyPlayed, setRecentlyPlayed] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("cognit-recent-music") || "[]"); } catch { return []; }
+  });
+  const [buffering, setBuffering] = useState(false);
   
   const [ambient,   setAmbient]   = useState("off");
   const [studyTime, setStudyTime] = useState(0);
@@ -134,6 +141,15 @@ export function MusicProvider({ children }) {
     playAmbient(id);
   };
 
+  const addToRecent = useCallback((item) => {
+    setRecentlyPlayed(prev => {
+      const filtered = prev.filter(r => r.id !== item.id && r.url !== item.url);
+      const updated = [item, ...filtered].slice(0, 10);
+      localStorage.setItem("cognit-recent-music", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   const handlePlaylist = (pl) => {
     setCustomLink(null);
     if (activePL?.id === pl.id) {
@@ -141,8 +157,26 @@ export function MusicProvider({ children }) {
     } else {
       setActivePL(pl);
       setPlaying(true);
+      addToRecent({ id: pl.id, name: pl.name, url: pl.url, color: pl.color });
     }
   };
+
+  const addToQueue = (pl) => {
+    setQueue(prev => [...prev, pl]);
+  };
+
+  const playNext = useCallback(() => {
+    if (queue.length > 0) {
+      const [next, ...rest] = queue;
+      setQueue(rest);
+      setActivePL(next);
+      setCustomLink(null);
+      setPlaying(true);
+      addToRecent({ id: next.id, name: next.name, url: next.url, color: next.color });
+    } else {
+      setPlaying(false);
+    }
+  }, [queue, addToRecent]);
 
   const playCustom = (url) => {
     if (!url || typeof url !== 'string') return false;
@@ -168,9 +202,10 @@ export function MusicProvider({ children }) {
   return (
     <MusicCtx.Provider value={{
       activePL, playing, ambient, studyTime, timerOn, customLink, currentUrl,
-      volume, muted, progress, duration, seeking,
+      volume, muted, progress, duration, seeking, speed, queue, recentlyPlayed, buffering,
       setTimerOn, setStudyTime, setPlaying, setVolume, setMuted, setProgress, setSeeking,
-      handlePlaylist, handleAmbient, playCustom, stopAll, playerRef
+      setSpeed, setQueue, setBuffering,
+      handlePlaylist, handleAmbient, playCustom, stopAll, playerRef, addToQueue, playNext
     }}>
       {children}
       <PersistentPlayer />
@@ -181,12 +216,13 @@ export function MusicProvider({ children }) {
 function PersistentPlayer() {
   const { 
     activePL, playing, customLink, currentUrl,
-    volume, muted, progress, duration, seeking,
-    setPlaying, setVolume, setMuted, setProgress, setSeeking,
-    stopAll, playerRef, ambient, timerOn, setTimerOn, studyTime 
+    volume, muted, progress, duration, seeking, speed, buffering,
+    setPlaying, setVolume, setMuted, setProgress, setSeeking, setSpeed, setBuffering,
+    stopAll, playerRef, ambient, timerOn, setTimerOn, studyTime, playNext
   } = useMusic();
 
   const [isExpanded, setIsExpanded] = useState(true);
+  const [showSpeed, setShowSpeed] = useState(false);
 
   const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2,"0")}:${String(Math.floor(s % 60)).padStart(2,"0")}`;
   const fmtStudy = (s) => `${String(Math.floor(s / 3600)).padStart(2,"0")}:${String(Math.floor((s % 3600) / 60)).padStart(2,"0")}:${String(s % 60).padStart(2,"0")}`;
@@ -221,14 +257,18 @@ function PersistentPlayer() {
             playing={playing}
             volume={volume}
             muted={muted}
+            playbackRate={speed}
             onProgress={({ played }) => {
               if (!seeking) setProgress(played);
             }}
             onDuration={(d) => setDuration(d)}
-            onEnded={() => setPlaying(false)}
+            onEnded={() => playNext()}
+            onBuffer={() => setBuffering(true)}
+            onBufferEnd={() => setBuffering(false)}
+            onReady={() => setBuffering(false)}
             width="0"
             height="0"
-            config={{ youtube: { playerVars: { autoplay: 1 } } }}
+            config={{ youtube: { playerVars: { autoplay: 1, origin: window.location.origin } } }}
           />
         </div>
       )}
@@ -242,14 +282,22 @@ function PersistentPlayer() {
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             className="fixed bottom-0 left-0 right-0 z-[1000] flex justify-center pb-6 px-4 pointer-events-none"
           >
-            <div className={`pointer-events-auto bg-[#0B1220]/80 backdrop-blur-2xl border border-[#00C896]/20 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.1)] transition-all duration-300 ${isExpanded ? 'w-full max-w-3xl' : 'w-auto'}`}>
+            <div className={`pointer-events-auto backdrop-blur-2xl rounded-2xl transition-all duration-300 ${isExpanded ? 'w-full max-w-3xl' : 'w-auto'}`}
+              style={{
+                background: 'color-mix(in srgb, var(--bg, #0B1220) 85%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--ac) 20%, transparent)',
+                boxShadow: `0 10px 40px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1), 0 0 30px color-mix(in srgb, var(--ac) 8%, transparent)`,
+              }}>
               
-              {/* Progress Bar (Only show if playing media and expanded) */}
+              {/* Progress Bar */}
               {hasMedia && isExpanded && (
-                <div className="absolute top-0 left-0 right-0 h-1 bg-white/5 rounded-t-2xl overflow-hidden group cursor-pointer"
+                <div className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl overflow-hidden group cursor-pointer"
+                  style={{ background: 'rgba(255,255,255,0.05)' }}
                   onMouseDown={handleSeekMouseDown} onMouseUp={handleSeekMouseUp} onMouseLeave={() => setSeeking(false)}>
-                  <div className="h-full bg-gradient-to-r from-[#00C896] to-[#00f2fe] relative transition-all duration-100" style={{ width: `${progress * 100}%` }}>
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-[0_0_10px_#00C896] scale-0 group-hover:scale-100 transition-transform"/>
+                  <div className="h-full relative transition-all duration-100"
+                    style={{ width: `${progress * 100}%`, background: `linear-gradient(90deg, var(--ac), color-mix(in srgb, var(--ac) 60%, #00f2fe))` }}>
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full scale-0 group-hover:scale-100 transition-transform"
+                      style={{ boxShadow: '0 0 10px var(--ac)' }}/>
                   </div>
                   <input type="range" min={0} max={0.999999} step="any" value={progress}
                     onChange={handleSeekChange}
@@ -272,13 +320,18 @@ function PersistentPlayer() {
                     </div>
                   )}
                   <div className="flex flex-col overflow-hidden">
-                    <span className="text-white font-bold text-sm truncate flex items-center gap-2">
+                    <span className="font-bold text-sm truncate flex items-center gap-2" style={{ color: 'var(--text)' }}>
                       {title}
-                      {playing && <span className="w-1.5 h-1.5 rounded-full bg-[#00C896] animate-pulse" />}
+                      {playing && !buffering && (
+                        <span className="flex items-end gap-[2px] h-3">
+                          {[1,2,3,4].map(i => <span key={i} className="equalizer-bar" />)}
+                        </span>
+                      )}
+                      {buffering && <span className="inline-block w-3 h-3 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: 'var(--ac)' }} />}
                     </span>
-                    <span className="text-[#8892a8] text-xs font-mono mt-0.5 truncate flex items-center gap-2">
+                    <span className="text-xs font-mono mt-0.5 truncate flex items-center gap-2" style={{ color: 'var(--muted)' }}>
                       {hasMedia ? `${fmt(progress * duration)} / ${fmt(duration)}` : "Ambient Noise"}
-                      {timerOn && <span className="text-[#00C896] ml-2">| Study: {fmtStudy(studyTime)}</span>}
+                      {timerOn && <span className="ml-2" style={{ color: 'var(--ac)' }}>| Study: {fmtStudy(studyTime)}</span>}
                     </span>
                   </div>
                 </div>
@@ -292,7 +345,12 @@ function PersistentPlayer() {
                       </button>
                     )}
                     <button 
-                      className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]"
+                      className="w-12 h-12 rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
+                      style={{
+                        background: 'var(--ac)',
+                        color: 'var(--bg)',
+                        boxShadow: `0 0 20px color-mix(in srgb, var(--ac) 30%, transparent)`,
+                      }}
                       onClick={() => setPlaying(!playing)}
                     >
                       <span className="material-symbols-outlined text-3xl ml-0.5">
@@ -327,20 +385,51 @@ function PersistentPlayer() {
                             setVolume(Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)));
                           }
                         }}>
-                        <div className="h-full bg-gradient-to-r from-[#00C896] to-[#00f2fe] rounded-full pointer-events-none" style={{ width: `${muted ? 0 : volume * 100}%` }} />
+                        <div className="h-full rounded-full pointer-events-none" style={{ width: `${muted ? 0 : volume * 100}%`, background: `linear-gradient(90deg, var(--ac), color-mix(in srgb, var(--ac) 60%, #00f2fe))` }} />
                       </div>
                     </div>
                     
-                    <div className="w-px h-6 bg-white/10 mx-1" />
+                    <div className="w-px h-6 mx-1" style={{ background: 'var(--border)' }} />
+                    
+                    {/* Playback Speed */}
+                    <div className="relative">
+                      <button onClick={() => setShowSpeed(!showSpeed)}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center transition-all text-xs font-bold"
+                        style={{ color: speed !== 1 ? 'var(--ac)' : 'var(--muted)', background: speed !== 1 ? 'color-mix(in srgb, var(--ac) 10%, transparent)' : 'transparent' }}
+                        title="Playback Speed">
+                        {speed}x
+                      </button>
+                      <AnimatePresence>
+                        {showSpeed && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+                            className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 p-2 rounded-xl flex flex-col gap-1 z-50"
+                            style={{ background: 'var(--bg2)', border: '1px solid var(--border)' }}>
+                            {[0.5, 0.75, 1, 1.25, 1.5, 2].map(s => (
+                              <button key={s} onClick={() => { setSpeed(s); setShowSpeed(false); }}
+                                className="px-3 py-1 rounded-lg text-xs font-semibold transition-all hover:bg-white/10 whitespace-nowrap"
+                                style={{ color: speed === s ? 'var(--ac)' : 'var(--text)' }}>
+                                {s}x
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                     
                     <button onClick={() => setTimerOn(t => !t)}
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${timerOn ? 'bg-[#f87171]/20 text-[#f87171]' : 'text-[#8892a8] hover:text-white hover:bg-white/10'}`}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all`}
+                      style={{
+                        color: timerOn ? 'var(--clr-danger, #f87171)' : 'var(--muted)',
+                        background: timerOn ? 'rgba(248,113,113,0.1)' : 'transparent',
+                      }}
                       title={timerOn ? "Pause Study Timer" : "Start Study Timer"}>
                       <span className="material-symbols-outlined text-sm">{timerOn ? "timer_pause" : "timer"}</span>
                     </button>
                     
                     <button onClick={stopAll}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-[#8892a8] hover:text-[#f87171] hover:bg-white/10 transition-colors"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
+                      style={{ color: 'var(--muted)' }}
                       title="Close Player">
                       <span className="material-symbols-outlined text-sm">close</span>
                     </button>

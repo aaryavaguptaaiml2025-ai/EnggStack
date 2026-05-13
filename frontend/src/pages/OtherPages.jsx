@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { api } from "../api";
 import { Card, Modal, Input, Btn, Badge, Toast, Spinner, Tabs, ProgressBar } from "../components/ui";
 import { sfx } from "../hooks/useSfx";
@@ -47,7 +48,7 @@ export function DeadlinesPage() {
   };
   const urgencyColor = (d) => {
     const diff = Math.ceil((new Date(d) - Date.now()) / 86400000);
-    return diff < 0 ? "#ef4444" : diff <= 1 ? "#f87171" : diff <= 3 ? "#fbbf24" : "#00C896";
+    return diff < 0 ? "var(--clr-danger, #ef4444)" : diff <= 1 ? "var(--clr-danger, #f87171)" : diff <= 3 ? "var(--clr-warning, #fbbf24)" : "var(--ac)";
   };
 
   const pending = items.filter(x => !x.done);
@@ -56,80 +57,83 @@ export function DeadlinesPage() {
   return (
     <div className="page-container">
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={() => setToast(null)} />}
-      <div className="flex justify-between items-center mb-8">
+      <motion.div className="flex justify-between items-center mb-8" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}}>
         <div>
-          <h1 className="section-title">Deadlines</h1>
-          <p className="text-xs text-muted mt-1">Track your upcoming tasks and submissions</p>
+          <div className="flex items-center gap-3 mb-1">
+            <span className="material-symbols-outlined text-3xl grad-text filled">event_available</span>
+            <h1 className="text-3xl font-extrabold grad-text tracking-tight">Deadlines</h1>
+          </div>
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>Track your upcoming tasks and submissions</p>
         </div>
-        <Btn color="#fbbf24" onClick={() => setModal(true)}>
+        <Btn color="var(--ac)" onClick={() => setModal(true)}>
           <span className="material-symbols-outlined text-base">add</span> Add Deadline
         </Btn>
-      </div>
+      </motion.div>
 
       {loading ? (
         <div className="text-center py-20"><Spinner /></div>
       ) : items.length === 0 ? (
-        <Card className="text-center py-16">
-          <span className="material-symbols-outlined text-5xl text-dim mb-4 block">event_available</span>
-          <div className="text-muted text-sm mb-4">No deadlines! Add one to stay on track.</div>
-          <Btn color="#fbbf24" onClick={() => setModal(true)}>
+        <motion.div initial={{opacity:0}} animate={{opacity:1}} className="text-center py-16 rounded-3xl" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+          <span className="material-symbols-outlined text-5xl mb-4 block" style={{ color: 'var(--dim)' }}>event_available</span>
+          <div className="text-sm mb-4" style={{ color: 'var(--muted)' }}>No deadlines! Add one to stay on track.</div>
+          <Btn color="var(--ac)" onClick={() => setModal(true)}>
             <span className="material-symbols-outlined text-base">add</span> Add Deadline
           </Btn>
-        </Card>
+        </motion.div>
       ) : (
-        <>
-          {pending.length > 0 && (
-            <div className="mb-6">
-              <div className="label-text mb-3 ml-1">Pending ({pending.length})</div>
-              <div className="space-y-2">
-                {pending.map(it => (
-                  <div key={it._id} className="fade-up glass-card flex items-center gap-4 p-5
-                    hover:bg-white/[.08] transition-all duration-200"
-                    style={{ borderLeft:`3px solid ${urgencyColor(it.dueDate)}` }}>
-                    <div onClick={() => toggle(it)}
-                      className="w-5 h-5 rounded-full border-2 cursor-pointer flex-shrink-0
-                        hover:scale-110 transition-transform duration-200"
-                      style={{borderColor:urgencyColor(it.dueDate)}}/>
-                    <div className="flex-1">
-                      <div className="text-sm font-semibold text-on-surface">{it.title}</div>
-                      {it.subject && <div className="text-xs text-muted mt-0.5">{it.subject}</div>}
-                    </div>
-                    <Badge color={urgencyColor(it.dueDate)}>{daysLeft(it.dueDate)}</Badge>
-                    <div className="text-[11px] text-dim min-w-[80px] text-right">
-                      {new Date(it.dueDate).toLocaleDateString("en-IN")}
-                    </div>
-                    <button onClick={() => del(it._id)}
-                      className="text-dim hover:text-danger transition-colors duration-200 p-1">
-                      <span className="material-symbols-outlined text-lg">close</span>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+        <div className="max-w-4xl mx-auto">
+          <AnimatePresence>
+            {pending.length > 0 && (
+              <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} className="mb-6">
+                <div className="text-xs font-bold uppercase tracking-wider mb-3 ml-1" style={{ color: 'var(--text)' }}>Pending ({pending.length})</div>
+                <div className="space-y-2">
+                  {pending.map((it, i) => (
+                    <motion.div key={it._id} layout initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, scale:0.9}} transition={{delay: i * 0.05}}
+                      className="glass-card flex items-center gap-4 p-5 transition-all duration-200"
+                      style={{ borderLeft:`3px solid ${urgencyColor(it.dueDate)}`, background: 'var(--card)' }}>
+                      <div onClick={() => toggle(it)}
+                        className="w-5 h-5 rounded-full border-2 cursor-pointer flex-shrink-0 hover:scale-110 transition-transform duration-200"
+                        style={{borderColor:urgencyColor(it.dueDate)}}/>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{it.title}</div>
+                        {it.subject && <div className="text-xs mt-0.5 truncate" style={{ color: 'var(--muted)' }}>{it.subject}</div>}
+                      </div>
+                      <Badge color={urgencyColor(it.dueDate)}>{daysLeft(it.dueDate)}</Badge>
+                      <div className="text-[11px] min-w-[80px] text-right" style={{ color: 'var(--dim)' }}>
+                        {new Date(it.dueDate).toLocaleDateString("en-IN")}
+                      </div>
+                      <button onClick={() => del(it._id)} className="p-1 transition-colors hover:brightness-150" style={{ color: 'var(--dim)' }}>
+                        <span className="material-symbols-outlined text-lg">close</span>
+                      </button>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
 
-          {done.length > 0 && (
-            <div>
-              <div className="label-text mb-3 ml-1 text-dim">Completed ({done.length})</div>
-              <div className="space-y-2">
-                {done.map(it => (
-                  <div key={it._id} className="flex items-center gap-4 p-3 bg-white/[.03] rounded-xl opacity-50">
-                    <div onClick={() => toggle(it)}
-                      className="w-5 h-5 rounded-full bg-[#00C896] cursor-pointer flex-shrink-0
-                        flex items-center justify-center">
-                      <span className="material-symbols-outlined text-black text-xs">check</span>
-                    </div>
-                    <span className="flex-1 text-sm text-muted line-through">{it.title}</span>
-                    <button onClick={() => del(it._id)}
-                      className="text-dim hover:text-danger transition-colors duration-200 p-1">
-                      <span className="material-symbols-outlined text-lg">close</span>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
+            {done.length > 0 && (
+              <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
+                <div className="text-xs font-bold uppercase tracking-wider mb-3 ml-1" style={{ color: 'var(--dim)' }}>Completed ({done.length})</div>
+                <div className="space-y-2">
+                  {done.map((it, i) => (
+                    <motion.div key={it._id} layout initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, scale:0.9}} transition={{delay: i * 0.05}}
+                      className="flex items-center gap-4 p-3 rounded-xl opacity-60 hover:opacity-100 transition-opacity" style={{ background: 'var(--card2)' }}>
+                      <div onClick={() => toggle(it)}
+                        className="w-5 h-5 rounded-full cursor-pointer flex-shrink-0 flex items-center justify-center"
+                        style={{ background: 'var(--ac)' }}>
+                        <span className="material-symbols-outlined text-xs" style={{ color: 'var(--bg)' }}>check</span>
+                      </div>
+                      <span className="flex-1 text-sm line-through truncate" style={{ color: 'var(--muted)' }}>{it.title}</span>
+                      <button onClick={() => del(it._id)} className="p-1 transition-colors hover:brightness-150" style={{ color: 'var(--dim)' }}>
+                        <span className="material-symbols-outlined text-lg">close</span>
+                      </button>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       )}
 
       {modal && (
@@ -138,21 +142,21 @@ export function DeadlinesPage() {
           <Input label="Subject (optional)" placeholder="e.g. Calculus" value={form.subject} onChange={e => setForm({...form, subject:e.target.value})} />
           <Input label="Due Date" type="date" value={form.dueDate} onChange={e => setForm({...form, dueDate:e.target.value})} />
           <div className="mb-4">
-            <div className="label-text mb-2 ml-1">Priority</div>
+            <div className="text-xs font-semibold mb-2 ml-1" style={{ color: 'var(--muted)' }}>Priority</div>
             <div className="flex gap-2">
               {["low","medium","high"].map(p => {
-                const c = {low:"#00C896",medium:"#fbbf24",high:"#f87171"}[p];
+                const c = {low:"var(--ac)",medium:"var(--clr-warning, #fbbf24)",high:"var(--clr-danger, #f87171)"}[p];
                 return <button key={p} onClick={() => setForm({...form, priority:p})}
                   className="flex-1 py-2 rounded-xl text-xs font-semibold capitalize transition-all duration-200"
                   style={{
-                    border:`1px solid ${form.priority===p?c+"44":"rgba(255,255,255,.05)"}`,
-                    background:form.priority===p?c+"0d":"transparent",
-                    color:form.priority===p?c:"#4a5568"
+                    border:`1px solid ${form.priority===p?`color-mix(in srgb, ${c} 40%, transparent)`:"var(--border)"}`,
+                    background:form.priority===p?`color-mix(in srgb, ${c} 10%, transparent)`:"transparent",
+                    color:form.priority===p?c:"var(--muted)"
                   }}>{p}</button>;
               })}
             </div>
           </div>
-          <Btn full color="#fbbf24" onClick={add}>Add Deadline</Btn>
+          <Btn full color="var(--ac)" onClick={add}>Add Deadline</Btn>
         </Modal>
       )}
     </div>
@@ -244,8 +248,8 @@ export function NotesPage() {
         @media (min-width: 769px) {
           .notes-layout { flex-direction: row !important; }
           .notes-list {
-            width: 300px !important;
-            border-right: 1px solid rgba(255,255,255,.1) !important;
+            width: 320px !important;
+            border-right: 1px solid var(--border) !important;
             border-bottom: none !important;
             height: 100% !important;
             max-height: none !important;
@@ -256,19 +260,18 @@ export function NotesPage() {
 
       <div className="notes-layout flex flex-1 overflow-hidden flex-col">
         {/* Note list */}
-        <div className="notes-list border-b border-white/10 flex flex-col flex-shrink-0 bg-[#0B1220] max-h-[40vh]">
-          <div className="p-4 pb-3 border-b border-white/10">
+        <div className="notes-list flex flex-col flex-shrink-0 max-h-[40vh]" style={{ background: 'var(--bg2)', borderBottom: '1px solid var(--border)' }}>
+          <div className="p-4 pb-3" style={{ borderBottom: '1px solid var(--border)' }}>
             <div className="flex justify-between items-center mb-3">
-              <span className="font-bold text-base text-on-surface">Notes</span>
+              <span className="font-bold text-base" style={{ color: 'var(--text)' }}>Notes</span>
               <button onClick={() => setModal(true)}
-                className="bg-[#00C896]/10 border border-[#00C896]/20 rounded-xl px-3 py-1.5
-                  text-[#00C896] text-xs font-semibold hover:bg-[#00C896]/15 transition-all duration-200">
+                className="rounded-xl px-3 py-1.5 text-xs font-semibold transition-all duration-200 flex items-center"
+                style={{ background: 'color-mix(in srgb, var(--ac) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--ac) 20%, transparent)', color: 'var(--ac)' }}>
                 <span className="material-symbols-outlined text-sm align-middle mr-1">add</span>New
               </button>
             </div>
             <div className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2
-                text-dim text-base">search</span>
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-base" style={{ color: 'var(--dim)' }}>search</span>
               <input value={search} onChange={e => setSearch(e.target.value)}
                 placeholder="Search notes..."
                 className="input-field pl-10 py-2.5 text-xs"/>
@@ -276,35 +279,36 @@ export function NotesPage() {
           </div>
           <div className="flex-1 overflow-y-auto px-2 py-1">
             {loading ? <div className="text-center py-6"><Spinner /></div> :
-             filtered.length === 0 ? <div className="text-dim text-xs text-center py-6">No notes found</div> :
+             filtered.length === 0 ? <div className="text-xs text-center py-6" style={{ color: 'var(--dim)' }}>No notes found</div> :
              filtered.map(n => (
               <div key={n._id} onClick={() => { setActive(n); setEditing(false); sfx.click(); }}
-                className={`p-3 rounded-xl cursor-pointer mb-1 transition-all duration-200
-                  ${active?._id===n._id
-                    ? "bg-[#00C896]/8 border border-[#00C896]/20"
-                    : "border border-transparent hover:bg-white/5"}`}>
-                <div className="text-sm font-semibold text-on-surface truncate mb-1">
-                  {n.pinned && <span className="material-symbols-outlined text-xs align-middle mr-1 text-[#00C896]">push_pin</span>}{n.title}
+                className={`p-3 rounded-xl cursor-pointer mb-1 transition-all duration-200`}
+                style={{
+                  background: active?._id === n._id ? 'color-mix(in srgb, var(--ac) 8%, transparent)' : 'transparent',
+                  border: `1px solid ${active?._id === n._id ? 'color-mix(in srgb, var(--ac) 20%, transparent)' : 'transparent'}`,
+                }}>
+                <div className="text-sm font-semibold truncate mb-1" style={{ color: 'var(--text)' }}>
+                  {n.pinned && <span className="material-symbols-outlined text-xs align-middle mr-1" style={{ color: 'var(--ac)' }}>push_pin</span>}{n.title}
                 </div>
-                <div className="text-[11px] text-muted truncate mb-1.5">
+                <div className="text-[11px] truncate mb-1.5" style={{ color: 'var(--muted)' }}>
                   {n.content?.slice(0,50) || "Empty note"}
                 </div>
                 <div className="flex justify-between items-center">
-                  {n.subject && <Badge color="#60a5fa">{n.subject}</Badge>}
-                  <span className="text-[10px] text-dim">{new Date(n.updatedAt).toLocaleDateString()}</span>
+                  {n.subject && <Badge color="var(--ac)">{n.subject}</Badge>}
+                  <span className="text-[10px]" style={{ color: 'var(--dim)' }}>{new Date(n.updatedAt).toLocaleDateString()}</span>
                 </div>
               </div>
             ))}
             {/* Section 4.4: Pagination controls */}
             {totalPages > 1 && (
-              <div className="flex justify-between items-center p-2 mt-2 border-t border-white/10">
+              <div className="flex justify-between items-center p-2 mt-2" style={{ borderTop: '1px solid var(--border)' }}>
                 <button disabled={page <= 1} onClick={() => load(page - 1)}
-                  className="text-xs text-muted hover:text-[var(--ac)] disabled:opacity-30 px-2 py-1">
+                  className="text-xs disabled:opacity-30 px-2 py-1 transition-colors" style={{ color: 'var(--muted)' }}>
                   ← Prev
                 </button>
-                <span className="text-[10px] text-dim">{page} / {totalPages}</span>
+                <span className="text-[10px]" style={{ color: 'var(--dim)' }}>{page} / {totalPages}</span>
                 <button disabled={page >= totalPages} onClick={() => load(page + 1)}
-                  className="text-xs text-muted hover:text-[var(--ac)] disabled:opacity-30 px-2 py-1">
+                  className="text-xs disabled:opacity-30 px-2 py-1 transition-colors" style={{ color: 'var(--muted)' }}>
                   Next →
                 </button>
               </div>
@@ -315,12 +319,12 @@ export function NotesPage() {
         {/* Editor pane */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {!active ? (
-            <div className="flex-1 flex items-center justify-center flex-col gap-4 text-dim">
+            <div className="flex-1 flex items-center justify-center flex-col gap-4" style={{ color: 'var(--dim)' }}>
               <span className="material-symbols-outlined text-5xl">edit_note</span>
               <div className="text-sm">Select a note or create a new one</div>
               <button onClick={() => setModal(true)}
-                className="bg-[#00C896]/10 border border-[#00C896]/20 rounded-xl px-6 py-3
-                  text-[#00C896] text-sm font-semibold hover:bg-[#00C896]/15 transition-all duration-200">
+                className="rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-200 flex items-center"
+                style={{ background: 'color-mix(in srgb, var(--ac) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--ac) 20%, transparent)', color: 'var(--ac)' }}>
                 <span className="material-symbols-outlined text-base align-middle mr-1">add</span>Create Note
               </button>
             </div>
@@ -330,25 +334,25 @@ export function NotesPage() {
                 <div className="flex-1">
                   {editing ? (
                     <input value={active.title} onChange={e => setActive({...active, title:e.target.value})}
-                      className="text-xl font-bold bg-transparent text-on-surface outline-none w-full"/>
+                      className="text-xl font-bold bg-transparent outline-none w-full" style={{ color: 'var(--text)' }}/>
                   ) : (
-                    <div className="text-xl font-bold text-on-surface">{active.title}</div>
+                    <div className="text-xl font-bold" style={{ color: 'var(--text)' }}>{active.title}</div>
                   )}
-                  <div className="text-[11px] text-dim mt-1">
+                  <div className="text-[11px] mt-1" style={{ color: 'var(--dim)' }}>
                     Updated {new Date(active.updatedAt || Date.now()).toLocaleString()}
                   </div>
                 </div>
                 <div className="flex gap-2 flex-shrink-0 ml-4">
                   {editing ? (
                     <>
-                      <Btn color="#00C896" size="sm" onClick={save}>Save</Btn>
+                      <Btn color="var(--ac)" size="sm" onClick={save}>Save</Btn>
                       <Btn variant="ghost" size="sm" onClick={() => setEditing(false)}>Cancel</Btn>
                     </>
                   ) : (
-                    <Btn color="#60a5fa" size="sm" variant="outline" onClick={() => setEditing(true)}>Edit</Btn>
+                    <Btn color="var(--ac)" size="sm" variant="outline" onClick={() => setEditing(true)}>Edit</Btn>
                   )}
-                  <Btn color="#00C896" size="sm" variant="outline" onClick={() => exportPDF(active._id)}>PDF</Btn>
-                  <Btn color="#f87171" size="sm" variant="outline" onClick={() => del(active._id)}>Delete</Btn>
+                  <Btn color="var(--ac)" size="sm" variant="outline" onClick={() => exportPDF(active._id)}>PDF</Btn>
+                  <Btn color="var(--clr-danger, #f87171)" size="sm" variant="outline" onClick={() => del(active._id)}>Delete</Btn>
                 </div>
               </div>
 
@@ -362,11 +366,11 @@ export function NotesPage() {
                 {editing ? (
                   <textarea value={active.content || ""} onChange={e => setActive({...active, content:e.target.value})}
                     placeholder="Start writing your notes here..."
-                    className="input-field h-full resize-none leading-7 text-sm"/>
+                    className="input-field h-full resize-none leading-7 text-sm" style={{ padding: '1rem' }}/>
                 ) : (
-                  <div className="h-full overflow-y-auto text-sm text-on-surface leading-7
-                    p-4 bg-white/[.03] rounded-2xl border border-white/10 whitespace-pre-wrap">
-                    {active.content || <span className="text-dim">Empty — click Edit to add content</span>}
+                  <div className="h-full overflow-y-auto text-sm leading-7 p-5 rounded-2xl whitespace-pre-wrap"
+                    style={{ background: 'var(--card)', border: '1px solid var(--border)', color: 'var(--text)' }}>
+                    {active.content || <span style={{ color: 'var(--dim)' }}>Empty — click Edit to add content</span>}
                   </div>
                 )}
               </div>
@@ -380,11 +384,11 @@ export function NotesPage() {
           <Input label="Topic" placeholder="e.g. Binary Search Trees" value={form.title} onChange={e => setForm({...form, title:e.target.value})} />
           <Input label="Subject (optional)" placeholder="e.g. Data Structures" value={form.subject} onChange={e => setForm({...form, subject:e.target.value})} />
           <div className="mb-4">
-            <div className="text-xs text-muted mb-1.5 font-medium ml-1">Content</div>
+            <div className="text-xs font-semibold mb-1.5 ml-1" style={{ color: 'var(--muted)' }}>Content</div>
             <textarea value={form.content} onChange={e => setForm({...form, content:e.target.value})} rows={5}
               className="input-field resize-none"/>
           </div>
-          <Btn full color="#00C896" onClick={add}>Create Note</Btn>
+          <Btn full color="var(--ac)" onClick={add}>Create Note</Btn>
         </Modal>
       )}
     </div>
@@ -424,75 +428,85 @@ export function ChecklistPage() {
   return (
     <div className="page-container">
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={() => setToast(null)} />}
-      <div className="mb-8">
-        <h1 className="section-title">Checklist</h1>
-        <p className="text-xs text-muted mt-1">Track your daily tasks</p>
-      </div>
-
-      <Card className="mb-6">
-        <div className="flex gap-3">
-          <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key==="Enter" && add()}
-            placeholder="Add a task... (press Enter)"
-            className="input-field flex-1"/>
-          <input value={sub} onChange={e => setSub(e.target.value)} placeholder="Subject"
-            className="input-field w-[120px]"/>
-          <Btn color="#00C896" onClick={add}>
-            <span className="material-symbols-outlined text-base">add</span> Add
-          </Btn>
+      <motion.div className="mb-8" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}}>
+        <div className="flex items-center gap-3 mb-1">
+          <span className="material-symbols-outlined text-3xl grad-text filled">task_alt</span>
+          <h1 className="text-3xl font-extrabold grad-text tracking-tight">Checklist</h1>
         </div>
-      </Card>
+        <p className="text-sm" style={{ color: 'var(--muted)' }}>Track your daily tasks</p>
+      </motion.div>
+
+      <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay:0.1}}>
+        <Card className="mb-6">
+          <div className="flex gap-3">
+            <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key==="Enter" && add()}
+              placeholder="Add a task... (press Enter)"
+              className="input-field flex-1"/>
+            <input value={sub} onChange={e => setSub(e.target.value)} placeholder="Subject"
+              className="input-field w-[120px]"/>
+            <Btn color="var(--ac)" onClick={add}>
+              <span className="material-symbols-outlined text-base">add</span> Add
+            </Btn>
+          </div>
+        </Card>
+      </motion.div>
 
       {loading ? <div className="text-center py-20"><Spinner /></div> : (
-        <>
+        <div className="max-w-4xl">
           {items.length > 0 && (
-            <div className="mb-5">
+            <motion.div initial={{opacity:0}} animate={{opacity:1}} className="mb-5">
               <div className="flex justify-between mb-2 px-1">
-                <span className="text-xs text-muted">{done.length} / {items.length} completed</span>
-                <span className="text-xs text-[#00C896] font-bold">{Math.round((done.length / items.length) * 100)}%</span>
+                <span className="text-xs" style={{ color: 'var(--muted)' }}>{done.length} / {items.length} completed</span>
+                <span className="text-xs font-bold" style={{ color: 'var(--ac)' }}>{Math.round((done.length / items.length) * 100)}%</span>
               </div>
-              <ProgressBar value={done.length} max={items.length} color="#00C896" glow />
-            </div>
+              <ProgressBar value={done.length} max={items.length} color="var(--ac)" glow />
+            </motion.div>
           )}
 
           <div className="space-y-2 mb-5">
-            {pending.map(it => (
-              <div key={it._id} className="fade-up glass-card flex items-center gap-3 p-5
-                hover:bg-white/[.08] transition-all duration-200">
-                <div onClick={() => toggle(it)}
-                  className="w-5 h-5 rounded-md border-2 border-[#00C896] cursor-pointer flex-shrink-0
-                    hover:bg-[#00C896]/15 transition-all duration-200"/>
-                <span className="flex-1 text-sm text-on-surface">{it.text}</span>
-                {it.subject && <Badge color="#60a5fa">{it.subject}</Badge>}
-                <button onClick={() => del(it._id)}
-                  className="text-dim hover:text-danger transition-colors duration-200 p-1">
-                  <span className="material-symbols-outlined text-lg">close</span>
-                </button>
-              </div>
-            ))}
+            <AnimatePresence>
+              {pending.map((it, i) => (
+                <motion.div key={it._id} layout initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, scale:0.9}} transition={{delay: i * 0.05}}
+                  className="glass-card flex items-center gap-3 p-5 transition-all duration-200"
+                  style={{ background: 'var(--card)' }}>
+                  <div onClick={() => toggle(it)}
+                    className="w-5 h-5 rounded-md border-2 cursor-pointer flex-shrink-0 transition-all duration-200"
+                    style={{ borderColor: 'var(--ac)' }}/>
+                  <span className="flex-1 text-sm truncate" style={{ color: 'var(--text)' }}>{it.text}</span>
+                  {it.subject && <Badge color="var(--ac)">{it.subject}</Badge>}
+                  <button onClick={() => del(it._id)}
+                    className="p-1 transition-colors hover:brightness-150" style={{ color: 'var(--dim)' }}>
+                    <span className="material-symbols-outlined text-lg">close</span>
+                  </button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
 
-          {done.length > 0 && (
-            <div>
-              <div className="label-text mb-3 ml-1 text-dim">Done ({done.length})</div>
-              <div className="space-y-2">
-                {done.map(it => (
-                  <div key={it._id} className="flex items-center gap-3 p-3 bg-white/[.03] rounded-xl opacity-50">
-                    <div onClick={() => toggle(it)}
-                      className="w-5 h-5 rounded-md bg-[#00C896] cursor-pointer flex-shrink-0
-                        flex items-center justify-center">
-                      <span className="material-symbols-outlined text-black text-xs">check</span>
-                    </div>
-                    <span className="flex-1 text-sm text-muted line-through">{it.text}</span>
-                    <button onClick={() => del(it._id)}
-                      className="text-dim hover:text-danger transition-colors duration-200">
-                      <span className="material-symbols-outlined text-lg">close</span>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </>
+          <AnimatePresence>
+            {done.length > 0 && (
+              <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
+                <div className="text-xs font-bold uppercase tracking-wider mb-3 ml-1" style={{ color: 'var(--dim)' }}>Done ({done.length})</div>
+                <div className="space-y-2">
+                  {done.map((it, i) => (
+                    <motion.div key={it._id} layout initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} exit={{opacity:0, scale:0.9}} transition={{delay: i * 0.05}}
+                      className="flex items-center gap-3 p-3 rounded-xl opacity-60 hover:opacity-100 transition-opacity" style={{ background: 'var(--card2)' }}>
+                      <div onClick={() => toggle(it)}
+                        className="w-5 h-5 rounded-md cursor-pointer flex-shrink-0 flex items-center justify-center"
+                        style={{ background: 'var(--ac)' }}>
+                        <span className="material-symbols-outlined text-xs" style={{ color: 'var(--bg)' }}>check</span>
+                      </div>
+                      <span className="flex-1 text-sm line-through truncate" style={{ color: 'var(--muted)' }}>{it.text}</span>
+                      <button onClick={() => del(it._id)} className="p-1 transition-colors hover:brightness-150" style={{ color: 'var(--dim)' }}>
+                        <span className="material-symbols-outlined text-lg">close</span>
+                      </button>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       )}
     </div>
   );
@@ -524,9 +538,9 @@ export function SubjectsPage() {
       await api.addSubject(form);
       sfx.success();
       setModal(false);
-      setForm({ name:"", color:"#60a5fa", totalTopics:0, icon:"menu_book" });
+      setForm({ name:"", color: "var(--ac)", totalTopics:0, icon:"menu_book" });
       load();
-    } catch(e) { sfx.error(); setToast({ msg:e.message, color:"#f87171" }); }
+    } catch(e) { sfx.error(); setToast({ msg:e.message, color:"var(--clr-danger, #f87171)" }); }
   };
   const inc = async (s) => {
     const d = Math.min(s.doneTopics + 1, s.totalTopics);
@@ -539,56 +553,60 @@ export function SubjectsPage() {
   return (
     <div className="page-container">
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={() => setToast(null)} />}
-      <div className="flex justify-between items-center mb-8">
+      <motion.div className="flex justify-between items-center mb-8" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}}>
         <div>
-          <h1 className="section-title">Subjects</h1>
-          <p className="text-xs text-muted mt-1">Track your syllabus coverage</p>
+          <div className="flex items-center gap-3 mb-1">
+            <span className="material-symbols-outlined text-3xl grad-text filled">library_books</span>
+            <h1 className="text-3xl font-extrabold grad-text tracking-tight">Subjects</h1>
+          </div>
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>Track your syllabus coverage</p>
         </div>
-        <Btn color="#60a5fa" onClick={() => setModal(true)}>
+        <Btn color="var(--ac)" onClick={() => setModal(true)}>
           <span className="material-symbols-outlined text-base">add</span> Add Subject
         </Btn>
-      </div>
+      </motion.div>
 
       {loading ? <div className="text-center py-20"><Spinner /></div> :
        subs.length === 0 ? (
-        <Card className="text-center py-16">
-          <span className="material-symbols-outlined text-5xl text-dim mb-4 block">library_books</span>
-          <div className="text-muted text-sm mb-4">No subjects yet</div>
-          <Btn color="#60a5fa" onClick={() => setModal(true)}>Add First Subject</Btn>
-        </Card>
+        <motion.div initial={{opacity:0}} animate={{opacity:1}} className="text-center py-16 rounded-3xl" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+          <span className="material-symbols-outlined text-5xl mb-4 block" style={{ color: 'var(--dim)' }}>library_books</span>
+          <div className="text-sm mb-4" style={{ color: 'var(--muted)' }}>No subjects yet</div>
+          <Btn color="var(--ac)" onClick={() => setModal(true)}>Add First Subject</Btn>
+        </motion.div>
        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {subs.map((s, i) => {
             const pct = s.totalTopics > 0 ? Math.round((s.doneTopics / s.totalTopics) * 100) : 0;
             const c = s.color || SC[i % SC.length];
             return (
-              <Card key={s._id} className="fade-up" style={{borderLeft:`3px solid ${c}`,animationDelay:`${i*.06}s`}}>
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-2xl" style={{color:c}}>
-                      {typeof s.icon === 'string' && s.icon.length <= 3 ? "menu_book" : (s.icon || "menu_book")}
-                    </span>
-                    <div className="text-base font-bold text-on-surface">{s.name}</div>
+              <motion.div key={s._id} initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} transition={{delay: i * 0.05}} whileHover={{y:-4}}>
+                <Card style={{borderLeft:`3px solid ${c}`}}>
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-2xl" style={{color:c}}>
+                        {typeof s.icon === 'string' && s.icon.length <= 3 ? "menu_book" : (s.icon || "menu_book")}
+                      </span>
+                      <div className="text-base font-bold truncate" style={{ color: 'var(--text)' }}>{s.name}</div>
+                    </div>
+                    <button onClick={() => del(s._id)} className="p-1 transition-colors hover:brightness-150" style={{ color: 'var(--dim)' }}>
+                      <span className="material-symbols-outlined text-lg">close</span>
+                    </button>
                   </div>
-                  <button onClick={() => del(s._id)}
-                    className="text-dim hover:text-danger transition-colors duration-200 p-1">
-                    <span className="material-symbols-outlined text-lg">close</span>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-xs" style={{ color: 'var(--muted)' }}>{s.doneTopics} / {s.totalTopics} topics</span>
+                    <span className="text-xs font-bold" style={{color:c}}>{pct}%</span>
+                  </div>
+                  <ProgressBar value={pct} max={100} color={c} glow />
+                  <button onClick={() => inc(s)} disabled={s.doneTopics >= s.totalTopics}
+                    className="mt-4 w-full rounded-xl py-2.5 text-xs font-semibold transition-all duration-200"
+                    style={{
+                      background: `color-mix(in srgb, ${c} 10%, transparent)`, border:`1px solid color-mix(in srgb, ${c} 25%, transparent)`, color:c,
+                      opacity: s.doneTopics >= s.totalTopics ? 0.5 : 1
+                    }}>
+                    {s.doneTopics >= s.totalTopics ? "All Done" : "+ Mark Topic Done"}
                   </button>
-                </div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-xs text-muted">{s.doneTopics} / {s.totalTopics} topics</span>
-                  <span className="text-xs font-bold" style={{color:c}}>{pct}%</span>
-                </div>
-                <ProgressBar value={pct} max={100} color={c} glow />
-                <button onClick={() => inc(s)} disabled={s.doneTopics >= s.totalTopics}
-                  className="mt-3 w-full rounded-xl py-2 text-xs font-semibold transition-all duration-200"
-                  style={{
-                    background:c+"0d", border:`1px solid ${c}25`, color:c,
-                    opacity:s.doneTopics>=s.totalTopics?.5:1
-                  }}>
-                  {s.doneTopics >= s.totalTopics ? "All Done" : "+ Mark Topic Done"}
-                </button>
-              </Card>
+                </Card>
+              </motion.div>
             );
           })}
         </div>
@@ -604,10 +622,10 @@ export function SubjectsPage() {
                 <button key={ic} onClick={() => setForm({...form, icon:ic})}
                   className="w-10 h-10 rounded-xl transition-all duration-200 flex items-center justify-center"
                   style={{
-                    background:form.icon===ic?"rgba(0,200,150,.1)":"rgba(255,255,255,.03)",
-                    border:`2px solid ${form.icon===ic?"#00C896":"rgba(255,255,255,.05)"}`
+                    background:form.icon===ic?"color-mix(in srgb, var(--ac) 15%, transparent)":"var(--card2)",
+                    border:`1px solid ${form.icon===ic?"var(--ac)":"var(--border)"}`
                   }}>
-                  <span className="material-symbols-outlined text-xl" style={{color:form.icon===ic?"#00C896":"#4a5568"}}>{ic}</span>
+                  <span className="material-symbols-outlined text-xl" style={{color:form.icon===ic?"var(--ac)":"var(--muted)"}}>{ic}</span>
                 </button>
               ))}
             </div>
@@ -669,53 +687,57 @@ export function TimetablePage() {
   return (
     <div className="page-container">
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={() => setToast(null)} />}
-      <div className="flex justify-between items-center mb-8">
+      <motion.div className="flex justify-between items-center mb-8" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}}>
         <div>
-          <h1 className="section-title">Timetable</h1>
-          <p className="text-xs text-muted mt-1">Your weekly class schedule</p>
+          <div className="flex items-center gap-3 mb-1">
+            <span className="material-symbols-outlined text-3xl grad-text filled">calendar_month</span>
+            <h1 className="text-3xl font-extrabold grad-text tracking-tight">Timetable</h1>
+          </div>
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>Your weekly class schedule</p>
         </div>
-        <Btn color="#60a5fa" onClick={() => setModal(true)}>
+        <Btn color="var(--ac)" onClick={() => setModal(true)}>
           <span className="material-symbols-outlined text-base">add</span> Add Class
         </Btn>
-      </div>
+      </motion.div>
 
       {loading ? <div className="text-center py-20"><Spinner /></div> : (
-        <div className="overflow-x-auto">
-          <div className="grid grid-cols-7 gap-3" style={{minWidth:600}}>
-            {DAYS.map(day => {
+        <motion.div initial={{opacity:0}} animate={{opacity:1}} className="overflow-x-auto pb-4">
+          <div className="grid grid-cols-7 gap-3" style={{minWidth:800}}>
+            {DAYS.map((day, di) => {
               const dayEntries = entries.filter(e => e.day === day).sort((a,b) => a.startTime.localeCompare(b.startTime));
               const isToday = day === todayShort;
               return (
-                <div key={day}>
-                  <div className={`text-center py-2 rounded-xl mb-2 text-sm font-medium transition-all duration-200
-                    ${isToday
-                      ? "bg-[#00C896]/10 border border-[#00C896]/20 text-[#00C896] font-bold"
-                      : "bg-white/5 border border-white/10 text-muted"}`}>
+                <motion.div key={day} initial={{opacity:0, y:20}} animate={{opacity:1, y:0}} transition={{delay: di * 0.05}}>
+                  <div className="text-center py-2 rounded-xl mb-3 text-sm font-semibold transition-all duration-200"
+                    style={{
+                      background: isToday ? 'color-mix(in srgb, var(--ac) 15%, transparent)' : 'var(--card)',
+                      border: isToday ? '1px solid color-mix(in srgb, var(--ac) 30%, transparent)' : '1px solid var(--border)',
+                      color: isToday ? 'var(--ac)' : 'var(--muted)'
+                    }}>
                     {day}
                   </div>
                   <div className="space-y-2">
                     {dayEntries.map(e => (
-                      <div key={e._id} className="glass-card p-3 relative"
-                        style={{borderLeft:`3px solid ${e.color||"#60a5fa"}`}}>
-                        <div className="text-xs font-semibold text-on-surface truncate mb-0.5">{e.subject}</div>
-                        <div className="text-[10px] text-muted">{e.startTime}–{e.endTime}</div>
-                        {e.room && <div className="text-[10px] text-dim mt-0.5">{e.room}</div>}
+                      <div key={e._id} className="glass-card p-3 relative group transition-all duration-200 hover:scale-105"
+                        style={{borderLeft:`3px solid ${e.color||"var(--ac)"}`}}>
+                        <div className="text-xs font-bold truncate mb-0.5" style={{ color: 'var(--text)' }}>{e.subject}</div>
+                        <div className="text-[10px]" style={{ color: 'var(--muted)' }}>{e.startTime}–{e.endTime}</div>
+                        {e.room && <div className="text-[10px] mt-0.5" style={{ color: 'var(--dim)' }}>{e.room}</div>}
                         <button onClick={() => del(e._id)}
-                          className="absolute top-1 right-1 text-dim hover:text-danger
-                            transition-colors duration-200 p-0.5">
+                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-0.5" style={{ color: 'var(--dim)' }}>
                           <span className="material-symbols-outlined text-sm">close</span>
                         </button>
                       </div>
                     ))}
                     {dayEntries.length === 0 && (
-                      <div className="text-[11px] text-dim text-center py-3">—</div>
+                      <div className="text-[11px] text-center py-3" style={{ color: 'var(--dim)' }}>—</div>
                     )}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {modal && (
@@ -725,11 +747,11 @@ export function TimetablePage() {
             <div className="flex gap-2 flex-wrap">
               {DAYS.map(d => (
                 <button key={d} onClick={() => setForm({...form, day:d})}
-                  className="px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200"
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-200"
                   style={{
-                    background:form.day===d?"rgba(0,200,150,.1)":"transparent",
-                    border:`1px solid ${form.day===d?"rgba(0,200,150,.3)":"rgba(255,255,255,.05)"}`,
-                    color:form.day===d?"#00C896":"#4a5568"
+                    background:form.day===d?"color-mix(in srgb, var(--ac) 15%, transparent)":"var(--card2)",
+                    border:`1px solid ${form.day===d?"var(--ac)":"var(--border)"}`,
+                    color:form.day===d?"var(--ac)":"var(--muted)"
                   }}>{d}</button>
               ))}
             </div>
@@ -748,7 +770,7 @@ export function TimetablePage() {
             </div>
           </div>
           <Input label="Room (optional)" placeholder="e.g. LT-3" value={form.room} onChange={e => setForm({...form, room:e.target.value})} />
-          <Btn full color="#60a5fa" onClick={add}>Add Class</Btn>
+          <Btn full color="var(--ac)" onClick={add}>Add Class</Btn>
         </Modal>
       )}
     </div>
@@ -761,6 +783,144 @@ export function TimetablePage() {
 const MOCK_BOARD = [
   { name:"Vartika Gupta", xp:2609 },
   { name:"Rahul singh",  xp:380 },
+  { name:"Arjun Mehta",  xp:290 },
+];
+
+export function GamificationPage() {
+  const { stats }  = useStats();
+  const { user }   = useAuth();
+
+  const lv = getLevel(stats.xp || 0);
+  const lo = XP_THRESHOLDS[lv] || 0;
+  const hi = XP_THRESHOLDS[lv + 1] || lo + 500;
+
+  const board = [
+    { name: user?.name || "You", xp: stats.xp || 0, you:true },
+    ...MOCK_BOARD,
+  ].sort((a,b) => b.xp - a.xp);
+
+  const RANK_ICONS = ["trophy","workspace_premium","military_tech","filter_4","filter_5"];
+  const RANK_COLORS = ["#fbbf24","#94a3b8","#cd7f32","#6b7280","#6b7280"];
+  const earnedCount = BADGES.filter(b => b.check(stats)).length;
+
+  return (
+    <div className="page-container">
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-1">
+          <span className="material-symbols-outlined text-3xl filled" style={{color:'var(--ac)'}}>emoji_events</span>
+          <h1 className="text-3xl font-extrabold tracking-tight grad-text">Achievements</h1>
+        </div>
+        <p className="text-sm" style={{color:'var(--muted)'}}>Track your progress and earn badges</p>
+      </div>
+
+      {/* Level hero */}
+      <div className="fade-up rounded-3xl p-8 mb-6 flex gap-6 items-center relative overflow-hidden"
+        style={{ background:'var(--card)', border:'1px solid var(--border)' }}>
+        <div className="absolute inset-0 pointer-events-none"
+          style={{background:'linear-gradient(135deg, rgba(167,139,250,0.06), transparent 60%)'}} />
+        <div className="w-16 h-16 rounded-full flex items-center justify-center flex-shrink-0 relative glow-pulse"
+          style={{background:'rgba(167,139,250,0.12)', border:'1px solid rgba(167,139,250,0.25)'}}>
+          <span className="material-symbols-outlined text-3xl filled" style={{color:'#a78bfa'}}>
+            {LEVEL_ICONS[lv] || "workspace_premium"}
+          </span>
+        </div>
+        <div className="flex-1 relative z-10">
+          <div className="text-2xl font-extrabold mb-1" style={{color:'var(--text)'}}>Level {lv+1} — {LEVEL_NAMES[lv]}</div>
+          <div className="text-sm mb-3" style={{color:'var(--muted)'}}>{stats.xp||0} XP · {hi-(stats.xp||0)} XP to next level</div>
+          <ProgressBar value={(stats.xp||0)-lo} max={hi-lo} color="#a78bfa" glow />
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {[
+          { l:"Total XP",  v:stats.xp||0,                              i:"bolt", c:"#fbbf24" },
+          { l:"Streak",    v:`${stats.streak||0}d`,                    i:"local_fire_department", c:"#f97316" },
+          { l:"Pomodoros", v:stats.pomodoros||0,                       i:"timer", c:"#f87171" },
+          { l:"Hours",     v:`${Math.floor((stats.totalMins||0)/60)}h`,i:"schedule", c:"#00C896" },
+        ].map((s,i) => (
+          <div key={i} className="fade-up stat-card text-center p-6"
+            style={{borderTop:`2px solid ${s.c}`,animationDelay:`${i*.08}s`}}>
+            <span className="material-symbols-outlined text-3xl mb-2 block filled" style={{color:s.c}}>{s.i}</span>
+            <div className="text-xl font-extrabold" style={{color:s.c}}>{s.v}</div>
+            <div className="text-[11px] mt-1" style={{color:'var(--muted)'}}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Badges with rarity */}
+      <Card className="mb-6">
+        <div className="flex items-center justify-between mb-5">
+          <div className="text-base font-bold flex items-center gap-2" style={{color:'var(--text)'}}>
+            <span className="material-symbols-outlined filled" style={{color:'var(--ac)'}}>workspace_premium</span>Badges
+          </div>
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full"
+            style={{background:'color-mix(in srgb, var(--ac) 10%, transparent)',color:'var(--ac)'}}>
+            {earnedCount} / {BADGES.length}
+          </span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {BADGES.map((b, bi) => {
+            const earned = b.check(stats);
+            const rarity = bi < 3 ? "common" : bi < 6 ? "rare" : "legendary";
+            const rc = { common:"#60a5fa", rare:"#a78bfa", legendary:"#fbbf24" };
+            return (
+              <div key={b.id} className={`p-4 rounded-xl flex gap-3 items-center transition-all duration-300
+                ${earned ? 'hover:scale-[1.03]' : ''}`}
+                style={{
+                  border:`1px solid ${earned ? b.color+"40" : "var(--border)"}`,
+                  background:earned ? `${b.color}0a` : "var(--card)",
+                  opacity:earned ? 1 : 0.4,
+                  boxShadow:earned ? `0 0 20px ${b.color}15` : "none",
+                }}>
+                <span className="material-symbols-outlined text-2xl" style={{color:earned?b.color:"var(--dim)"}}>{b.icon}</span>
+                <div>
+                  <div className="text-xs font-semibold" style={{color:earned?"var(--text)":"var(--dim)"}}>{b.label||b.name}</div>
+                  <div className="text-[10px] mt-0.5 flex items-center gap-1">
+                    <span style={{color:earned?b.color:"var(--dim)"}}>{earned?"✓ Earned":"Locked"}</span>
+                    {earned && <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold uppercase"
+                      style={{background:`${rc[rarity]}15`,color:rc[rarity]}}>{rarity}</span>}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      {/* Leaderboard */}
+      <Card>
+        <div className="text-base font-bold mb-5 flex items-center gap-2" style={{color:'var(--text)'}}>
+          <span className="material-symbols-outlined filled" style={{color:'#fbbf24'}}>leaderboard</span>Leaderboard
+        </div>
+        <div className="space-y-2">
+          {board.map((u, i) => (
+            <div key={u.name} className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200"
+              style={{
+                background:u.you ? 'color-mix(in srgb, var(--ac) 8%, transparent)' : 'transparent',
+                border:u.you ? '1px solid color-mix(in srgb, var(--ac) 20%, transparent)' : '1px solid transparent',
+              }}>
+              <span className="material-symbols-outlined text-lg w-7 text-center filled"
+                style={{color:RANK_COLORS[i]||"#6b7280"}}>{RANK_ICONS[i]||"tag"}</span>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                style={{
+                  background:u.you?'color-mix(in srgb, var(--ac) 15%, transparent)':'rgba(255,255,255,.05)',
+                  color:u.you?'var(--ac)':'var(--dim)',
+                }}>{u.name[0]}</div>
+              <span className="flex-1 text-sm"
+                style={{color:u.you?'var(--ac)':'var(--text)',fontWeight:u.you?700:400}}>
+                {u.name}{u.you ? " (You)" : ""}
+              </span>
+              <span className="text-sm font-bold" style={{color:'#fbbf24'}}>{u.xp} XP</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+
   { name:"Arjun Mehta",  xp:290 },
 ];
 

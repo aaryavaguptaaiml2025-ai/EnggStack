@@ -6,10 +6,10 @@ import { useStats } from "../context/StatsContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 const RATING_BUTTONS = [
-  { rating: 1, label: "Again", color: "#ef4444", icon: "replay", sub: "< 1 min" },
-  { rating: 2, label: "Hard",  color: "#f97316", icon: "trending_down", sub: "~1 day" },
-  { rating: 3, label: "Good",  color: "#00C896", icon: "check", sub: "Normal" },
-  { rating: 4, label: "Easy",  color: "#3b82f6", icon: "bolt", sub: "Extended" },
+  { rating: 1, label: "Again", color: "var(--clr-danger, #ef4444)", icon: "replay", sub: "< 1 min" },
+  { rating: 2, label: "Hard",  color: "var(--clr-streak, #f97316)", icon: "trending_down", sub: "~1 day" },
+  { rating: 3, label: "Good",  color: "var(--ac)", icon: "check", sub: "Normal" },
+  { rating: 4, label: "Easy",  color: "var(--clr-blue, #3b82f6)", icon: "bolt", sub: "Extended" },
 ];
 
 export default function FlashcardsPage() {
@@ -58,11 +58,11 @@ export default function FlashcardsPage() {
     try {
       await api.createDeck(deckForm);
       sfx.success();
-      setToast({ msg: "Deck created!", color: "#00C896" });
+      setToast({ msg: "Deck created!", color: "var(--ac)" });
       setDeckModal(false);
       setDeckForm({ title: "", subject: "" });
       loadDecks();
-    } catch (e) { sfx.error(); setToast({ msg: e.message, color: "#f87171" }); }
+    } catch (e) { sfx.error(); setToast({ msg: e.message, color: "var(--clr-danger, #f87171)" }); }
   };
 
   // Delete deck
@@ -76,13 +76,13 @@ export default function FlashcardsPage() {
     try {
       await api.createCard(cardForm);
       sfx.success();
-      setToast({ msg: "Card added!", color: "#00C896" });
+      setToast({ msg: "Card added!", color: "var(--ac)" });
       setCardForm(f => ({ ...f, front: "", back: "" }));
       loadDecks();
       if (browseDeckId === cardForm.deckId) {
         api.getDeckCards(cardForm.deckId).then(setBrowseCards).catch(() => {});
       }
-    } catch (e) { sfx.error(); setToast({ msg: e.message, color: "#f87171" }); }
+    } catch (e) { sfx.error(); setToast({ msg: e.message, color: "var(--clr-danger, #f87171)" }); }
   };
 
   // Start review
@@ -90,7 +90,7 @@ export default function FlashcardsPage() {
     try {
       const cards = await api.getDueCards(deckId);
       if (cards.length === 0) {
-        setToast({ msg: "No cards due! Come back later.", color: "#3b82f6" });
+        setToast({ msg: "No cards due! Come back later.", color: "var(--clr-blue, #3b82f6)" });
         return;
       }
       setReviewDeckId(deckId);
@@ -101,7 +101,7 @@ export default function FlashcardsPage() {
       setXpEarned(0);
       setShowComplete(false);
       sfx.click();
-    } catch (e) { setToast({ msg: e.message, color: "#f87171" }); }
+    } catch (e) { setToast({ msg: e.message, color: "var(--clr-danger, #f87171)" }); }
   };
 
   // Submit review
@@ -126,7 +126,7 @@ export default function FlashcardsPage() {
         setCurrentIdx(i => i + 1);
         setFlipped(false);
       }
-    } catch (e) { setToast({ msg: e.message, color: "#f87171" }); }
+    } catch (e) { setToast({ msg: e.message, color: "var(--clr-danger, #f87171)" }); }
     finally { setReviewing(false); }
   };
 
@@ -157,8 +157,8 @@ export default function FlashcardsPage() {
             <span className="text-xs text-muted">{currentIdx + 1} / {reviewCards.length}</span>
           </div>
           <div className="w-full h-1 rounded-full bg-white/10">
-            <div className="h-full rounded-full bg-[#00C896] transition-all duration-300"
-              style={{ width: `${((currentIdx) / reviewCards.length) * 100}%` }} />
+            <div className="h-full rounded-full transition-all duration-300"
+              style={{ background: "var(--ac)", width: `${((currentIdx) / reviewCards.length) * 100}%` }} />
           </div>
         </div>
 
@@ -174,17 +174,17 @@ export default function FlashcardsPage() {
             style={{ transformStyle: "preserve-3d", position: "relative", minHeight: "280px" }}
           >
             {/* Front */}
-            <div className="absolute inset-0 glass-card p-8 flex flex-col items-center justify-center text-center"
-              style={{ backfaceVisibility: "hidden" }}>
-              <span className="material-symbols-outlined text-3xl text-[var(--ac)]/30 mb-4">quiz</span>
-              <div className="text-lg font-bold text-[var(--text)] leading-relaxed whitespace-pre-wrap">{card?.front}</div>
-              <div className="text-xs text-muted mt-6">Tap to reveal answer</div>
+            <div className="absolute inset-0 p-8 flex flex-col items-center justify-center text-center rounded-3xl"
+              style={{ background: 'var(--card)', border: '1px solid var(--border)', backfaceVisibility: "hidden" }}>
+              <span className="material-symbols-outlined text-3xl mb-4" style={{ color: 'color-mix(in srgb, var(--ac) 40%, transparent)' }}>quiz</span>
+              <div className="text-lg font-bold leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text)' }}>{card?.front}</div>
+              <div className="text-xs mt-6" style={{ color: 'var(--dim)' }}>Tap to reveal answer</div>
             </div>
             {/* Back */}
-            <div className="absolute inset-0 glass-card p-8 flex flex-col items-center justify-center text-center"
-              style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
-              <span className="material-symbols-outlined text-3xl text-[#00C896]/30 mb-4">lightbulb</span>
-              <div className="text-lg font-bold text-[var(--text)] leading-relaxed whitespace-pre-wrap">{card?.back}</div>
+            <div className="absolute inset-0 p-8 flex flex-col items-center justify-center text-center rounded-3xl"
+              style={{ background: 'var(--card)', border: '1px solid var(--border)', backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}>
+              <span className="material-symbols-outlined text-3xl mb-4" style={{ color: 'color-mix(in srgb, var(--ac) 40%, transparent)' }}>lightbulb</span>
+              <div className="text-lg font-bold leading-relaxed whitespace-pre-wrap" style={{ color: 'var(--text)' }}>{card?.back}</div>
             </div>
           </motion.div>
         </div>
@@ -234,21 +234,21 @@ export default function FlashcardsPage() {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", duration: 0.6 }}
         >
-          <span className="material-symbols-outlined text-7xl text-[#00C896] mb-4 block filled">emoji_events</span>
+          <span className="material-symbols-outlined text-7xl mb-4 block filled" style={{ color: "var(--ac)" }}>emoji_events</span>
         </motion.div>
-        <h2 className="text-2xl font-extrabold text-[var(--text)] mb-2">Session Complete!</h2>
-        <p className="text-muted text-sm mb-6">You reviewed {reviewed} cards</p>
+        <h2 className="text-2xl font-extrabold mb-2" style={{ color: "var(--text)" }}>Session Complete!</h2>
+        <p className="text-sm mb-6" style={{ color: "var(--muted)" }}>You reviewed {reviewed} cards</p>
         <div className="flex gap-4 mb-8">
-          <div className="glass-card px-6 py-4 text-center">
-            <div className="text-2xl font-extrabold text-[#00C896]">+{xpEarned}</div>
-            <div className="text-[10px] text-muted mt-1">XP Earned</div>
+          <div className="px-6 py-4 text-center rounded-3xl" style={{ background: "var(--card)" }}>
+            <div className="text-2xl font-extrabold" style={{ color: "var(--ac)" }}>+{xpEarned}</div>
+            <div className="text-[10px] mt-1" style={{ color: "var(--muted)" }}>XP Earned</div>
           </div>
-          <div className="glass-card px-6 py-4 text-center">
-            <div className="text-2xl font-extrabold text-[#f97316]">{reviewed}</div>
-            <div className="text-[10px] text-muted mt-1">Cards Reviewed</div>
+          <div className="px-6 py-4 text-center rounded-3xl" style={{ background: "var(--card)" }}>
+            <div className="text-2xl font-extrabold" style={{ color: "var(--clr-streak, #f97316)" }}>{reviewed}</div>
+            <div className="text-[10px] mt-1" style={{ color: "var(--muted)" }}>Cards Reviewed</div>
           </div>
         </div>
-        <Btn color="#00C896" onClick={() => { setReviewDeckId(null); setShowComplete(false); loadDecks(); }}>
+        <Btn color="var(--ac)" onClick={() => { setReviewDeckId(null); setShowComplete(false); loadDecks(); }}>
           Back to Decks
         </Btn>
       </div>
@@ -260,24 +260,27 @@ export default function FlashcardsPage() {
     <div className="page-container">
       {toast && <Toast msg={toast.msg} color={toast.color} onClose={() => setToast(null)} />}
       
-      <div className="flex justify-between items-center mb-8">
+      <motion.div className="flex justify-between items-center mb-8" initial={{opacity:0, y:20}} animate={{opacity:1, y:0}}>
         <div>
-          <h1 className="section-title">Flashcards</h1>
-          <p className="text-xs text-muted mt-1">Spaced repetition for long-term memory</p>
+          <div className="flex items-center gap-3 mb-1">
+            <span className="material-symbols-outlined text-3xl grad-text filled">style</span>
+            <h1 className="text-3xl font-extrabold grad-text tracking-tight">Flashcards</h1>
+          </div>
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>Spaced repetition for long-term memory</p>
         </div>
-        <Btn color="#8b5cf6" onClick={() => setDeckModal(true)}>
+        <Btn color="var(--clr-purple, #8b5cf6)" onClick={() => setDeckModal(true)}>
           <span className="material-symbols-outlined text-base">add</span> New Deck
         </Btn>
-      </div>
+      </motion.div>
 
       {loading ? (
         <div className="text-center py-20"><Spinner /></div>
       ) : decks.length === 0 ? (
-        <Card className="text-center py-16">
-          <span className="material-symbols-outlined text-5xl text-dim mb-4 block">style</span>
-          <div className="text-muted text-sm mb-4">No flashcard decks yet. Create one to start studying!</div>
-          <Btn color="#8b5cf6" onClick={() => setDeckModal(true)}>Create First Deck</Btn>
-        </Card>
+        <motion.div initial={{opacity:0}} animate={{opacity:1}} className="text-center py-16 rounded-3xl" style={{ background: 'var(--card)', border: '1px solid var(--border)' }}>
+          <span className="material-symbols-outlined text-5xl mb-4 block" style={{ color: 'var(--dim)' }}>style</span>
+          <div className="text-sm mb-4" style={{ color: 'var(--muted)' }}>No flashcard decks yet. Create one to start studying!</div>
+          <Btn color="var(--clr-purple, #8b5cf6)" onClick={() => setDeckModal(true)}>Create First Deck</Btn>
+        </motion.div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {decks.map((deck, i) => {
@@ -288,24 +291,24 @@ export default function FlashcardsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
               >
-                <Card className="relative overflow-hidden" style={{ borderLeft: "3px solid #8b5cf6" }}>
+                <Card className="relative overflow-hidden" style={{ borderLeft: "3px solid var(--clr-purple, #8b5cf6)" }}>
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-2xl text-[#8b5cf6]">style</span>
+                      <span className="material-symbols-outlined text-2xl" style={{ color: 'var(--clr-purple, #8b5cf6)' }}>style</span>
                       <div>
-                        <div className="text-base font-bold text-on-surface">{deck.title}</div>
-                        {deck.subject && <Badge color="#60a5fa">{deck.subject}</Badge>}
+                        <div className="text-base font-bold truncate" style={{ color: 'var(--text)' }}>{deck.title}</div>
+                        {deck.subject && <Badge color="var(--ac)">{deck.subject}</Badge>}
                       </div>
                     </div>
                     <button onClick={() => deleteDeck(deck._id)}
-                      className="text-dim hover:text-danger transition-colors p-1">
+                      className="p-1 transition-colors hover:brightness-150" style={{ color: 'var(--dim)' }}>
                       <span className="material-symbols-outlined text-lg">close</span>
                     </button>
                   </div>
 
-                  <div className="flex gap-3 text-xs text-muted mb-4">
+                  <div className="flex gap-3 text-xs mb-4" style={{ color: 'var(--muted)' }}>
                     <span>{deck.totalCards} cards</span>
-                    <span className={`font-bold ${hasDue ? "text-[#f97316]" : "text-[#00C896]"}`}>
+                    <span className="font-bold" style={{ color: hasDue ? 'var(--clr-streak, #f97316)' : 'var(--ac)' }}>
                       {hasDue ? `🔥 ${deck.dueCount} due` : "✅ All caught up"}
                     </span>
                   </div>
@@ -313,19 +316,24 @@ export default function FlashcardsPage() {
                   <div className="flex gap-2">
                     <button onClick={() => startReview(deck._id)}
                       disabled={!hasDue}
-                      className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5
-                        ${hasDue 
-                          ? "bg-[#8b5cf6]/10 border border-[#8b5cf6]/20 text-[#8b5cf6] hover:bg-[#8b5cf6]/20" 
-                          : "bg-white/5 border border-white/10 text-dim cursor-default"}`}>
+                      className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5`}
+                      style={{
+                        background: hasDue ? 'color-mix(in srgb, var(--clr-purple, #8b5cf6) 10%, transparent)' : 'var(--card2)',
+                        border: hasDue ? '1px solid color-mix(in srgb, var(--clr-purple, #8b5cf6) 20%, transparent)' : '1px solid var(--border)',
+                        color: hasDue ? 'var(--clr-purple, #8b5cf6)' : 'var(--dim)',
+                        cursor: hasDue ? 'pointer' : 'default'
+                      }}>
                       <span className="material-symbols-outlined text-sm">play_arrow</span>
                       {hasDue ? "Study" : "No cards due"}
                     </button>
                     <button onClick={() => { setCardForm(f => ({ ...f, deckId: deck._id })); setCardModal(true); }}
-                      className="py-2.5 px-4 rounded-xl text-xs font-semibold bg-[#00C896]/10 border border-[#00C896]/20 text-[#00C896] hover:bg-[#00C896]/20 transition-all duration-200">
+                      className="py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200"
+                      style={{ background: 'color-mix(in srgb, var(--ac) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--ac) 20%, transparent)', color: 'var(--ac)' }}>
                       <span className="material-symbols-outlined text-sm">add</span>
                     </button>
                     <button onClick={() => browseDeckId === deck._id ? setBrowseDeckId(null) : browseCardsDeck(deck._id)}
-                      className="py-2.5 px-4 rounded-xl text-xs font-semibold bg-white/5 border border-white/10 text-muted hover:bg-white/10 transition-all duration-200">
+                      className="py-2.5 px-4 rounded-xl text-xs font-semibold transition-all duration-200"
+                      style={{ background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--muted)' }}>
                       <span className="material-symbols-outlined text-sm">list</span>
                     </button>
                   </div>
@@ -339,17 +347,17 @@ export default function FlashcardsPage() {
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden"
                       >
-                        <div className="mt-4 pt-4 border-t border-white/10 space-y-2 max-h-60 overflow-y-auto">
+                        <div className="mt-4 pt-4 space-y-2 max-h-60 overflow-y-auto" style={{ borderTop: '1px solid var(--border)' }}>
                           {browseCards.length === 0 ? (
-                            <div className="text-xs text-dim text-center py-3">No cards yet</div>
+                            <div className="text-xs text-center py-3" style={{ color: 'var(--dim)' }}>No cards yet</div>
                           ) : browseCards.map(c => (
-                            <div key={c._id} className="flex items-start justify-between p-2.5 rounded-xl bg-white/5 text-xs">
+                            <div key={c._id} className="flex items-start justify-between p-2.5 rounded-xl text-xs" style={{ background: 'var(--card2)' }}>
                               <div className="flex-1 mr-2">
-                                <div className="text-[var(--text)] font-medium truncate">{c.front}</div>
-                                <div className="text-muted truncate mt-0.5">{c.back}</div>
+                                <div className="font-medium truncate" style={{ color: 'var(--text)' }}>{c.front}</div>
+                                <div className="truncate mt-0.5" style={{ color: 'var(--muted)' }}>{c.back}</div>
                               </div>
                               <button onClick={() => { api.deleteCard(c._id).then(() => browseCardsDeck(deck._id)).then(loadDecks); sfx.click(); }}
-                                className="text-dim hover:text-danger flex-shrink-0 p-0.5">
+                                className="flex-shrink-0 p-0.5 transition-colors hover:brightness-150" style={{ color: 'var(--dim)' }}>
                                 <span className="material-symbols-outlined text-sm">close</span>
                               </button>
                             </div>
@@ -371,11 +379,11 @@ export default function FlashcardsPage() {
           <Input label="Deck Title" placeholder="e.g. Data Structures — Trees" value={deckForm.title} 
             onChange={e => setDeckForm({...deckForm, title: e.target.value})} />
           <div className="mb-4">
-            <div className="text-xs text-muted mb-1.5 font-medium ml-1">Subject (optional)</div>
+            <div className="text-xs font-semibold mb-1.5 ml-1" style={{ color: 'var(--muted)' }}>Subject (optional)</div>
             <select 
               value={deckForm.subject}
               onChange={e => setDeckForm({...deckForm, subject: e.target.value})}
-              className="input-field"
+              className="input-field w-full"
               style={{ colorScheme: "dark" }}
             >
               <option value="">No subject</option>
@@ -384,7 +392,7 @@ export default function FlashcardsPage() {
               ))}
             </select>
           </div>
-          <Btn full color="#8b5cf6" onClick={createDeck}>Create Deck</Btn>
+          <Btn full color="var(--clr-purple, #8b5cf6)" onClick={createDeck}>Create Deck</Btn>
         </Modal>
       )}
 
@@ -392,19 +400,19 @@ export default function FlashcardsPage() {
       {cardModal && (
         <Modal title="Add Flashcard" onClose={() => setCardModal(false)}>
           <div className="mb-4">
-            <div className="text-xs text-muted mb-1.5 font-medium ml-1">Front (Question)</div>
+            <div className="text-xs font-semibold mb-1.5 ml-1" style={{ color: 'var(--muted)' }}>Front (Question)</div>
             <textarea value={cardForm.front} onChange={e => setCardForm({...cardForm, front: e.target.value})}
               placeholder="e.g. What is the time complexity of binary search?"
-              rows={3} className="input-field resize-none" />
+              rows={3} className="input-field resize-none w-full" />
           </div>
           <div className="mb-4">
-            <div className="text-xs text-muted mb-1.5 font-medium ml-1">Back (Answer)</div>
+            <div className="text-xs font-semibold mb-1.5 ml-1" style={{ color: 'var(--muted)' }}>Back (Answer)</div>
             <textarea value={cardForm.back} onChange={e => setCardForm({...cardForm, back: e.target.value})}
               placeholder="e.g. O(log n)"
-              rows={3} className="input-field resize-none" />
+              rows={3} className="input-field resize-none w-full" />
           </div>
           <div className="flex gap-2">
-            <Btn full color="#00C896" onClick={createCard}>Add Card</Btn>
+            <Btn full color="var(--ac)" onClick={createCard}>Add Card</Btn>
             <Btn full variant="outline" onClick={() => setCardModal(false)}>Done</Btn>
           </div>
         </Modal>
